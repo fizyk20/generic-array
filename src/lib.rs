@@ -3,17 +3,17 @@ use std::mem;
 use std::ops::{Index, IndexMut};
 
 #[derive(Debug, Copy, Clone)]
-struct _0;
+pub struct _0;
 #[derive(Debug, Copy, Clone)]
-struct _1;
+pub struct _1;
 
 /// Single type-level bit, `_0` or `_1`.
-trait Bit { }
+pub trait Bit { }
 impl Bit for _0 { }
 impl Bit for _1 { }
 
 /// Nonnegative type-level integer, e.g., `((_1,_0),_1) = 0b101 = 25`.
-trait Nat {
+pub trait Nat {
     fn reify() -> u64;
 }
 impl Nat for _0 { fn reify() -> u64 { 0 } }
@@ -25,27 +25,21 @@ impl<N: Nat> Nat for (N, _1) {
     fn reify() -> u64 { (N::reify() << 1) | 1 }
 }
 
-/// Positive type-level integer.
-trait Pos: Nat { }
-impl Pos for _1 { }
-impl<N: Pos> Pos for (N, _0) { }
-impl<N: Nat> Pos for (N, _1) { }
-
 /// Trait making GenericArray work
-trait ArrayLength<T> : Nat {
+pub trait ArrayLength<T> : Nat {
 	/// Associated type representing the array type for the number
 	type ArrayType;
 }
 
 /// Empty array - needed to end recursion
 #[allow(dead_code)]
-struct EmptyArray<T> {
+pub struct EmptyArray<T> {
 	_marker: PhantomData<T>
 }
 
 /// Array with a single element - for _1
 #[allow(dead_code)]
-struct UnitArray<T> {
+pub struct UnitArray<T> {
 	data: T
 }
 
@@ -57,14 +51,14 @@ impl<T> ArrayLength<T> for _1 {
 }
 
 #[allow(dead_code)]
-struct GenericArrayImplEven<T, U> {
+pub struct GenericArrayImplEven<T, U> {
 	parent1: U,
 	parent2: U,
 	_marker: PhantomData<T>
 }
 
 #[allow(dead_code)]
-struct GenericArrayImplOdd<T, U> {
+pub struct GenericArrayImplOdd<T, U> {
 	parent1: U,
 	parent2: U,
 	data: T
@@ -79,7 +73,7 @@ impl<T, N: ArrayLength<T>> ArrayLength<T> for (N, _1) {
 }
 
 #[allow(dead_code)]
-struct GenericArray<T, U: ArrayLength<T>> {
+pub struct GenericArray<T, U: ArrayLength<T>> {
 	data: U::ArrayType
 }
 
@@ -104,11 +98,11 @@ impl<T, N> IndexMut<usize> for GenericArray<T, N> where N: ArrayLength<T> {
 
 impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
-	fn new() -> GenericArray<T, N> {
+	pub fn new() -> GenericArray<T, N> {
 		unsafe { mem::zeroed() }
 	}
 
-	fn new_list(list: &[T]) -> GenericArray<T, N> {
+	pub fn new_list(list: &[T]) -> GenericArray<T, N> {
 		assert_eq!(list.len(), N::reify() as usize);
 		let mut res = GenericArray::new();
 		for i in 0..N::reify() as usize {
@@ -119,12 +113,22 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 }
 
-type P65 = ((((((_1, _0), _0), _0), _0), _0), _1);
+#[cfg(test)]
+mod test {
+	use super::{_0, _1, GenericArray};
 
-fn main() {
-    let l : GenericArray<i32, P65> = GenericArray::new_list(&[1; 65]);
-    println!("l[0]: {}", l[0]);
-    println!("l[1]: {}", l[1]);
-    println!("l[2]: {}", l[2]);
-    println!("l[3]: {}", l[3]);
+	type P97 = ((((((_1, _1), _0), _0), _0), _0), _1);
+
+	#[test]
+	fn test() {
+		let mut list97 = [0; 97];
+		for i in 0..97 {
+			list97[i] = i as i32;
+		}
+	    let l : GenericArray<i32, P97> = GenericArray::new_list(&list97);
+	    assert_eq!(l[0], 0);
+	    assert_eq!(l[1], 1);
+	    assert_eq!(l[32], 32);
+	    assert_eq!(l[56], 56);
+	}	
 }

@@ -1,4 +1,13 @@
 [package]
+
 name = "generic-array"
-version = "0.1.0"
-authors = ["Bartłomiej Kamiński <fizyk20@gmail.com>"]
+version = "0.0.1"
+authors = [ "Bartłomiej Kamiński <fizyk20@gmail.com>" ]
+description = "Generic types implementing functionality of arrays"
+license = "MIT"
+repository = "https://github.com/fizyk20/generic-array.git"
+
+[lib]
+
+name = "generic_array"
+crate-type = ["rlib", "dylib"]
