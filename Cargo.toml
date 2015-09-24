@@ -1,4 +1,4 @@
 [package]
-name = "peano-array"
+name = "generic-array"
 version = "0.1.0"
 authors = ["Bartłomiej Kamiński <fizyk20@gmail.com>"]

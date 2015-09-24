@@ -61,14 +61,14 @@ impl<N: Peano + ToInt> ToInt for Succ<N> {
 
 /// Empty array - needed to end recursion
 #[allow(dead_code)]
-struct ArrayEmpty<T> {
+struct EmptyArray<T> {
 	_marker: PhantomData<T>
 }
 
 /// Type implementing the array recursion
 #[allow(dead_code)]
 #[repr(packed)]
-struct ArrayPeanoImpl<T, U: ArrayLength<T>> {
+struct GenericArrayImpl<T, U: ArrayLength<T>> {
 	prev: U::ArrayPrev,
 	val: T
 }
@@ -76,11 +76,11 @@ struct ArrayPeanoImpl<T, U: ArrayLength<T>> {
 /// The actually useful array type
 #[allow(dead_code)]
 #[repr(packed)]
-struct ArrayPeano<T, U: ArrayLength<T>> {
+struct GenericArray<T, U: ArrayLength<T>> {
 	data: U::ArrayPrev
 }
 
-/// Trait making ArrayPeano work
+/// Trait making GenericArray work
 trait ArrayLength<T> : Peano + ToInt {
 	/// Associated type representing the array type for the number that is one less
 	type ArrayPrev;
@@ -88,41 +88,41 @@ trait ArrayLength<T> : Peano + ToInt {
 
 // Array of size Zero should be empty
 impl<T> ArrayLength<T> for Zero {
-	type ArrayPrev = ArrayEmpty<T>;
+	type ArrayPrev = EmptyArray<T>;
 }
-// We use ArrayPeanoImpl for each next number
+// We use GenericArrayImpl for each next number
 impl<T, N> ArrayLength<T> for Succ<N> where N: ArrayLength<T> {
-	type ArrayPrev = ArrayPeanoImpl<T, N>;
+	type ArrayPrev = GenericArrayImpl<T, N>;
 }
 
-impl<T, N> Index<usize> for ArrayPeano<T, N> where N: ArrayLength<T> {
+impl<T, N> Index<usize> for GenericArray<T, N> where N: ArrayLength<T> {
 	type Output = T;
 
 	fn index(&self, i: usize) -> &T {
 		assert!(i < N::to_int() as usize);
-		let p: *const T = self as *const ArrayPeano<T, N> as *const T;
+		let p: *const T = self as *const GenericArray<T, N> as *const T;
 		unsafe { &*p.offset(i as isize) }
 	}
 }
 
-impl<T, N> IndexMut<usize> for ArrayPeano<T, N> where N: ArrayLength<T> {
+impl<T, N> IndexMut<usize> for GenericArray<T, N> where N: ArrayLength<T> {
 
 	fn index_mut(&mut self, i: usize) -> &mut T {
 		assert!(i < N::to_int() as usize);
-		let p: *mut T = self as *mut ArrayPeano<T, N> as *mut T;
+		let p: *mut T = self as *mut GenericArray<T, N> as *mut T;
 		unsafe { &mut *p.offset(i as isize) }
 	}
 }
 
-impl<T: Clone, N> ArrayPeano<T, N> where N: ArrayLength<T> {
+impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
-	fn new() -> ArrayPeano<T, N> {
+	fn new() -> GenericArray<T, N> {
 		unsafe { mem::zeroed() }
 	}
 
-	fn new_list(list: &[T]) -> ArrayPeano<T, N> {
+	fn new_list(list: &[T]) -> GenericArray<T, N> {
 		assert_eq!(list.len(), N::to_int() as usize);
-		let mut res = ArrayPeano::new();
+		let mut res = GenericArray::new();
 		for i in 0..N::to_int() as usize {
 			res[i] = list[i].clone();
 		}
@@ -132,7 +132,7 @@ impl<T: Clone, N> ArrayPeano<T, N> where N: ArrayLength<T> {
 }
 
 fn main() {
-    let l : ArrayPeano<i32, P4> = ArrayPeano::new_list(&[1, 2, 3, 4]);
+    let l : GenericArray<i32, P4> = GenericArray::new_list(&[1, 2, 3, 4]);
     println!("l[0]: {}", l[0]);
     println!("l[1]: {}", l[1]);
     println!("l[2]: {}", l[2]);
