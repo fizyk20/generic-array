@@ -2,62 +2,40 @@ use std::marker::PhantomData;
 use std::mem;
 use std::ops::{Index, IndexMut};
 
-// Code from dimensioned - START
+#[derive(Debug, Copy, Clone)]
+struct _0;
+#[derive(Debug, Copy, Clone)]
+struct _1;
 
-pub struct Zero;
+/// Single type-level bit, `_0` or `_1`.
+trait Bit { }
+impl Bit for _0 { }
+impl Bit for _1 { }
 
-/// For any non-negative Peano number `N`, we define its successor, `Succ<N>`.
-///
-/// This gives us positive Peano numbers.
-#[derive(Copy, Clone)]
-pub struct Succ<N: Peano> {
-    _marker: PhantomData<N>
+/// Nonnegative type-level integer, e.g., `((_1,_0),_1) = 0b101 = 25`.
+trait Nat {
+    fn reify() -> u64;
+}
+impl Nat for _0 { fn reify() -> u64 { 0 } }
+impl Nat for _1 { fn reify() -> u64 { 1 } }
+impl<N: Nat> Nat for (N, _0) {
+    fn reify() -> u64 { N::reify() << 1 }
+}
+impl<N: Nat> Nat for (N, _1) {
+    fn reify() -> u64 { (N::reify() << 1) | 1 }
 }
 
+/// Positive type-level integer.
+trait Pos: Nat { }
+impl Pos for _1 { }
+impl<N: Pos> Pos for (N, _0) { }
+impl<N: Nat> Pos for (N, _1) { }
 
-/// The Peano number +1; `P1 = Succ<Zero>;`
-pub type P1 = Succ<Zero>;
-/// The Peano number +2; `P2 = Succ<P1>;`
-pub type P2 = Succ<P1>;
-/// The Peano number +3; `P3 = Succ<P2>;`
-pub type P3 = Succ<P2>;
-/// The Peano number +4; `P4 = Succ<P3>;`
-pub type P4 = Succ<P3>;
-/// The Peano number +5; `P5 = Succ<P4>;`
-pub type P5 = Succ<P4>;
-/// The Peano number +6; `P6 = Succ<P5>;`
-pub type P6 = Succ<P5>;
-/// The Peano number +7; `P7 = Succ<P6>;`
-pub type P7 = Succ<P6>;
-/// The Peano number +8; `P8 = Succ<P7>;`
-pub type P8 = Succ<P7>;
-/// The Peano number +9; `P9 = Succ<P8>;`
-pub type P9 = Succ<P8>;
-
-pub trait Peano {}
-impl Peano for Zero {}
-impl<N: Peano> Peano for Succ<N> {}
-
-trait PrevPeano: Peano {
-	type Prev: Peano;
+/// Trait making GenericArray work
+trait ArrayLength<T> : Nat {
+	/// Associated type representing the array type for the number
+	type ArrayType;
 }
-
-impl<N: Peano> PrevPeano for Succ<N> {
-	type Prev = N;
-}
-
-pub trait ToInt: Peano {
-    #[allow(missing_docs)]
-    fn to_int() -> i32;
-}
-impl ToInt for Zero {
-    fn to_int() -> i32 { 0 }
-}
-impl<N: Peano + ToInt> ToInt for Succ<N> {
-    fn to_int() -> i32 { 1 + N::to_int() }
-}
-
-// Code from dimensioned - END
 
 /// Empty array - needed to end recursion
 #[allow(dead_code)]
@@ -65,41 +43,51 @@ struct EmptyArray<T> {
 	_marker: PhantomData<T>
 }
 
-/// Type implementing the array recursion
+/// Array with a single element - for _1
 #[allow(dead_code)]
-#[repr(packed)]
-struct GenericArrayImpl<T, U: ArrayLength<T>> {
-	prev: U::ArrayPrev,
-	val: T
+struct UnitArray<T> {
+	data: T
 }
 
-/// The actually useful array type
+impl<T> ArrayLength<T> for _0 {
+	type ArrayType = EmptyArray<T>;
+}
+impl<T> ArrayLength<T> for _1 {
+	type ArrayType = UnitArray<T>;
+}
+
 #[allow(dead_code)]
-#[repr(packed)]
+struct GenericArrayImplEven<T, U> {
+	parent1: U,
+	parent2: U,
+	_marker: PhantomData<T>
+}
+
+#[allow(dead_code)]
+struct GenericArrayImplOdd<T, U> {
+	parent1: U,
+	parent2: U,
+	data: T
+}
+
+impl<T, N: ArrayLength<T>> ArrayLength<T> for (N, _0) {
+	type ArrayType = GenericArrayImplEven<T, N::ArrayType>;
+}
+
+impl<T, N: ArrayLength<T>> ArrayLength<T> for (N, _1) {
+	type ArrayType = GenericArrayImplOdd<T, N::ArrayType>;
+}
+
+#[allow(dead_code)]
 struct GenericArray<T, U: ArrayLength<T>> {
-	data: U::ArrayPrev
-}
-
-/// Trait making GenericArray work
-trait ArrayLength<T> : Peano + ToInt {
-	/// Associated type representing the array type for the number that is one less
-	type ArrayPrev;
-}
-
-// Array of size Zero should be empty
-impl<T> ArrayLength<T> for Zero {
-	type ArrayPrev = EmptyArray<T>;
-}
-// We use GenericArrayImpl for each next number
-impl<T, N> ArrayLength<T> for Succ<N> where N: ArrayLength<T> {
-	type ArrayPrev = GenericArrayImpl<T, N>;
+	data: U::ArrayType
 }
 
 impl<T, N> Index<usize> for GenericArray<T, N> where N: ArrayLength<T> {
 	type Output = T;
 
 	fn index(&self, i: usize) -> &T {
-		assert!(i < N::to_int() as usize);
+		assert!(i < N::reify() as usize);
 		let p: *const T = self as *const GenericArray<T, N> as *const T;
 		unsafe { &*p.offset(i as isize) }
 	}
@@ -108,7 +96,7 @@ impl<T, N> Index<usize> for GenericArray<T, N> where N: ArrayLength<T> {
 impl<T, N> IndexMut<usize> for GenericArray<T, N> where N: ArrayLength<T> {
 
 	fn index_mut(&mut self, i: usize) -> &mut T {
-		assert!(i < N::to_int() as usize);
+		assert!(i < N::reify() as usize);
 		let p: *mut T = self as *mut GenericArray<T, N> as *mut T;
 		unsafe { &mut *p.offset(i as isize) }
 	}
@@ -121,9 +109,9 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 	}
 
 	fn new_list(list: &[T]) -> GenericArray<T, N> {
-		assert_eq!(list.len(), N::to_int() as usize);
+		assert_eq!(list.len(), N::reify() as usize);
 		let mut res = GenericArray::new();
-		for i in 0..N::to_int() as usize {
+		for i in 0..N::reify() as usize {
 			res[i] = list[i].clone();
 		}
 		res
@@ -131,8 +119,10 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 }
 
+type P65 = ((((((_1, _0), _0), _0), _0), _0), _1);
+
 fn main() {
-    let l : GenericArray<i32, P4> = GenericArray::new_list(&[1, 2, 3, 4]);
+    let l : GenericArray<i32, P65> = GenericArray::new_list(&[1; 65]);
     println!("l[0]: {}", l[0]);
     println!("l[1]: {}", l[1]);
     println!("l[2]: {}", l[2]);
