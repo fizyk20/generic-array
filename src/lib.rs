@@ -8,11 +8,6 @@ pub struct _0;
 #[derive(Debug, Copy, Clone)]
 pub struct _1;
 
-/// Single type-level bit, `_0` or `_1`.
-pub trait Bit { }
-impl Bit for _0 { }
-impl Bit for _1 { }
-
 /// Nonnegative type-level integer, e.g., `((_1,_0),_1) = 0b101 = 25`.
 pub trait Nat {
     fn reify() -> u64;
