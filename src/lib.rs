@@ -32,24 +32,11 @@ pub unsafe trait ArrayLength<T> : Nat {
 	type ArrayType;
 }
 
-/// Empty array - needed to end recursion
-#[allow(dead_code)]
-pub struct EmptyArray<T> {
-	_marker: PhantomData<T>
-}
-
-/// Array with a single element - for _1
-#[allow(dead_code)]
-#[repr(C)]
-pub struct UnitArray<T> {
-	data: T
-}
-
 unsafe impl<T> ArrayLength<T> for _0 {
-	type ArrayType = EmptyArray<T>;
+	type ArrayType = ();
 }
 unsafe impl<T> ArrayLength<T> for _1 {
-	type ArrayType = UnitArray<T>;
+	type ArrayType = T;
 }
 
 #[allow(dead_code)]
