@@ -39,6 +39,7 @@ pub struct EmptyArray<T> {
 
 /// Array with a single element - for _1
 #[allow(dead_code)]
+#[repr(C)]
 pub struct UnitArray<T> {
 	data: T
 }
@@ -51,6 +52,7 @@ impl<T> ArrayLength<T> for _1 {
 }
 
 #[allow(dead_code)]
+#[repr(C)]
 pub struct GenericArrayImplEven<T, U> {
 	parent1: U,
 	parent2: U,
@@ -58,6 +60,7 @@ pub struct GenericArrayImplEven<T, U> {
 }
 
 #[allow(dead_code)]
+#[repr(C)]
 pub struct GenericArrayImplOdd<T, U> {
 	parent1: U,
 	parent2: U,
