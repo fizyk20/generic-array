@@ -1,6 +1,7 @@
 use std::marker::PhantomData;
 use std::mem;
-use std::ops::{Index, IndexMut};
+use std::ops::{Deref, DerefMut};
+use std::slice;
 
 #[derive(Debug, Copy, Clone)]
 pub struct _0;
@@ -80,23 +81,22 @@ pub struct GenericArray<T, U: ArrayLength<T>> {
 	data: U::ArrayType
 }
 
-impl<T, N> Index<usize> for GenericArray<T, N> where N: ArrayLength<T> {
-	type Output = T;
+impl<T, N> Deref for GenericArray<T, N> where N: ArrayLength<T> {
+    type Target = [T];
 
-	fn index(&self, i: usize) -> &T {
-		assert!(i < N::reify() as usize);
-		let p: *const T = self as *const GenericArray<T, N> as *const T;
-		unsafe { &*p.offset(i as isize) }
-	}
+    fn deref(&self) -> &[T] {
+        unsafe {
+            slice::from_raw_parts(self as *const Self as *const T, N::reify() as usize)
+        }
+    }
 }
 
-impl<T, N> IndexMut<usize> for GenericArray<T, N> where N: ArrayLength<T> {
-
-	fn index_mut(&mut self, i: usize) -> &mut T {
-		assert!(i < N::reify() as usize);
-		let p: *mut T = self as *mut GenericArray<T, N> as *mut T;
-		unsafe { &mut *p.offset(i as isize) }
-	}
+impl<T, N> DerefMut for GenericArray<T, N> where N: ArrayLength<T> {
+    fn deref_mut(&mut self) -> &mut [T] {
+        unsafe {
+            slice::from_raw_parts_mut(self as *mut Self as *mut T, N::reify() as usize)
+        }
+    }
 }
 
 impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
