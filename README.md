@@ -3,6 +3,8 @@
 
 This crate implements generic array types for Rust.
 
+[Documentation](http://fizyk20.github.io/generic-array/generic_array/)
+
 ## Usage
 
 The Rust arrays `[T; N]` are problematic in that they can't be used generically with respect to `N`, so for example this won't work:
