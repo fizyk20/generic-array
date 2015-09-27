@@ -1,7 +1,7 @@
 //! This crate implements a structure that can be used as a generic array type.use
 //! Core Rust array types `[T; N]` can't be used generically with respect to `N`, so for example this:
 //!
-//! ```
+//! ```ignore
 //! struct Foo<T, N> {
 //!     data: [T; N]
 //! }
@@ -11,7 +11,7 @@
 //!
 //! **generic-array** exports a `GenericArray<T,N>` type, which lets the above be implemented as:
 //!
-//! ```
+//! ```ignore
 //! struct Foo<T, N: ArrayLength<T>> {
 //!     data: GenericArray<T,N>
 //! }
