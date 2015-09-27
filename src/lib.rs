@@ -81,15 +81,23 @@ impl<T, N> DerefMut for GenericArray<T, N> where N: ArrayLength<T> {
     }
 }
 
-impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
+impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 	pub fn new() -> GenericArray<T, N> {
-		unsafe { mem::zeroed() }
+		let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
+		for i in 0..N::reify() as usize {
+			res[i] = T::default();
+		}
+		res
 	}
 
-	pub fn new_list(list: &[T]) -> GenericArray<T, N> {
+}
+
+impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
+
+	pub fn from_slice(list: &[T]) -> GenericArray<T, N> {
 		assert_eq!(list.len(), N::reify() as usize);
-		let mut res = GenericArray::new();
+		let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
 		for i in 0..N::reify() as usize {
 			res[i] = list[i].clone();
 		}
@@ -110,7 +118,7 @@ mod test {
 		for i in 0..97 {
 			list97[i] = i as i32;
 		}
-	    let l : GenericArray<i32, P97> = GenericArray::new_list(&list97);
+	    let l : GenericArray<i32, P97> = GenericArray::from_slice(&list97);
 	    assert_eq!(l[0], 0);
 	    assert_eq!(l[1], 1);
 	    assert_eq!(l[32], 32);
