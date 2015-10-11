@@ -21,43 +21,22 @@
 //! This allows one to define length types as, for example, `type _6 = ((_1, _1), _0)`.
 //!
 //! Currently, the crate implements its own numeric types. This might change in the future.
+extern crate typenum;
+use typenum::uint::{Unsigned, UTerm, UInt};
+use typenum::bit::{B0, B1};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{Deref, DerefMut};
 use std::slice;
 
-/// Struct representing bit O
-#[derive(Debug, Copy, Clone)]
-pub struct _0;
-/// Struct representing bit 1
-#[derive(Debug, Copy, Clone)]
-pub struct _1;
-
-/// Nonnegative type-level integer, e.g., `((_1,_0),_1) = 0b101 = 5`.
-/// Copied from shoggoth.rs
-pub trait Nat {
-    fn reify() -> u64;
-}
-impl Nat for _0 { fn reify() -> u64 { 0 } }
-impl Nat for _1 { fn reify() -> u64 { 1 } }
-impl<N: Nat> Nat for (N, _0) {
-    fn reify() -> u64 { N::reify() << 1 }
-}
-impl<N: Nat> Nat for (N, _1) {
-    fn reify() -> u64 { (N::reify() << 1) | 1 }
-}
-
 /// Trait making GenericArray work, marking types to be used as length of an array
-pub unsafe trait ArrayLength<T> : Nat {
+pub unsafe trait ArrayLength<T> : Unsigned {
 	/// Associated type representing the array type for the number
 	type ArrayType;
 }
 
-unsafe impl<T> ArrayLength<T> for _0 {
+unsafe impl<T> ArrayLength<T> for UTerm {
 	type ArrayType = ();
-}
-unsafe impl<T> ArrayLength<T> for _1 {
-	type ArrayType = T;
 }
 
 /// Internal type used to generate a struct of appropriate size
@@ -78,11 +57,11 @@ pub struct GenericArrayImplOdd<T, U> {
 	data: T
 }
 
-unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for (N, _0) {
+unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B0> {
 	type ArrayType = GenericArrayImplEven<T, N::ArrayType>;
 }
 
-unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for (N, _1) {
+unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B1> {
 	type ArrayType = GenericArrayImplOdd<T, N::ArrayType>;
 }
 
@@ -97,7 +76,7 @@ impl<T, N> Deref for GenericArray<T, N> where N: ArrayLength<T> {
 
     fn deref(&self) -> &[T] {
         unsafe {
-            slice::from_raw_parts(self as *const Self as *const T, N::reify() as usize)
+            slice::from_raw_parts(self as *const Self as *const T, N::to_int() as usize)
         }
     }
 }
@@ -105,7 +84,7 @@ impl<T, N> Deref for GenericArray<T, N> where N: ArrayLength<T> {
 impl<T, N> DerefMut for GenericArray<T, N> where N: ArrayLength<T> {
     fn deref_mut(&mut self) -> &mut [T] {
         unsafe {
-            slice::from_raw_parts_mut(self as *mut Self as *mut T, N::reify() as usize)
+            slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_int() as usize)
         }
     }
 }
@@ -115,7 +94,7 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
 	/// Function constructing an array filled with default values
 	pub fn new() -> GenericArray<T, N> {
 		let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-		for i in 0..N::reify() as usize {
+		for i in 0..N::to_int() as usize {
 			res[i] = T::default();
 		}
 		res
@@ -127,9 +106,9 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 	/// Function constructing an array from a slice; the length of the slice must be equal to the length of the array
 	pub fn from_slice(list: &[T]) -> GenericArray<T, N> {
-		assert_eq!(list.len(), N::reify() as usize);
+		assert_eq!(list.len(), N::to_int() as usize);
 		let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-		for i in 0..N::reify() as usize {
+		for i in 0..N::to_int() as usize {
 			res[i] = list[i].clone();
 		}
 		res
@@ -139,9 +118,9 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 #[cfg(test)]
 mod test {
-	use super::{_0, _1, GenericArray};
-
-	type P97 = ((((((_1, _1), _0), _0), _0), _0), _1);
+	extern crate typenum;
+	use typenum::uint::U97;
+	use super::GenericArray;
 
 	#[test]
 	fn test() {
@@ -149,7 +128,7 @@ mod test {
 		for i in 0..97 {
 			list97[i] = i as i32;
 		}
-	    let l : GenericArray<i32, P97> = GenericArray::from_slice(&list97);
+	    let l : GenericArray<i32, U97> = GenericArray::from_slice(&list97);
 	    assert_eq!(l[0], 0);
 	    assert_eq!(l[1], 1);
 	    assert_eq!(l[32], 32);

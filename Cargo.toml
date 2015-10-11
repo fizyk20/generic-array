@@ -11,3 +11,7 @@ repository = "https://github.com/fizyk20/generic-array.git"
 
 name = "generic_array"
 crate-type = ["rlib", "dylib"]
+
+[dependencies.typenum]
+git = "https://github.com/paholg/typenum.git"
+branch = "master"
