@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["NInt","Negative integers"],["PInt","Positive integers"],["Z0","The signed integer 0"]],"trait":[["Integer",""]]});

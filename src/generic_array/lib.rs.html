@@ -174,35 +174,11 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
-<span id="135">135</span>
-<span id="136">136</span>
-<span id="137">137</span>
-<span id="138">138</span>
-<span id="139">139</span>
-<span id="140">140</span>
-<span id="141">141</span>
-<span id="142">142</span>
-<span id="143">143</span>
-<span id="144">144</span>
-<span id="145">145</span>
-<span id="146">146</span>
-<span id="147">147</span>
-<span id="148">148</span>
-<span id="149">149</span>
-<span id="150">150</span>
-<span id="151">151</span>
-<span id="152">152</span>
-<span id="153">153</span>
-<span id="154">154</span>
-<span id="155">155</span>
-<span id="156">156</span>
-<span id="157">157</span>
-<span id="158">158</span>
 </pre><pre class='rust '>
 <span class='doccomment'>//! This crate implements a structure that can be used as a generic array type.use</span>
 <span class='doccomment'>//! Core Rust array types `[T; N]` can&#39;t be used generically with respect to `N`, so for example this:</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```</span>
+<span class='doccomment'>//! ```ignore</span>
 <span class='doccomment'>//! struct Foo&lt;T, N&gt; {</span>
 <span class='doccomment'>//!     data: [T; N]</span>
 <span class='doccomment'>//! }</span>
@@ -212,53 +188,29 @@
 <span class='doccomment'>//!</span>
 <span class='doccomment'>//! **generic-array** exports a `GenericArray&lt;T,N&gt;` type, which lets the above be implemented as:</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! ```</span>
+<span class='doccomment'>//! ```ignore</span>
 <span class='doccomment'>//! struct Foo&lt;T, N: ArrayLength&lt;T&gt;&gt; {</span>
 <span class='doccomment'>//!     data: GenericArray&lt;T,N&gt;</span>
 <span class='doccomment'>//! }</span>
 <span class='doccomment'>//! ```	</span>
 <span class='doccomment'>//!</span>
-<span class='doccomment'>//! The `ArrayLength&lt;T&gt;` trait is implemented by default for tuples consisting of binary structs `_1` and `_0`, like `((_1, _0), _1)`.</span>
-<span class='doccomment'>//! This allows one to define length types as, for example, `type _6 = ((_1, _1), _0)`.</span>
-<span class='doccomment'>//!</span>
-<span class='doccomment'>//! Currently, the crate implements its own numeric types. This might change in the future.</span>
+<span class='doccomment'>//! The `ArrayLength&lt;T&gt;` trait is implemented by default for [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).</span>
+<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>typenum</span>;
+<span class='kw'>use</span> <span class='ident'>typenum</span>::<span class='ident'>uint</span>::{<span class='ident'>Unsigned</span>, <span class='ident'>UTerm</span>, <span class='ident'>UInt</span>};
+<span class='kw'>use</span> <span class='ident'>typenum</span>::<span class='ident'>bit</span>::{<span class='ident'>B0</span>, <span class='ident'>B1</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>marker</span>::<span class='ident'>PhantomData</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>mem</span>;
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>ops</span>::{<span class='ident'>Deref</span>, <span class='ident'>DerefMut</span>};
 <span class='kw'>use</span> <span class='ident'>std</span>::<span class='ident'>slice</span>;
 
-<span class='doccomment'>/// Struct representing bit O</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>_0</span>;
-<span class='doccomment'>/// Struct representing bit 1</span>
-<span class='attribute'>#[<span class='ident'>derive</span>(<span class='ident'>Debug</span>, <span class='ident'>Copy</span>, <span class='ident'>Clone</span>)]</span>
-<span class='kw'>pub</span> <span class='kw'>struct</span> <span class='ident'>_1</span>;
-
-<span class='doccomment'>/// Nonnegative type-level integer, e.g., `((_1,_0),_1) = 0b101 = 5`.</span>
-<span class='doccomment'>/// Copied from shoggoth.rs</span>
-<span class='kw'>pub</span> <span class='kw'>trait</span> <span class='ident'>Nat</span> {
-    <span class='kw'>fn</span> <span class='ident'>reify</span>() <span class='op'>-&gt;</span> <span class='ident'>u64</span>;
-}
-<span class='kw'>impl</span> <span class='ident'>Nat</span> <span class='kw'>for</span> <span class='ident'>_0</span> { <span class='kw'>fn</span> <span class='ident'>reify</span>() <span class='op'>-&gt;</span> <span class='ident'>u64</span> { <span class='number'>0</span> } }
-<span class='kw'>impl</span> <span class='ident'>Nat</span> <span class='kw'>for</span> <span class='ident'>_1</span> { <span class='kw'>fn</span> <span class='ident'>reify</span>() <span class='op'>-&gt;</span> <span class='ident'>u64</span> { <span class='number'>1</span> } }
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>N</span>: <span class='ident'>Nat</span><span class='op'>&gt;</span> <span class='ident'>Nat</span> <span class='kw'>for</span> (<span class='ident'>N</span>, <span class='ident'>_0</span>) {
-    <span class='kw'>fn</span> <span class='ident'>reify</span>() <span class='op'>-&gt;</span> <span class='ident'>u64</span> { <span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='op'>&lt;&lt;</span> <span class='number'>1</span> }
-}
-<span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>N</span>: <span class='ident'>Nat</span><span class='op'>&gt;</span> <span class='ident'>Nat</span> <span class='kw'>for</span> (<span class='ident'>N</span>, <span class='ident'>_1</span>) {
-    <span class='kw'>fn</span> <span class='ident'>reify</span>() <span class='op'>-&gt;</span> <span class='ident'>u64</span> { (<span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='op'>&lt;&lt;</span> <span class='number'>1</span>) <span class='op'>|</span> <span class='number'>1</span> }
-}
-
 <span class='doccomment'>/// Trait making GenericArray work, marking types to be used as length of an array</span>
-<span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>trait</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> : <span class='ident'>Nat</span> {
+<span class='kw'>pub</span> <span class='kw'>unsafe</span> <span class='kw'>trait</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> : <span class='ident'>Unsigned</span> {
 	<span class='doccomment'>/// Associated type representing the array type for the number</span>
 	<span class='kw'>type</span> <span class='ident'>ArrayType</span>;
 }
 
-<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>_0</span> {
+<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>UTerm</span> {
 	<span class='kw'>type</span> <span class='ident'>ArrayType</span> <span class='op'>=</span> ();
-}
-<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>_1</span> {
-	<span class='kw'>type</span> <span class='ident'>ArrayType</span> <span class='op'>=</span> <span class='ident'>T</span>;
 }
 
 <span class='doccomment'>/// Internal type used to generate a struct of appropriate size</span>
@@ -279,11 +231,11 @@
 	<span class='ident'>data</span>: <span class='ident'>T</span>
 }
 
-<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span>: <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> (<span class='ident'>N</span>, <span class='ident'>_0</span>) {
+<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span>: <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>UInt</span><span class='op'>&lt;</span><span class='ident'>N</span>, <span class='ident'>B0</span><span class='op'>&gt;</span> {
 	<span class='kw'>type</span> <span class='ident'>ArrayType</span> <span class='op'>=</span> <span class='ident'>GenericArrayImplEven</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span>::<span class='ident'>ArrayType</span><span class='op'>&gt;</span>;
 }
 
-<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span>: <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> (<span class='ident'>N</span>, <span class='ident'>_1</span>) {
+<span class='kw'>unsafe</span> <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span>: <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;&gt;</span> <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> <span class='kw'>for</span> <span class='ident'>UInt</span><span class='op'>&lt;</span><span class='ident'>N</span>, <span class='ident'>B1</span><span class='op'>&gt;</span> {
 	<span class='kw'>type</span> <span class='ident'>ArrayType</span> <span class='op'>=</span> <span class='ident'>GenericArrayImplOdd</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span>::<span class='ident'>ArrayType</span><span class='op'>&gt;</span>;
 }
 
@@ -298,7 +250,7 @@
 
     <span class='kw'>fn</span> <span class='ident'>deref</span>(<span class='kw-2'>&amp;</span><span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span>[<span class='ident'>T</span>] {
         <span class='kw'>unsafe</span> {
-            <span class='ident'>slice</span>::<span class='ident'>from_raw_parts</span>(<span class='self'>self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='kw'>Self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>T</span>, <span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='kw'>as</span> <span class='ident'>usize</span>)
+            <span class='ident'>slice</span>::<span class='ident'>from_raw_parts</span>(<span class='self'>self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='kw'>Self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw'>const</span> <span class='ident'>T</span>, <span class='ident'>N</span>::<span class='ident'>to_usize</span>())
         }
     }
 }
@@ -306,7 +258,7 @@
 <span class='kw'>impl</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span><span class='op'>&gt;</span> <span class='ident'>DerefMut</span> <span class='kw'>for</span> <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span><span class='op'>&gt;</span> <span class='kw'>where</span> <span class='ident'>N</span>: <span class='ident'>ArrayLength</span><span class='op'>&lt;</span><span class='ident'>T</span><span class='op'>&gt;</span> {
     <span class='kw'>fn</span> <span class='ident'>deref_mut</span>(<span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> <span class='self'>self</span>) <span class='op'>-&gt;</span> <span class='kw-2'>&amp;</span><span class='kw-2'>mut</span> [<span class='ident'>T</span>] {
         <span class='kw'>unsafe</span> {
-            <span class='ident'>slice</span>::<span class='ident'>from_raw_parts_mut</span>(<span class='self'>self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='kw'>Self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span>, <span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='kw'>as</span> <span class='ident'>usize</span>)
+            <span class='ident'>slice</span>::<span class='ident'>from_raw_parts_mut</span>(<span class='self'>self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='kw'>Self</span> <span class='kw'>as</span> <span class='op'>*</span><span class='kw-2'>mut</span> <span class='ident'>T</span>, <span class='ident'>N</span>::<span class='ident'>to_usize</span>())
         }
     }
 }
@@ -316,7 +268,7 @@
 	<span class='doccomment'>/// Function constructing an array filled with default values</span>
 	<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>new</span>() <span class='op'>-&gt;</span> <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span><span class='op'>&gt;</span> {
 		<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span>: <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>mem</span>::<span class='ident'>zeroed</span>() };
-		<span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='kw'>as</span> <span class='ident'>usize</span> {
+		<span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>N</span>::<span class='ident'>to_usize</span>() {
 			<span class='ident'>res</span>[<span class='ident'>i</span>] <span class='op'>=</span> <span class='ident'>T</span>::<span class='ident'>default</span>();
 		}
 		<span class='ident'>res</span>
@@ -328,9 +280,9 @@
 
 	<span class='doccomment'>/// Function constructing an array from a slice; the length of the slice must be equal to the length of the array</span>
 	<span class='kw'>pub</span> <span class='kw'>fn</span> <span class='ident'>from_slice</span>(<span class='ident'>list</span>: <span class='kw-2'>&amp;</span>[<span class='ident'>T</span>]) <span class='op'>-&gt;</span> <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span><span class='op'>&gt;</span> {
-		<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list</span>.<span class='ident'>len</span>(), <span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='kw'>as</span> <span class='ident'>usize</span>);
+		<span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>list</span>.<span class='ident'>len</span>(), <span class='ident'>N</span>::<span class='ident'>to_usize</span>());
 		<span class='kw'>let</span> <span class='kw-2'>mut</span> <span class='ident'>res</span>: <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>T</span>, <span class='ident'>N</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='kw'>unsafe</span> { <span class='ident'>mem</span>::<span class='ident'>zeroed</span>() };
-		<span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>N</span>::<span class='ident'>reify</span>() <span class='kw'>as</span> <span class='ident'>usize</span> {
+		<span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='ident'>N</span>::<span class='ident'>to_usize</span>() {
 			<span class='ident'>res</span>[<span class='ident'>i</span>] <span class='op'>=</span> <span class='ident'>list</span>[<span class='ident'>i</span>].<span class='ident'>clone</span>();
 		}
 		<span class='ident'>res</span>
@@ -340,9 +292,9 @@
 
 <span class='attribute'>#[<span class='ident'>cfg</span>(<span class='ident'>test</span>)]</span>
 <span class='kw'>mod</span> <span class='ident'>test</span> {
-	<span class='kw'>use</span> <span class='ident'>super</span>::{<span class='ident'>_0</span>, <span class='ident'>_1</span>, <span class='ident'>GenericArray</span>};
-
-	<span class='kw'>type</span> <span class='ident'>P97</span> <span class='op'>=</span> ((((((<span class='ident'>_1</span>, <span class='ident'>_1</span>), <span class='ident'>_0</span>), <span class='ident'>_0</span>), <span class='ident'>_0</span>), <span class='ident'>_0</span>), <span class='ident'>_1</span>);
+	<span class='kw'>extern</span> <span class='kw'>crate</span> <span class='ident'>typenum</span>;
+	<span class='kw'>use</span> <span class='ident'>typenum</span>::<span class='ident'>uint</span>::<span class='ident'>U97</span>;
+	<span class='kw'>use</span> <span class='ident'>super</span>::<span class='ident'>GenericArray</span>;
 
 	<span class='attribute'>#[<span class='ident'>test</span>]</span>
 	<span class='kw'>fn</span> <span class='ident'>test</span>() {
@@ -350,7 +302,7 @@
 		<span class='kw'>for</span> <span class='ident'>i</span> <span class='kw'>in</span> <span class='number'>0</span>..<span class='number'>97</span> {
 			<span class='ident'>list97</span>[<span class='ident'>i</span>] <span class='op'>=</span> <span class='ident'>i</span> <span class='kw'>as</span> <span class='ident'>i32</span>;
 		}
-	    <span class='kw'>let</span> <span class='ident'>l</span> : <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='ident'>P97</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>GenericArray</span>::<span class='ident'>from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>list97</span>);
+	    <span class='kw'>let</span> <span class='ident'>l</span> : <span class='ident'>GenericArray</span><span class='op'>&lt;</span><span class='ident'>i32</span>, <span class='ident'>U97</span><span class='op'>&gt;</span> <span class='op'>=</span> <span class='ident'>GenericArray</span>::<span class='ident'>from_slice</span>(<span class='kw-2'>&amp;</span><span class='ident'>list97</span>);
 	    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>l</span>[<span class='number'>0</span>], <span class='number'>0</span>);
 	    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>l</span>[<span class='number'>1</span>], <span class='number'>1</span>);
 	    <span class='macro'>assert_eq</span><span class='macro'>!</span>(<span class='ident'>l</span>[<span class='number'>32</span>], <span class='number'>32</span>);

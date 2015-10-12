@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `UTerm` struct in crate `typenum`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, UTerm">
+
+    <title>typenum::uint::UTerm - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='../index.html'>typenum</a>::<wbr><a href='index.html'>uint</a></p><script>window.sidebarCurrent = {name: 'UTerm', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>typenum</a>::<wbr><a href='index.html'>uint</a>::<wbr><a class='struct' href=''>UTerm</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-760' class='srclink' href='../../src/typenum/uint.rs.html#51' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct UTerm;</pre><div class='docblock'><p>The terminating type for <code>UInt</code>, it always comes after the most significant bit.</p>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='impl-items'><h4 id='method.to_u8' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_u8' class='fnname'>to_u8</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.u8.html'>u8</a></code></h4>
+<h4 id='method.to_u16' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_u16' class='fnname'>to_u16</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.u16.html'>u16</a></code></h4>
+<h4 id='method.to_u32' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_u32' class='fnname'>to_u32</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.u32.html'>u32</a></code></h4>
+<h4 id='method.to_u64' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_u64' class='fnname'>to_u64</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.u64.html'>u64</a></code></h4>
+<h4 id='method.to_usize' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_usize' class='fnname'>to_usize</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.usize.html'>usize</a></code></h4>
+<h4 id='method.to_i8' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_i8' class='fnname'>to_i8</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i8.html'>i8</a></code></h4>
+<h4 id='method.to_i16' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_i16' class='fnname'>to_i16</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a></code></h4>
+<h4 id='method.to_i32' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_i32' class='fnname'>to_i32</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a></code></h4>
+<h4 id='method.to_i64' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_i64' class='fnname'>to_i64</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></h4>
+<h4 id='method.to_isize' class='method'><code>fn <a href='../../typenum/uint/trait.Unsigned.html#method.to_isize' class='fnname'>to_isize</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.isize.html'>isize</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../typenum/trait.SizeOf.html' title='typenum::SizeOf'>SizeOf</a> for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Size of <code>UTerm</code> by itself is 0</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='type' href='../../typenum/consts/uints/type.U0.html' title='typenum::consts::uints::U0'>U0</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../typenum/__private/trait.PrivateSizeOf.html' title='typenum::__private::PrivateSizeOf'>PrivateSizeOf</a> for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Size of <code>UTerm</code> inside a number is 0</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='type' href='../../typenum/consts/uints/type.U0.html' title='typenum::consts::uints::U0'>U0</a></code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm + B0 = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm + B1 = UInt&lt;UTerm, B1&gt;</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;<a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>, <a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>&gt;</code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm + UTerm = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>, B: <a class='trait' href='../../typenum/bit/trait.Bit.html' title='typenum::bit::Bit'>Bit</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;U, B&gt;&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm + UInt&lt;U, B&gt; = UInt&lt;U, B&gt;</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;U, B&gt;</code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;U, B&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm - B0 = Term</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm - UTerm = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, _: <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='../../typenum/__private/trait.PrivateAnd.html' title='typenum::__private::PrivateAnd'>PrivateAnd</a>&lt;U&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm &amp; X = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.BitAnd.html' title='core::ops::BitAnd'>BitAnd</a>&lt;Ur&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.bitand' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.BitAnd.html#method.bitand' class='fnname'>bitand</a>(self, _: Ur) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.BitOr.html' title='core::ops::BitOr'>BitOr</a>&lt;U&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm | X = X</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = U</code></h4>
+<h4 id='method.bitor' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.BitOr.html#method.bitor' class='fnname'>bitor</a>(self, _: U) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='../../typenum/__private/trait.PrivateXor.html' title='typenum::__private::PrivateXor'>PrivateXor</a>&lt;U&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm ^ X = X</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = U</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.BitXor.html' title='core::ops::BitXor'>BitXor</a>&lt;Ur&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>0 ^ X = X</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = Ur</code></h4>
+<h4 id='method.bitxor' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.BitXor.html#method.bitxor' class='fnname'>bitxor</a>(self, _: Ur) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Shl.html' title='core::ops::Shl'>Shl</a>&lt;U&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Shifting left <code>UTerm</code> by an unsigned integer: <code>UTerm &lt;&lt; U = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.shl' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Shl.html#method.shl' class='fnname'>shl</a>(self, _: U) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Shl.html' title='core::ops::Shl'>Shl</a>&lt;<a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Shifting UTerm by a zero bit: <code>UTerm &lt;&lt; B0 = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.shl' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Shl.html#method.shl' class='fnname'>shl</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Shl.html' title='core::ops::Shl'>Shl</a>&lt;<a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Shifting left a <code>UTerm</code> by a 1 bit: <code>UTerm &lt;&lt; B1 = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.shl' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Shl.html#method.shl' class='fnname'>shl</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Shr.html' title='core::ops::Shr'>Shr</a>&lt;U&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Shifting right a <code>UTerm</code> by an unsigned integer: <code>UTerm &gt;&gt; U = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.shr' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Shr.html#method.shr' class='fnname'>shr</a>(self, _: U) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Shr.html' title='core::ops::Shr'>Shr</a>&lt;<a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Shifting right UTerm by a zero bit: <code>UTerm &gt;&gt; B0 = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.shr' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Shr.html#method.shr' class='fnname'>shr</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B0.html' title='typenum::bit::B0'>B0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Shr.html' title='core::ops::Shr'>Shr</a>&lt;<a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Shifting right a <code>UTerm</code> by a 1 bit: <code>UTerm &gt;&gt; B1 = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.shr' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Shr.html#method.shr' class='fnname'>shr</a>(self, _: <a class='struct' href='../../typenum/bit/struct.B1.html' title='typenum::bit::B1'>B1</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;B: <a class='trait' href='../../typenum/bit/trait.Bit.html' title='typenum::bit::Bit'>Bit</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;B&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm * B = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, _: B) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>, B: <a class='trait' href='../../typenum/bit/trait.Bit.html' title='typenum::bit::Bit'>Bit</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;U, B&gt;&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm * UInt&lt;U, B&gt; = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, _: <a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;U, B&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p><code>UTerm * UTerm = UTerm</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, _: <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../typenum/trait.Cmp.html' title='typenum::Cmp'>Cmp</a>&lt;<a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a>&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Zero == Zero</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/struct.Equal.html' title='typenum::Equal'>Equal</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>, B: <a class='trait' href='../../typenum/bit/trait.Bit.html' title='typenum::bit::Bit'>Bit</a>&gt; <a class='trait' href='../../typenum/trait.Cmp.html' title='typenum::Cmp'>Cmp</a>&lt;<a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;U, B&gt;&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='docblock'><p>Zero &lt; Nonzero</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/struct.Less.html' title='typenum::Less'>Less</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a>, Br: <a class='trait' href='../../typenum/bit/trait.Bit.html' title='typenum::bit::Bit'>Bit</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;<a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;Ur, Br&gt;&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h4>
+<h4 id='method.div' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, _: <a class='struct' href='../../typenum/uint/struct.UInt.html' title='typenum::uint::UInt'>UInt</a>&lt;Ur, Br&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl <a class='trait' href='../../typenum/__private/trait.Invert.html' title='typenum::__private::Invert'>Invert</a> for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/__private/struct.InvertedUTerm.html' title='typenum::__private::InvertedUTerm'>InvertedUTerm</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;IU: <a class='trait' href='../../typenum/__private/trait.InvertedUnsigned.html' title='typenum::__private::InvertedUnsigned'>InvertedUnsigned</a>&gt; <a class='trait' href='../../typenum/__private/trait.PrivateInvert.html' title='typenum::__private::PrivateInvert'>PrivateInvert</a>&lt;IU&gt; for <a class='struct' href='../../typenum/uint/struct.UTerm.html' title='typenum::uint::UTerm'>UTerm</a></code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = IU</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div>
+            <div class="shortcuts">
+                <h1>Keyboard Shortcuts</h1>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h1>Search Tricks</h1>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>typedef</code> (or
+                    <code>tdef</code>).
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "typenum";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>

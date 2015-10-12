@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `PInt` struct in crate `typenum`.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, PInt">
+
+    <title>typenum::int::PInt - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../../main.css">
+
+    
+    
+</head>
+<body class="rustdoc">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <section class="sidebar">
+        
+        <p class='location'><a href='../index.html'>typenum</a>::<wbr><a href='index.html'>int</a></p><script>window.sidebarCurrent = {name: 'PInt', ty: 'struct', relpath: ''};</script><script defer src="sidebar-items.js"></script>
+    </section>
+
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content struct">
+<h1 class='fqn'><span class='in-band'>Struct <a href='../index.html'>typenum</a>::<wbr><a href='index.html'>int</a>::<wbr><a class='struct' href=''>PInt</a></span><span class='out-of-band'><span id='render-detail'>
+            <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                [<span class='inner'>&#x2212;</span>]
+            </a>
+        </span><a id='src-5265' class='srclink' href='../../src/typenum/int.rs.html#54-56' title='goto source code'>[src]</a></span></h1>
+<pre class='rust struct'>pub struct PInt&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; {
+    // some fields omitted
+}</pre><div class='docblock'><p>Positive integers</p>
+</div><h2 id='implementations'>Trait Implementations</h2><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a> for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='impl-items'></div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='../../typenum/int/trait.Integer.html' title='typenum::int::Integer'>Integer</a> for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='impl-items'><h4 id='method.to_i8' class='method'><code>fn <a href='../../typenum/int/trait.Integer.html#method.to_i8' class='fnname'>to_i8</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i8.html'>i8</a></code></h4>
+<h4 id='method.to_i16' class='method'><code>fn <a href='../../typenum/int/trait.Integer.html#method.to_i16' class='fnname'>to_i16</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i16.html'>i16</a></code></h4>
+<h4 id='method.to_i32' class='method'><code>fn <a href='../../typenum/int/trait.Integer.html#method.to_i32' class='fnname'>to_i32</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i32.html'>i32</a></code></h4>
+<h4 id='method.to_i64' class='method'><code>fn <a href='../../typenum/int/trait.Integer.html#method.to_i64' class='fnname'>to_i64</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.i64.html'>i64</a></code></h4>
+<h4 id='method.to_isize' class='method'><code>fn <a href='../../typenum/int/trait.Integer.html#method.to_isize' class='fnname'>to_isize</a>() -&gt; <a href='http://doc.rust-lang.org/nightly/std/primitive.isize.html'>isize</a></code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='../../typenum/trait.Same.html' title='typenum::Same'>Same</a>&lt;<a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Neg.html' title='core::ops::Neg'>Neg</a> for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='docblock'><p><code>-PInt = NInt</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;U&gt;</code></h4>
+<h4 id='method.neg' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Neg.html#method.neg' class='fnname'>neg</a>(self) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a>&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='docblock'><p><code>PInt + Z0 = PInt</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;Ur&gt;, Ul::Output: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a></span></code></h3><div class='docblock'><p><code>P(Ul) + P(Ur) = P(Ul + Ur)</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul::Output&gt;</code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;<a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='../../typenum/trait.Cmp.html' title='typenum::Cmp'>Cmp</a>&lt;Ur&gt; + <a class='trait' href='../../typenum/__private/trait.PrivateIntegerAdd.html' title='typenum::__private::PrivateIntegerAdd'>PrivateIntegerAdd</a>&lt;Ul::Output, Ur&gt;</span></code></h3><div class='docblock'><p><code>P(Ul) + N(Ur)</code>: We resolve this with our <code>PrivateAdd</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = Ul::Output</code></h4>
+<h4 id='method.add' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html#method.add' class='fnname'>add</a>(self, _: <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a>&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='docblock'><p><code>PInt - Z0 = PInt</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, _: <a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Add.html' title='core::ops::Add'>Add</a>&lt;Ur&gt;, Ul::Output: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a></span></code></h3><div class='docblock'><p><code>P(Ul) - N(Ur) = P(Ul + Ur)</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul::Output&gt;</code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, _: <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html' title='core::ops::Sub'>Sub</a>&lt;<a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='../../typenum/trait.Cmp.html' title='typenum::Cmp'>Cmp</a>&lt;Ur&gt; + <a class='trait' href='../../typenum/__private/trait.PrivateIntegerAdd.html' title='typenum::__private::PrivateIntegerAdd'>PrivateIntegerAdd</a>&lt;Ul::Output, Ur&gt;</span></code></h3><div class='docblock'><p><code>P(Ul) - P(Ur)</code>: We resolve this with our <code>PrivateAdd</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = Ul::Output</code></h4>
+<h4 id='method.sub' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Sub.html#method.sub' class='fnname'>sub</a>(self, _: <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;U: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a>&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;U&gt;</code></h3><div class='docblock'><p><code>P * Z0 = Z0</code></p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a></code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, _: <a class='struct' href='../../typenum/int/struct.Z0.html' title='typenum::int::Z0'>Z0</a>) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;Ur&gt;, Ul::Output: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a></span></code></h3><div class='docblock'><p>P(Ul) * P(Ur) = P(Ul * Ur)</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul::Output&gt;</code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, _: <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;<a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html' title='core::ops::Mul'>Mul</a>&lt;Ur&gt;, Ul::Output: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a></span></code></h3><div class='docblock'><p>P(Ul) * N(Ur) = N(Ul * Ur)</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ul::Output&gt;</code></h4>
+<h4 id='method.mul' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Mul.html#method.mul' class='fnname'>mul</a>(self, _: <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;<a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;Ur&gt;, Ul::Output: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a></span></code></h3><div class='docblock'><p>P(Ul) / P(Ur) = P(Ul / Ur)</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul::Output&gt;</code></h4>
+<h4 id='method.div' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, _: <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div><h3 class='impl'><code>impl&lt;Ul: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>, Ur: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a>&gt; <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;<a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;&gt; for <a class='struct' href='../../typenum/int/struct.PInt.html' title='typenum::int::PInt'>PInt</a>&lt;Ul&gt; <span class='where'>where Ul: <a class='trait' href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html' title='core::ops::Div'>Div</a>&lt;Ur&gt;, Ul::Output: <a class='trait' href='../../typenum/uint/trait.Unsigned.html' title='typenum::uint::Unsigned'>Unsigned</a> + <a class='trait' href='../../typenum/trait.NonZero.html' title='typenum::NonZero'>NonZero</a></span></code></h3><div class='docblock'><p>P(Ul) / N(Ur) = N(Ul / Ur)</p>
+</div><div class='impl-items'><h4 id='assoc_type.Output' class='type'><code>type Output = <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ul::Output&gt;</code></h4>
+<h4 id='method.div' class='method'><code>fn <a href='http://doc.rust-lang.org/nightly/core/ops/trait.Div.html#method.div' class='fnname'>div</a>(self, _: <a class='struct' href='../../typenum/int/struct.NInt.html' title='typenum::int::NInt'>NInt</a>&lt;Ur&gt;) -&gt; Self::Output</code></h4>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <div id="help" class="hidden">
+        <div>
+            <div class="shortcuts">
+                <h1>Keyboard Shortcuts</h1>
+
+                <dl>
+                    <dt>?</dt>
+                    <dd>Show this help dialog</dd>
+                    <dt>S</dt>
+                    <dd>Focus the search field</dd>
+                    <dt>&larrb;</dt>
+                    <dd>Move up in search results</dd>
+                    <dt>&rarrb;</dt>
+                    <dd>Move down in search results</dd>
+                    <dt>&#9166;</dt>
+                    <dd>Go to active search result</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h1>Search Tricks</h1>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>typedef</code> (or
+                    <code>tdef</code>).
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code>)
+                </p>
+            </div>
+        </div>
+    </div>
+
+    
+
+    <script>
+        window.rootPath = "../../";
+        window.currentCrate = "typenum";
+        window.playgroundUrl = "";
+    </script>
+    <script src="../../jquery.js"></script>
+    <script src="../../main.js"></script>
+    
+    <script async src="../../search-index.js"></script>
+</body>
+</html>
