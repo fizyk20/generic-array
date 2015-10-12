@@ -76,7 +76,7 @@ impl<T, N> Deref for GenericArray<T, N> where N: ArrayLength<T> {
 
     fn deref(&self) -> &[T] {
         unsafe {
-            slice::from_raw_parts(self as *const Self as *const T, N::to_int() as usize)
+            slice::from_raw_parts(self as *const Self as *const T, N::to_usize())
         }
     }
 }
@@ -84,7 +84,7 @@ impl<T, N> Deref for GenericArray<T, N> where N: ArrayLength<T> {
 impl<T, N> DerefMut for GenericArray<T, N> where N: ArrayLength<T> {
     fn deref_mut(&mut self) -> &mut [T] {
         unsafe {
-            slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_int() as usize)
+            slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_usize())
         }
     }
 }
@@ -94,7 +94,7 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
 	/// Function constructing an array filled with default values
 	pub fn new() -> GenericArray<T, N> {
 		let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-		for i in 0..N::to_int() as usize {
+		for i in 0..N::to_usize() {
 			res[i] = T::default();
 		}
 		res
@@ -106,9 +106,9 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 	/// Function constructing an array from a slice; the length of the slice must be equal to the length of the array
 	pub fn from_slice(list: &[T]) -> GenericArray<T, N> {
-		assert_eq!(list.len(), N::to_int() as usize);
+		assert_eq!(list.len(), N::to_usize());
 		let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-		for i in 0..N::to_int() as usize {
+		for i in 0..N::to_usize() {
 			res[i] = list[i].clone();
 		}
 		res
