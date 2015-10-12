@@ -23,10 +23,4 @@ struct Foo<N: ArrayLength<i32>> {
 }
 ```
 
-To actually define a type implementing `ArrayLength`, you can use two types `_0` and `_1` grouped in tuples to form a binary representation, e.g.:
-
-```
-type _5 = ((_1, _0), _1);
-```
-
-Then you can use `GenericArray<T, _5>` almost like you would use `[T; 5]` :)
+To actually define a type implementing `ArrayLength`, you can use unsigned integer types defined in [typenum](https://github.com/paholg/typenum) crate - for example, `GenericArray<T, U5>` would work almost like `[T; 5]` :)
