@@ -17,10 +17,7 @@
 //! }
 //! ```	
 //!
-//! The `ArrayLength<T>` trait is implemented by default for tuples consisting of binary structs `_1` and `_0`, like `((_1, _0), _1)`.
-//! This allows one to define length types as, for example, `type _6 = ((_1, _1), _0)`.
-//!
-//! Currently, the crate implements its own numeric types. This might change in the future.
+//! The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).
 extern crate typenum;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
