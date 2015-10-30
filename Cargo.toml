@@ -13,4 +13,4 @@ name = "generic_array"
 crate-type = ["rlib", "dylib"]
 
 [dependencies]
-typenum = "0.1.0"
+typenum = "1.0.1"
