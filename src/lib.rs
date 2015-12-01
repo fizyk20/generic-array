@@ -46,6 +46,18 @@ pub struct GenericArrayImplEven<T, U> {
     _marker: PhantomData<T>
 }
 
+impl<T: Clone, U: Clone> Clone for GenericArrayImplEven<T, U> {
+    fn clone(&self) -> GenericArrayImplEven<T, U> {
+        GenericArrayImplEven {
+            parent1: self.parent1.clone(),
+            parent2: self.parent2.clone(),
+            _marker: PhantomData
+        }
+    }
+}
+
+impl<T: Copy, U: Copy> Copy for GenericArrayImplEven<T, U> {}
+
 /// Internal type used to generate a struct of appropriate size
 #[allow(dead_code)]
 #[repr(C)]
@@ -54,6 +66,18 @@ pub struct GenericArrayImplOdd<T, U> {
     parent2: U,
     data: T
 }
+
+impl<T: Clone, U: Clone> Clone for GenericArrayImplOdd<T, U> {
+    fn clone(&self) -> GenericArrayImplOdd<T, U> {
+        GenericArrayImplOdd {
+            parent1: self.parent1.clone(),
+            parent2: self.parent2.clone(),
+            data: self.data.clone()
+        }
+    }
+}
+
+impl<T: Copy, U: Copy> Copy for GenericArrayImplOdd<T, U> {}
 
 unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B0> {
     type ArrayType = GenericArrayImplEven<T, N::ArrayType>;
@@ -111,3 +135,12 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
     }
 
 }
+
+impl<T: Clone, N> Clone for GenericArray<T, N> where N: ArrayLength<T> {
+    fn clone(&self) -> GenericArray<T, N> {
+        let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
+        for i in 0..N::to_usize() { res[i] = self[i].clone(); }
+        res
+    }
+}
+impl<T: Copy, N> Copy for GenericArray<T, N> where N: ArrayLength<T>, N::ArrayType: Copy {}
