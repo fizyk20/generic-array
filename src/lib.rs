@@ -20,6 +20,7 @@
 //!
 //! The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).
 extern crate typenum;
+pub mod arr;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
 use std::marker::PhantomData;
