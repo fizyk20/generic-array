@@ -25,3 +25,10 @@ struct Foo<N: ArrayLength<i32>> {
 ```
 
 To actually define a type implementing `ArrayLength`, you can use unsigned integer types defined in [typenum](https://github.com/paholg/typenum) crate - for example, `GenericArray<T, U5>` would work almost like `[T; 5]` :)
+
+In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays as shown below:
+
+```rust
+let array = arr![u32; 1, 2, 3];
+assert_eq!(arr[2], 3);
+```
