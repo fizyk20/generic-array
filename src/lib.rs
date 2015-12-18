@@ -19,6 +19,18 @@
 //! ``` 
 //!
 //! The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).
+//!
+//! For ease of use, an `arr!` macro is provided - example below:
+//!
+//! ```
+//! # #[macro_use] 
+//! # extern crate generic_array;
+//! # extern crate typenum;
+//! # fn main() {
+//! let array = arr![u32; 1, 2, 3];
+//! assert_eq!(array[2], 3);
+//! # }
+//! ```
 extern crate typenum;
 pub mod arr;
 use typenum::uint::{Unsigned, UTerm, UInt};

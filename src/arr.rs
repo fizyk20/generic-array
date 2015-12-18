@@ -2,6 +2,7 @@ use typenum::consts::{U1};
 use std::ops::Add;
 use super::ArrayLength;
 
+/// Helper trait for `arr!` macro
 pub trait AddLength<T, N: ArrayLength<T>>: ArrayLength<T> {
     type Output: ArrayLength<T>;
 }
@@ -14,12 +15,15 @@ impl<T, N1, N2> AddLength<T, N2> for N1
     type Output = <N1 as Add<N2>>::Output;
 }
 
+/// Helper type for `arr!` macro
 pub type Inc<T, U> = <U as AddLength<T, U1>>::Output;
 
+/// Proper implementation of `arr!`
 #[macro_export]
 macro_rules! arr_impl {
     ($T:ty; $N:ty, [$($x:expr),*], []) => ({
         use typenum::consts::U0;
+        use generic_array::GenericArray;
         use generic_array::arr::Inc;
         GenericArray::<$T, $N>::from_slice(&[$($x),*])
     });
@@ -37,6 +41,7 @@ macro_rules! arr_impl {
     );
 }
 
+/// Macro allowing for easy generation of Generic Arrays.
 #[macro_export]
 macro_rules! arr {
     ($T:ty; $($x:expr),*) => (
