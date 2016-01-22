@@ -41,6 +41,7 @@ use typenum::bit::{B0, B1};
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{Deref, DerefMut};
+use std::ptr;
 use std::slice;
 
 /// Trait making GenericArray work, marking types to be used as length of an array
@@ -131,9 +132,11 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
 
     /// Function constructing an array filled with default values
     pub fn new() -> GenericArray<T, N> {
-        let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-        for r in res.iter_mut() { *r = T::default(); }
-        res
+        unsafe {
+            let mut res: GenericArray<T, N> = mem::uninitialized();
+            for r in res.iter_mut() { ptr::write(r, T::default()) }
+            res
+        }
     }
 
 }
@@ -143,20 +146,22 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
     /// Function constructing an array from a slice; the length of the slice must be equal to the length of the array
     pub fn from_slice(list: &[T]) -> GenericArray<T, N> {
         assert_eq!(list.len(), N::to_usize());
-        let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-        for i in 0..N::to_usize() {
-            res[i] = list[i].clone();
+        unsafe {
+            let mut res: GenericArray<T, N> = mem::uninitialized();
+            for i in 0..N::to_usize() { ptr::write(&mut res[i], list[i].clone()) }
+            res
         }
-        res
     }
 
 }
 
 impl<T: Clone, N> Clone for GenericArray<T, N> where N: ArrayLength<T> {
     fn clone(&self) -> GenericArray<T, N> {
-        let mut res: GenericArray<T, N> = unsafe { mem::zeroed() };
-        for i in 0..N::to_usize() { res[i] = self[i].clone(); }
-        res
+        unsafe {
+            let mut res: GenericArray<T, N> = mem::uninitialized();
+            for i in 0..N::to_usize() { ptr::write(&mut res[i], self[i].clone()) }
+            res
+        }
     }
 }
 impl<T: Copy, N> Copy for GenericArray<T, N> where N: ArrayLength<T>, N::ArrayType: Copy {}
