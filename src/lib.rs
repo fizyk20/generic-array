@@ -165,3 +165,8 @@ impl<T: Clone, N> Clone for GenericArray<T, N> where N: ArrayLength<T> {
     }
 }
 impl<T: Copy, N> Copy for GenericArray<T, N> where N: ArrayLength<T>, N::ArrayType: Copy {}
+
+impl<T: PartialEq, N> PartialEq for GenericArray<T, N> where N: ArrayLength<T> {
+    fn eq(&self, other: &Self) -> bool { **self == **other }
+}
+impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
