@@ -38,6 +38,7 @@ extern crate typenum;
 pub mod arr;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
+use std::fmt::Debug;
 use std::marker::PhantomData;
 use std::mem;
 use std::ops::{Deref, DerefMut};
@@ -170,3 +171,7 @@ impl<T: PartialEq, N> PartialEq for GenericArray<T, N> where N: ArrayLength<T> {
     fn eq(&self, other: &Self) -> bool { **self == **other }
 }
 impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
+
+impl<T: Debug, N> Debug for GenericArray<T, N> where N: ArrayLength<T> {
+    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result { self[..].fmt(fmt) }
+}
