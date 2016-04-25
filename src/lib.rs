@@ -45,7 +45,7 @@ use std::ops::{Deref, DerefMut};
 use std::ptr;
 use std::slice;
 
-/// Trait making GenericArray work, marking types to be used as length of an array
+/// Trait making `GenericArray` work, marking types to be used as length of an array
 pub unsafe trait ArrayLength<T> : Unsigned {
     /// Associated type representing the array type for the number
     type ArrayType;
@@ -105,7 +105,7 @@ unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B1> {
     type ArrayType = GenericArrayImplOdd<T, N::ArrayType>;
 }
 
-/// Struct representing a generic array - GenericArray<T, N> works like [T; N]
+/// Struct representing a generic array - `GenericArray<T, N>` works like [T; N]
 #[allow(dead_code)]
 pub struct GenericArray<T, U: ArrayLength<T>> {
     data: U::ArrayType
@@ -129,13 +129,53 @@ impl<T, N> DerefMut for GenericArray<T, N> where N: ArrayLength<T> {
     }
 }
 
+impl<T, N> GenericArray<T, N> where N: ArrayLength<T> {
+    /// map a function over a  slice to a `GenericArray`.
+    /// The length of the slice *must* be equal to the length of the array
+    pub fn map_slice<S, F: Fn(&S) -> T>(s: &[S], f: F) -> GenericArray<T, N> {
+        assert_eq!(s.len(), N::to_usize());
+        map_inner(s, f)
+    }
+    
+    /// map a function over a `GenericArray`.
+    pub fn map<U, F>(self, f: F) -> GenericArray<U, N>
+    where F: Fn(&T) -> U, N: ArrayLength<U> {
+        map_inner(&self, f)
+    }
+}
+
+#[inline]
+fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
+where F: Fn(&S) -> T, N: ArrayLength<T> {
+     unsafe {
+        let mut res : GenericArray<T, N> = std::mem::uninitialized();
+        if let Err(e) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+            for (s, r) in list.iter().zip(res.iter_mut()) {
+                std::ptr::write(r, f(s))
+            }
+        })) {
+            // forget the whole thing (leak amplification)
+            std::mem::forget(res);
+            std::panic::resume_unwind(e);
+        };
+        res
+    }
+}
+
 impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
 
     /// Function constructing an array filled with default values
     pub fn new() -> GenericArray<T, N> {
         unsafe {
             let mut res: GenericArray<T, N> = mem::uninitialized();
-            for r in res.iter_mut() { ptr::write(r, T::default()) }
+            if let Err(e) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+                for r in res.iter_mut() { 
+                    ptr::write(r, T::default())
+                }
+            })) {
+                std::mem::forget(res);
+                std::panic::resume_unwind(e);
+            };
             res
         }
     }
@@ -147,11 +187,7 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
     /// Function constructing an array from a slice; the length of the slice must be equal to the length of the array
     pub fn from_slice(list: &[T]) -> GenericArray<T, N> {
         assert_eq!(list.len(), N::to_usize());
-        unsafe {
-            let mut res: GenericArray<T, N> = mem::uninitialized();
-            for i in 0..N::to_usize() { ptr::write(&mut res[i], list[i].clone()) }
-            res
-        }
+        map_inner(list, |x: &T| x.clone())
     }
 
 }
