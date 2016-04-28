@@ -35,7 +35,9 @@
 #[cfg(feature="no_std")]
 extern crate core as std;
 extern crate typenum;
+extern crate nodrop;
 pub mod arr;
+use nodrop::NoDrop;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
 use std::fmt::Debug;
@@ -148,17 +150,12 @@ impl<T, N> GenericArray<T, N> where N: ArrayLength<T> {
 fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
 where F: Fn(&S) -> T, N: ArrayLength<T> {
      unsafe {
-        let mut res : GenericArray<T, N> = std::mem::uninitialized();
-        if let Err(e) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-            for (s, r) in list.iter().zip(res.iter_mut()) {
-                std::ptr::write(r, f(s))
-            }
-        })) {
-            // forget the whole thing (leak amplification)
-            std::mem::forget(res);
-            std::panic::resume_unwind(e);
-        };
-        res
+        let mut res : NoDrop<GenericArray<T, N>> = 
+                      NoDrop::new(std::mem::uninitialized());
+        for (s, r) in list.iter().zip(res.iter_mut()) {
+            std::ptr::write(r, f(s))
+        }
+        res.into_inner()
     }
 }
 
