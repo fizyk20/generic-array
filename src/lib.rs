@@ -164,16 +164,12 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
     /// Function constructing an array filled with default values
     pub fn new() -> GenericArray<T, N> {
         unsafe {
-            let mut res: GenericArray<T, N> = mem::uninitialized();
-            if let Err(e) = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
-                for r in res.iter_mut() { 
-                    ptr::write(r, T::default())
-                }
-            })) {
-                std::mem::forget(res);
-                std::panic::resume_unwind(e);
-            };
-            res
+            let mut res : NoDrop<GenericArray<T, N>> = 
+                          NoDrop::new(std::mem::uninitialized());
+            for r in res.iter_mut() { 
+                ptr::write(r, T::default())
+            }
+            res.into_inner()
         }
     }
 
@@ -192,9 +188,10 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 impl<T: Clone, N> Clone for GenericArray<T, N> where N: ArrayLength<T> {
     fn clone(&self) -> GenericArray<T, N> {
         unsafe {
-            let mut res: GenericArray<T, N> = mem::uninitialized();
+            let mut res : NoDrop<GenericArray<T, N>> = 
+                          NoDrop::new(std::mem::uninitialized());
             for i in 0..N::to_usize() { ptr::write(&mut res[i], self[i].clone()) }
-            res
+            res.into_inner()
         }
     }
 }
