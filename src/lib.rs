@@ -151,7 +151,7 @@ fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
 where F: Fn(&S) -> T, N: ArrayLength<T> {
      unsafe {
         let mut res : NoDrop<GenericArray<T, N>> = 
-                      NoDrop::new(std::mem::uninitialized());
+                      NoDrop::new(mem::uninitialized());
         for (s, r) in list.iter().zip(res.iter_mut()) {
             std::ptr::write(r, f(s))
         }
@@ -165,7 +165,7 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
     pub fn new() -> GenericArray<T, N> {
         unsafe {
             let mut res : NoDrop<GenericArray<T, N>> = 
-                          NoDrop::new(std::mem::uninitialized());
+                          NoDrop::new(mem::uninitialized());
             for r in res.iter_mut() { 
                 ptr::write(r, T::default())
             }
@@ -189,7 +189,7 @@ impl<T: Clone, N> Clone for GenericArray<T, N> where N: ArrayLength<T> {
     fn clone(&self) -> GenericArray<T, N> {
         unsafe {
             let mut res : NoDrop<GenericArray<T, N>> = 
-                          NoDrop::new(std::mem::uninitialized());
+                          NoDrop::new(mem::uninitialized());
             for i in 0..N::to_usize() { ptr::write(&mut res[i], self[i].clone()) }
             res.into_inner()
         }
