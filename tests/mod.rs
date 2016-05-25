@@ -50,3 +50,8 @@ fn test_arr() {
     let test: GenericArray<u32, U3> = arr![u32; 1, 2, 3];
     assert_eq!(test[1], 2);
 }
+
+#[test]
+fn test_iter_flat_map() {
+    assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
+}
