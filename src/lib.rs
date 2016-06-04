@@ -37,6 +37,8 @@ extern crate core as std;
 extern crate typenum;
 extern crate nodrop;
 pub mod arr;
+pub mod iter;
+pub use iter::GenericArrayIter;
 use nodrop::NoDrop;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
