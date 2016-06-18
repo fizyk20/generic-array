@@ -5,7 +5,7 @@
 //! struct Foo<T, N> {
 //!     data: [T; N]
 //! }
-//! ``` 
+//! ```
 //!
 //! won't work.
 //!
@@ -16,14 +16,14 @@
 //! struct Foo<T, N: ArrayLength<T>> {
 //!     data: GenericArray<T,N>
 //! }
-//! ``` 
+//! ```
 //!
 //! The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).
 //!
 //! For ease of use, an `arr!` macro is provided - example below:
 //!
 //! ```
-//! # #[macro_use] 
+//! # #[macro_use]
 //! # extern crate generic_array;
 //! # extern crate typenum;
 //! # fn main() {
@@ -36,9 +36,15 @@
 extern crate core as std;
 extern crate typenum;
 extern crate nodrop;
+#[cfg(feature="serde")]
+extern crate serde;
 pub mod arr;
 pub mod iter;
 pub use iter::GenericArrayIter;
+
+#[cfg(feature="serde")]
+pub mod impl_serde;
+
 use nodrop::NoDrop;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
@@ -140,7 +146,7 @@ impl<T, N> GenericArray<T, N> where N: ArrayLength<T> {
         assert_eq!(s.len(), N::to_usize());
         map_inner(s, f)
     }
-    
+
     /// map a function over a `GenericArray`.
     pub fn map<U, F>(self, f: F) -> GenericArray<U, N>
     where F: Fn(&T) -> U, N: ArrayLength<U> {
@@ -152,7 +158,7 @@ impl<T, N> GenericArray<T, N> where N: ArrayLength<T> {
 fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
 where F: Fn(&S) -> T, N: ArrayLength<T> {
      unsafe {
-        let mut res : NoDrop<GenericArray<T, N>> = 
+        let mut res : NoDrop<GenericArray<T, N>> =
                       NoDrop::new(mem::uninitialized());
         for (s, r) in list.iter().zip(res.iter_mut()) {
             std::ptr::write(r, f(s))
@@ -166,9 +172,9 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
     /// Function constructing an array filled with default values
     pub fn new() -> GenericArray<T, N> {
         unsafe {
-            let mut res : NoDrop<GenericArray<T, N>> = 
+            let mut res : NoDrop<GenericArray<T, N>> =
                           NoDrop::new(mem::uninitialized());
-            for r in res.iter_mut() { 
+            for r in res.iter_mut() {
                 ptr::write(r, T::default())
             }
             res.into_inner()
@@ -190,7 +196,7 @@ impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 impl<T: Clone, N> Clone for GenericArray<T, N> where N: ArrayLength<T> {
     fn clone(&self) -> GenericArray<T, N> {
         unsafe {
-            let mut res : NoDrop<GenericArray<T, N>> = 
+            let mut res : NoDrop<GenericArray<T, N>> =
                           NoDrop::new(mem::uninitialized());
             for i in 0..N::to_usize() { ptr::write(&mut res[i], self[i].clone()) }
             res.into_inner()

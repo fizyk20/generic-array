@@ -55,3 +55,21 @@ fn test_arr() {
 fn test_iter_flat_map() {
     assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
 }
+
+#[cfg(feature="serde")]
+mod impl_serde {
+    extern crate serde_json;
+
+    use generic_array::GenericArray;
+    use typenum::U6;
+
+    #[test]
+    fn test_serde_implementation() {
+        let array: GenericArray<f64, U6> = arr![f64; 0.0, 5.0, 3.0, 7.07192, 76.0, -9.0];
+        let string = serde_json::to_string(&array).unwrap();
+        assert_eq!(string, "[0,5,3,7.07192,76,-9]");
+
+        let test_array: GenericArray<f64, U6> = serde_json::from_str(&string).unwrap();
+        assert_eq!(test_array, array);
+    }
+}
