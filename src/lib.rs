@@ -34,7 +34,7 @@
 #![cfg_attr(feature="no_std", no_std)]
 #[cfg(feature="no_std")]
 extern crate core as std;
-extern crate typenum;
+pub extern crate typenum;
 extern crate nodrop;
 #[cfg(feature="serde")]
 extern crate serde;

@@ -21,4 +21,4 @@ serde = { version = "~0.7", optional = true }
 serde_json = "~0.7"
 
 [features]
-no_std = ["typenum/no_std"]
+no_std = []
