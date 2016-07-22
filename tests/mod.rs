@@ -1,7 +1,7 @@
 #[macro_use]
 extern crate generic_array;
-extern crate typenum;
-use typenum::consts::{U3, U97};
+// extern crate typenum;
+use generic_array::typenum::{U3, U97};
 use generic_array::GenericArray;
 use std::ops::Drop;
 
@@ -61,7 +61,7 @@ mod impl_serde {
     extern crate serde_json;
 
     use generic_array::GenericArray;
-    use typenum::U6;
+    use generic_array::typenum::U6;
 
     #[test]
     fn test_serde_implementation() {

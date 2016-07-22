@@ -1,4 +1,4 @@
-use typenum::consts::{U1};
+use typenum::U1;
 use std::ops::Add;
 use super::ArrayLength;
 
@@ -22,7 +22,7 @@ pub type Inc<T, U> = <U as AddLength<T, U1>>::Output;
 #[macro_export]
 macro_rules! arr_impl {
     ($T:ty; $N:ty, [$($x:expr),*], []) => ({
-        use typenum::consts::U0;
+        use generic_array::typenum::U0;
         use generic_array::GenericArray;
         use generic_array::arr::Inc;
         GenericArray::<$T, $N>::from_slice(&[$($x),*])
