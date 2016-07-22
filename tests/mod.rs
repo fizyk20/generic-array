@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate generic_array;
-// extern crate typenum;
 use generic_array::typenum::{U3, U97};
 use generic_array::GenericArray;
 use std::ops::Drop;
