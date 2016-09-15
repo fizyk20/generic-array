@@ -31,8 +31,7 @@
 //! assert_eq!(array[2], 3);
 //! # }
 //! ```
-#![cfg_attr(feature="no_std", no_std)]
-#[cfg(feature="no_std")]
+#![no_std]
 extern crate core as std;
 pub extern crate typenum;
 extern crate nodrop;
