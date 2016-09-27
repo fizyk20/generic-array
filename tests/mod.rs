@@ -51,6 +51,15 @@ fn test_arr() {
 }
 
 #[test]
+fn test_copy() {
+    let test = arr![u32; 1, 2, 3];
+    let test2 = test;
+    // if GenericArray is not copy, this should fail as a use of a moved value
+    assert_eq!(test[1], 2);
+    assert_eq!(test2[0], 1);
+}
+
+#[test]
 fn test_iter_flat_map() {
     assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
 }
