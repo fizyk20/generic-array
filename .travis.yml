@@ -1,4 +1,10 @@
 language: rust
+script:
+  - cd $TRAVIS_BUILD_DIR
+  - cargo build
+  - cargo test
+  - cargo build --features serde
+  - cargo test --features serde
 after_success: |-
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
