@@ -1,5 +1,4 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::ser::impls::SeqIteratorVisitor;
 use serde::de::impls::VecVisitor;
 use {ArrayLength, GenericArray};
 
@@ -10,7 +9,11 @@ impl<T, N> Serialize for GenericArray<T, N>
         where S: Serializer,
     {
         // serializes this array just like a slice or a vector
-        serializer.serialize_seq(SeqIteratorVisitor::new(self.iter(), Some(self.len())))
+        let mut state = try!(serializer.serialize_seq(Some(N::to_usize())));
+        for e in self.iter() {
+            try!(serializer.serialize_seq_elt(&mut state, e));
+        }
+        serializer.serialize_seq_end(state)
     }
 }
 
