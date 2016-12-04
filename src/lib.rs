@@ -182,6 +182,12 @@ impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
 
 }
 
+impl<T: Default, N> Default for GenericArray<T, N> where N: ArrayLength<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<T: Clone, N> GenericArray<T, N> where N: ArrayLength<T> {
 
     /// Function constructing an array from a slice; the length of the slice must be equal to the length of the array
