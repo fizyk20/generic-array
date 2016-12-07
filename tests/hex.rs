@@ -32,3 +32,15 @@ fn long_upper_hex() {
     assert_eq!(format!("{:X}", ar),
         from_utf8(&[b'0'; 4096]).unwrap());
 }
+
+#[test]
+fn truncated_lower_hex() {
+    let ar = arr![u8; 10, 20, 30, 40, 50];
+    assert_eq!(format!("{:.2x}", ar), "0a14");
+}
+
+#[test]
+fn truncated_upper_hex() {
+    let ar = arr![u8; 30, 20, 10, 17, 0];
+    assert_eq!(format!("{:.4X}", ar), "1E140A11");
+}
