@@ -151,6 +151,24 @@ impl<T, N> GenericArray<T, N> where N: ArrayLength<T> {
     where F: Fn(&T) -> U, N: ArrayLength<U> {
         map_inner(&self, f)
     }
+
+    /// Extracts a slice containing the entire array
+    pub fn as_slice(&self) -> &[T] {
+        self.deref()
+    }
+
+    /// Extracts a mutable slice containing the entire array
+    pub fn as_mut_slice(&mut self) -> &mut [T] {
+        self.deref_mut()
+    }
+
+    /// Allows access to the data in the array as a slice of bytes
+    pub fn as_bytes(&self) -> &[u8] {
+        unsafe {
+            slice::from_raw_parts(self as *const Self as *const u8,
+                                  N::to_usize() * mem::size_of::<T>())
+        }
+    }
 }
 
 #[inline]
