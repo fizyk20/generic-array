@@ -184,25 +184,17 @@ where F: Fn(&S) -> T, N: ArrayLength<T> {
     }
 }
 
-impl<T: Default, N> GenericArray<T, N> where N: ArrayLength<T> {
-
-    /// Function constructing an array filled with default values
-    pub fn new() -> GenericArray<T, N> {
+impl<T: Default, N> Default for GenericArray<T, N>
+    where N: ArrayLength<T>
+{
+    fn default() -> Self {
         unsafe {
-            let mut res : NoDrop<GenericArray<T, N>> =
-                          NoDrop::new(mem::uninitialized());
+            let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
             for r in res.iter_mut() {
                 ptr::write(r, T::default())
             }
             res.into_inner()
         }
-    }
-
-}
-
-impl<T: Default, N> Default for GenericArray<T, N> where N: ArrayLength<T> {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
