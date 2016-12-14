@@ -1,5 +1,5 @@
 use typenum::U1;
-use std::ops::Add;
+use core::ops::Add;
 use super::ArrayLength;
 
 /// Helper trait for `arr!` macro

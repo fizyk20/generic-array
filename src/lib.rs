@@ -32,7 +32,6 @@
 //! # }
 //! ```
 #![no_std]
-extern crate core as std;
 pub extern crate typenum;
 extern crate nodrop;
 #[cfg(feature="serde")]
@@ -47,12 +46,12 @@ pub mod impl_serde;
 use nodrop::NoDrop;
 use typenum::uint::{Unsigned, UTerm, UInt};
 use typenum::bit::{B0, B1};
-use std::fmt::Debug;
-use std::marker::PhantomData;
-use std::mem;
-use std::ops::{Deref, DerefMut};
-use std::ptr;
-use std::slice;
+use core::fmt::Debug;
+use core::marker::PhantomData;
+use core::mem;
+use core::ops::{Deref, DerefMut};
+use core::ptr;
+use core::slice;
 
 /// Trait making `GenericArray` work, marking types to be used as length of an array
 pub unsafe trait ArrayLength<T>: Unsigned {
@@ -183,7 +182,7 @@ fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
     unsafe {
         let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
         for (s, r) in list.iter().zip(res.iter_mut()) {
-            std::ptr::write(r, f(s))
+            core::ptr::write(r, f(s))
         }
         res.into_inner()
     }
@@ -244,7 +243,31 @@ impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
 impl<T: Debug, N> Debug for GenericArray<T, N>
     where N: ArrayLength<T>
 {
-    fn fmt(&self, fmt: &mut std::fmt::Formatter) -> std::fmt::Result {
+    fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
         self[..].fmt(fmt)
+    }
+}
+
+/// Converts slice to a generic array reference with inferred length
+///
+/// If length can not be inferred use e.g. `from_slice::<_, U3>(slice)`
+#[inline]
+pub fn from_slice<T, N: ArrayLength<T>>(slice: &[T]) -> &GenericArray<T, N> {
+    assert_eq!(slice.len(), N::to_usize());
+    unsafe {
+        &*(slice.as_ptr() as *const GenericArray<T, N>)
+    }
+}
+
+/// Converts mutable slice to a generic array mutable reference with inferred
+/// length
+///
+/// If length can not be inferred use e.g. `from_mut_slice::<_, U3>(slice)`
+#[inline]
+pub fn from_mut_slice<T, N: ArrayLength<T>>(slice: &mut [T]) ->
+                                        &mut GenericArray<T, N> {
+    assert_eq!(slice.len(), N::to_usize());
+    unsafe {
+        &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>)
     }
 }
