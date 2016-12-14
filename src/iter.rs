@@ -1,6 +1,6 @@
 use nodrop::NoDrop;
-use std::cmp;
-use std::ptr;
+use core::cmp;
+use core::ptr;
 use super::{GenericArray, ArrayLength};
 
 /// An iterator that moves out of a `GenericArray`

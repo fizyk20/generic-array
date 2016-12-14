@@ -1,8 +1,9 @@
+#![no_std]
 #[macro_use]
 extern crate generic_array;
 use generic_array::typenum::{U3, U97};
 use generic_array::GenericArray;
-use std::ops::Drop;
+use core::ops::Drop;
 
 #[test]
 fn test() {
@@ -17,6 +18,7 @@ fn test() {
     assert_eq!(l[56], 56);
 }
 
+#[allow(non_upper_case_globals)]
 static mut drop_counter: u32 = 0;
 
 #[derive(Clone)]
@@ -62,6 +64,23 @@ fn test_copy() {
 #[test]
 fn test_iter_flat_map() {
     assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
+}
+
+#[test]
+fn test_from_slice() {
+    let arr = [1,2,3,4];
+    let gen_arr = generic_array::from_slice::<_, U3>(&arr[..3]);
+    assert_eq!(&arr[..3], gen_arr.as_slice());
+}
+
+#[test]
+fn test_from_mut_slice() {
+    let mut arr = [1,2,3,4];
+    {
+        let mut gen_arr = generic_array::from_mut_slice::<_, U3>(&mut arr[..3]);
+        gen_arr[2] = 10;
+    }
+    assert_eq!(arr, [1,2,10,4]);
 }
 
 #[cfg(feature="serde")]
