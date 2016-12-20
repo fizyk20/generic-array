@@ -64,6 +64,23 @@ fn test_iter_flat_map() {
     assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
 }
 
+#[test]
+fn test_unit_macro(){
+    let arr = arr![f32; 3.14];
+    assert_eq!(arr[0], 3.14);
+}
+
+#[test]
+fn test_empty_macro(){
+    let arr = arr![f32;];
+}
+
+/// This test should cause a helpful compile error if uncommented.
+// #[test]
+// fn test_empty_macro2(){
+//     let arr = arr![];
+// }
+
 #[cfg(feature="serde")]
 mod impl_serde {
     extern crate serde_json;
