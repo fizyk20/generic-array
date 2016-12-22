@@ -39,6 +39,7 @@ extern crate serde;
 pub mod arr;
 pub mod iter;
 pub use iter::GenericArrayIter;
+mod hex;
 
 #[cfg(feature="serde")]
 pub mod impl_serde;
@@ -163,14 +164,6 @@ impl<T, N> GenericArray<T, N>
     /// Extracts a mutable slice containing the entire array
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.deref_mut()
-    }
-
-    /// Allows access to the data in the array as a slice of bytes
-    pub fn as_bytes(&self) -> &[u8] {
-        unsafe {
-            slice::from_raw_parts(self as *const Self as *const u8,
-                                  N::to_usize() * mem::size_of::<T>())
-        }
     }
 }
 
