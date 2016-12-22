@@ -11,7 +11,7 @@ fn test() {
     for i in 0..97 {
         list97[i] = i as i32;
     }
-    let l : GenericArray<i32, U97> = GenericArray::from_slice(&list97);
+    let l : GenericArray<i32, U97> = GenericArray::clone_from_slice(&list97);
     assert_eq!(l[0], 0);
     assert_eq!(l[1], 1);
     assert_eq!(l[32], 32);
@@ -69,7 +69,7 @@ fn test_iter_flat_map() {
 #[test]
 fn test_from_slice() {
     let arr = [1,2,3,4];
-    let gen_arr = generic_array::from_slice::<_, U3>(&arr[..3]);
+    let gen_arr = GenericArray::<_, U3>::from_slice(&arr[..3]);
     assert_eq!(&arr[..3], gen_arr.as_slice());
 }
 
@@ -77,7 +77,7 @@ fn test_from_slice() {
 fn test_from_mut_slice() {
     let mut arr = [1,2,3,4];
     {
-        let mut gen_arr = generic_array::from_mut_slice::<_, U3>(&mut arr[..3]);
+        let mut gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
         gen_arr[2] = 10;
     }
     assert_eq!(arr, [1,2,10,4]);

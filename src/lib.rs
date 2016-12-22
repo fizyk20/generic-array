@@ -205,10 +205,30 @@ impl<T: Default, N> Default for GenericArray<T, N>
 impl<T: Clone, N> GenericArray<T, N>
     where N: ArrayLength<T>
 {
-    /// Function constructing an array from a slice; the length of the slice must be equal to the length of the array
-    pub fn from_slice(list: &[T]) -> GenericArray<T, N> {
+    /// Function constructing an array from a slice by clonning its content
+    ///
+    /// Length of the slice must be equal to the length of the array
+    pub fn clone_from_slice(list: &[T]) -> GenericArray<T, N> {
         assert_eq!(list.len(), N::to_usize());
         map_inner(list, |x: &T| x.clone())
+    }
+
+    /// Converts slice to a generic array reference with inferred length;
+    ///
+    /// Length of the slice must be equal to the length of the array
+    #[inline]
+    pub fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
+        assert_eq!(slice.len(), N::to_usize());
+        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
+    }
+
+    /// Converts mutable slice to a mutable generic array reference
+    ///
+    /// Length of the slice must be equal to the length of the array
+    #[inline]
+    pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
+        assert_eq!(slice.len(), N::to_usize());
+        unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
 }
 
@@ -245,29 +265,5 @@ impl<T: Debug, N> Debug for GenericArray<T, N>
 {
     fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
         self[..].fmt(fmt)
-    }
-}
-
-/// Converts slice to a generic array reference with inferred length
-///
-/// If length can not be inferred use e.g. `from_slice::<_, U3>(slice)`
-#[inline]
-pub fn from_slice<T, N: ArrayLength<T>>(slice: &[T]) -> &GenericArray<T, N> {
-    assert_eq!(slice.len(), N::to_usize());
-    unsafe {
-        &*(slice.as_ptr() as *const GenericArray<T, N>)
-    }
-}
-
-/// Converts mutable slice to a generic array mutable reference with inferred
-/// length
-///
-/// If length can not be inferred use e.g. `from_mut_slice::<_, U3>(slice)`
-#[inline]
-pub fn from_mut_slice<T, N: ArrayLength<T>>(slice: &mut [T]) ->
-                                        &mut GenericArray<T, N> {
-    assert_eq!(slice.len(), N::to_usize());
-    unsafe {
-        &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>)
     }
 }
