@@ -40,6 +40,7 @@ extern crate serde;
 pub mod arr;
 pub mod iter;
 pub use iter::GenericArrayIter;
+mod hex;
 
 #[cfg(feature="serde")]
 pub mod impl_serde;
