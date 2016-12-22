@@ -21,16 +21,14 @@ fn short_upper_hex() {
 
 #[test]
 fn long_lower_hex() {
-    let ar = GenericArray::<u8, U2048>::new();
-    assert_eq!(format!("{:x}", ar),
-        from_utf8(&[b'0'; 4096]).unwrap());
+    let ar = GenericArray::<u8, U2048>::default();
+    assert_eq!(format!("{:x}", ar), from_utf8(&[b'0'; 4096]).unwrap());
 }
 
 #[test]
 fn long_upper_hex() {
-    let ar = GenericArray::<u8, U2048>::new();
-    assert_eq!(format!("{:X}", ar),
-        from_utf8(&[b'0'; 4096]).unwrap());
+    let ar = GenericArray::<u8, U2048>::default();
+    assert_eq!(format!("{:X}", ar), from_utf8(&[b'0'; 4096]).unwrap());
 }
 
 #[test]
