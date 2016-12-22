@@ -14,9 +14,9 @@
 //! # }
 //! ```
 //!
-use std::fmt;
-use std::str;
-use std::ops::Add;
+use core::fmt;
+use core::str;
+use core::ops::Add;
 use typenum::*;
 use {GenericArray, ArrayLength};
 
