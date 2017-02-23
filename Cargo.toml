@@ -1,7 +1,7 @@
 [package]
 
 name = "generic-array"
-version = "0.6.0"
+version = "0.7.0"
 authors = [ "Bartłomiej Kamiński <fizyk20@gmail.com>" ]
 description = "Generic types implementing functionality of arrays"
 license = "MIT"
@@ -12,13 +12,13 @@ documentation = "http://fizyk20.github.io/generic-array/generic_array/"
 name = "generic_array"
 
 [dependencies]
-typenum = "1.3.1"
-serde = { version = "~0.8", optional = true }
+typenum = "~1.5"
+serde = { version = "~0.9", optional = true }
 
 [dependencies.nodrop]
-version = "0.1.6"
+version = "~0.1"
 default-features = false
 
 [dev_dependencies]
 # this can't yet be made optional, see https://github.com/rust-lang/cargo/issues/1596
-serde_json = "~0.8"
+serde_json = "~0.9"
