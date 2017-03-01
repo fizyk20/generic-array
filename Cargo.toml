@@ -13,7 +13,7 @@ name = "generic_array"
 
 [dependencies]
 typenum = "~1.5"
-serde = { version = "~0.9", optional = true }
+serde = { version = "~0.9", optional = true, default-features = false, features = ["collections"] }
 
 [dependencies.nodrop]
 version = "~0.1"
