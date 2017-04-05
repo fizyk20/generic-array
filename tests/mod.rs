@@ -1,7 +1,7 @@
 #![no_std]
 #[macro_use]
 extern crate generic_array;
-use generic_array::typenum::{U3, U97};
+use generic_array::typenum::{U1, U3, U97};
 use generic_array::GenericArray;
 use core::ops::Drop;
 
@@ -84,7 +84,13 @@ fn test_from_mut_slice() {
 }
 
 #[test]
-fn test_unit_macro(){
+fn test_default() {
+    let arr = GenericArray::<u8, U1>::default();
+    assert_eq!(arr[0], 0);
+}
+
+#[test]
+fn test_unit_macro() {
     let arr = arr![f32; 3.14];
     assert_eq!(arr[0], 3.14);
 }
