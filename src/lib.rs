@@ -53,6 +53,7 @@ use core::mem;
 use core::ops::{Deref, DerefMut};
 use core::ptr;
 use core::slice;
+use core::cmp::Ordering;
 
 /// Trait making `GenericArray` work, marking types to be used as length of an array
 pub unsafe trait ArrayLength<T>: Unsigned {
@@ -252,6 +253,22 @@ impl<T: PartialEq, N> PartialEq for GenericArray<T, N>
     }
 }
 impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
+
+impl<T: PartialOrd, N> PartialOrd for GenericArray<T, N>
+    where N: ArrayLength<T>
+{
+    fn partial_cmp(&self, other: &GenericArray<T, N>) -> Option<Ordering> {
+        PartialOrd::partial_cmp(&self, &other)
+    }
+}
+
+impl<T: Ord, N> Ord for GenericArray<T, N>
+    where N: ArrayLength<T>
+{
+    fn cmp(&self, other: &GenericArray<T, N>) -> Ordering {
+        Ord::cmp(&self, &other)
+    }
+}
 
 impl<T: Debug, N> Debug for GenericArray<T, N>
     where N: ArrayLength<T>
