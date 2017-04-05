@@ -11,7 +11,7 @@ fn test() {
     for i in 0..97 {
         list97[i] = i as i32;
     }
-    let l : GenericArray<i32, U97> = GenericArray::clone_from_slice(&list97);
+    let l: GenericArray<i32, U97> = GenericArray::clone_from_slice(&list97);
     assert_eq!(l[0], 0);
     assert_eq!(l[1], 1);
     assert_eq!(l[32], 32);
@@ -42,7 +42,7 @@ fn test_drop() {
         let _: GenericArray<TestDrop, U3> = arr![TestDrop; TestDrop(1), TestDrop(2), TestDrop(3)];
     }
     unsafe {
-        assert_eq!(drop_counter, 6);    // 6 drops, as explained above
+        assert_eq!(drop_counter, 6); // 6 drops, as explained above
     }
 }
 
@@ -63,24 +63,26 @@ fn test_copy() {
 
 #[test]
 fn test_iter_flat_map() {
-    assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
+    assert!((0..5)
+                .flat_map(|i| arr![i32; 2 * i, 2 * i + 1])
+                .eq(0..10));
 }
 
 #[test]
 fn test_from_slice() {
-    let arr = [1,2,3,4];
+    let arr = [1, 2, 3, 4];
     let gen_arr = GenericArray::<_, U3>::from_slice(&arr[..3]);
     assert_eq!(&arr[..3], gen_arr.as_slice());
 }
 
 #[test]
 fn test_from_mut_slice() {
-    let mut arr = [1,2,3,4];
+    let mut arr = [1, 2, 3, 4];
     {
         let mut gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
         gen_arr[2] = 10;
     }
-    assert_eq!(arr, [1,2,10,4]);
+    assert_eq!(arr, [1, 2, 10, 4]);
 }
 
 #[test]
@@ -96,7 +98,7 @@ fn test_unit_macro() {
 }
 
 #[test]
-fn test_empty_macro(){
+fn test_empty_macro() {
     let arr = arr![f32;];
 }
 
@@ -105,7 +107,6 @@ fn test_empty_macro(){
 // fn test_empty_macro2(){
 //     let arr = arr![];
 // }
-
 #[cfg(feature="serde")]
 mod impl_serde {
     extern crate serde_json;

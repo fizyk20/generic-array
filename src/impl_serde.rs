@@ -23,7 +23,8 @@ impl<T, N> Deserialize for GenericArray<T, N>
     {
         // this implementation has the cost of allocating a new vector each time.
         // TODO: write a better 'allocationless' version
-        deserializer.deserialize_seq(VecVisitor::new())
+        deserializer
+            .deserialize_seq(VecVisitor::new())
             .map(|vec| GenericArray::clone_from_slice(&vec))
     }
 }
