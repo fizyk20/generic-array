@@ -40,20 +40,18 @@ pub mod arr;
 pub mod iter;
 pub use iter::GenericArrayIter;
 mod hex;
+mod impls;
 
 #[cfg(feature="serde")]
 pub mod impl_serde;
 
-use nodrop::NoDrop;
-use typenum::uint::{Unsigned, UTerm, UInt};
-use typenum::bit::{B0, B1};
-use core::fmt::Debug;
 use core::marker::PhantomData;
 use core::mem;
 use core::ops::{Deref, DerefMut};
-use core::ptr;
 use core::slice;
-use core::cmp::Ordering;
+use nodrop::NoDrop;
+use typenum::bit::{B0, B1};
+use typenum::uint::{UInt, UTerm, Unsigned};
 
 /// Trait making `GenericArray` work, marking types to be used as length of an array
 pub unsafe trait ArrayLength<T>: Unsigned {
@@ -182,20 +180,6 @@ fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
     }
 }
 
-impl<T: Default, N> Default for GenericArray<T, N>
-    where N: ArrayLength<T>
-{
-    fn default() -> Self {
-        unsafe {
-            let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
-            for r in res.iter_mut() {
-                ptr::write(r, T::default())
-            }
-            res.into_inner()
-        }
-    }
-}
-
 impl<T: Clone, N> GenericArray<T, N>
     where N: ArrayLength<T>
 {
@@ -223,57 +207,5 @@ impl<T: Clone, N> GenericArray<T, N>
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
         assert_eq!(slice.len(), N::to_usize());
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
-    }
-}
-
-impl<T: Clone, N> Clone for GenericArray<T, N>
-    where N: ArrayLength<T>
-{
-    fn clone(&self) -> GenericArray<T, N> {
-        unsafe {
-            let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
-            for i in 0..N::to_usize() {
-                ptr::write(&mut res[i], self[i].clone())
-            }
-            res.into_inner()
-        }
-    }
-}
-impl<T: Copy, N> Copy for GenericArray<T, N>
-    where N: ArrayLength<T>,
-          N::ArrayType: Copy
-{
-}
-
-impl<T: PartialEq, N> PartialEq for GenericArray<T, N>
-    where N: ArrayLength<T>
-{
-    fn eq(&self, other: &Self) -> bool {
-        **self == **other
-    }
-}
-impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
-
-impl<T: PartialOrd, N> PartialOrd for GenericArray<T, N>
-    where N: ArrayLength<T>
-{
-    fn partial_cmp(&self, other: &GenericArray<T, N>) -> Option<Ordering> {
-        PartialOrd::partial_cmp(&self, &other)
-    }
-}
-
-impl<T: Ord, N> Ord for GenericArray<T, N>
-    where N: ArrayLength<T>
-{
-    fn cmp(&self, other: &GenericArray<T, N>) -> Ordering {
-        Ord::cmp(&self, &other)
-    }
-}
-
-impl<T: Debug, N> Debug for GenericArray<T, N>
-    where N: ArrayLength<T>
-{
-    fn fmt(&self, fmt: &mut core::fmt::Formatter) -> core::fmt::Result {
-        self[..].fmt(fmt)
     }
 }

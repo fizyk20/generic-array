@@ -1,6 +1,6 @@
+use {ArrayLength, GenericArray};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use serde::de::impls::VecVisitor;
-use {ArrayLength, GenericArray};
 
 impl<T, N> Serialize for GenericArray<T, N>
     where T: Serialize,

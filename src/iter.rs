@@ -1,7 +1,7 @@
-use nodrop::NoDrop;
+use super::{ArrayLength, GenericArray};
 use core::cmp;
 use core::ptr;
-use super::{GenericArray, ArrayLength};
+use nodrop::NoDrop;
 
 /// An iterator that moves out of a `GenericArray`
 pub struct GenericArrayIter<T, N: ArrayLength<T>> {
