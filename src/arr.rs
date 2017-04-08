@@ -1,6 +1,6 @@
-use typenum::U1;
-use core::ops::Add;
 use super::ArrayLength;
+use core::ops::Add;
+use typenum::U1;
 
 /// Helper trait for `arr!` macro
 pub trait AddLength<T, N: ArrayLength<T>>: ArrayLength<T> {

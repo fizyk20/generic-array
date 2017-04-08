@@ -14,11 +14,12 @@
 //! # }
 //! ```
 //!
+
+use {ArrayLength, GenericArray};
 use core::fmt;
-use core::str;
 use core::ops::Add;
+use core::str;
 use typenum::*;
-use {GenericArray, ArrayLength};
 
 static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
 static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";
