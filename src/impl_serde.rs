@@ -1,6 +1,8 @@
 use {ArrayLength, GenericArray};
+use core::fmt;
+use core::marker::PhantomData;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
-use serde::de::impls::VecVisitor;
+use serde::de::{self, SeqAccess, Visitor};
 
 impl<T, N> Serialize for GenericArray<T, N>
     where T: Serialize,
@@ -14,17 +16,44 @@ impl<T, N> Serialize for GenericArray<T, N>
     }
 }
 
-impl<T, N> Deserialize for GenericArray<T, N>
-    where T: Deserialize + Clone,
+struct GAVisitor<T, N> {
+    _t: PhantomData<T>,
+    _n: PhantomData<N>,
+}
+
+impl<'de, T, N> Visitor<'de> for GAVisitor<T, N>
+    where T: Deserialize<'de> + Default,
+          N: ArrayLength<T>
+{
+    type Value = GenericArray<T, N>;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
+        formatter.write_str("struct GenericArray")
+    }
+
+    fn visit_seq<A>(self, mut seq: A) -> Result<GenericArray<T, N>, A::Error>
+        where A: SeqAccess<'de>
+    {
+        let mut result = GenericArray::default();
+        for i in 0..N::to_usize() {
+            result[i] = seq.next_element()?
+                .ok_or_else(|| de::Error::invalid_length(i, &self))?;
+        }
+        Ok(result)
+    }
+}
+
+impl<'de, T, N> Deserialize<'de> for GenericArray<T, N>
+    where T: Deserialize<'de> + Default,
           N: ArrayLength<T>
 {
     fn deserialize<D>(deserializer: D) -> Result<GenericArray<T, N>, D::Error>
-        where D: Deserializer
+        where D: Deserializer<'de>
     {
-        // this implementation has the cost of allocating a new vector each time.
-        // TODO: write a better 'allocationless' version
-        deserializer
-            .deserialize_seq(VecVisitor::new())
-            .map(|vec| GenericArray::clone_from_slice(&vec))
+        let visitor = GAVisitor {
+            _t: PhantomData,
+            _n: PhantomData,
+        };
+        deserializer.deserialize_seq(visitor)
     }
 }
