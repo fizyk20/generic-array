@@ -32,10 +32,9 @@ fn test_drop() {
 
     let drop_counter = Cell::new(0);
     {
-        // This clones the structs, so we will have 6 drops, not 3
         let _: GenericArray<TestDrop, U3> = arr![TestDrop; TestDrop(&drop_counter), TestDrop(&drop_counter), TestDrop(&drop_counter)];
     }
-    assert_eq!(drop_counter.get(), 6); // 6 drops, as explained above
+    assert_eq!(drop_counter.get(), 3);
 }
 
 #[test]
