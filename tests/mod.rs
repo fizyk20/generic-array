@@ -29,7 +29,7 @@ fn test_drop() {
             self.0.set(self.0.get() + 1);
         }
     }
-  
+
     let drop_counter = Cell::new(0);
     {
         let _: GenericArray<TestDrop, U3> = arr![TestDrop; TestDrop(&drop_counter), TestDrop(&drop_counter), TestDrop(&drop_counter)];
