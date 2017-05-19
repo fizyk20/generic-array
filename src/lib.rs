@@ -47,6 +47,7 @@ pub mod impl_serde;
 
 use core::marker::PhantomData;
 use core::mem;
+pub use core::mem::transmute;
 use core::ops::{Deref, DerefMut};
 use core::slice;
 use nodrop::NoDrop;
