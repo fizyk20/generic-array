@@ -59,9 +59,15 @@ fn test_iter_flat_map() {
                 .eq(0..10));
 }
 
+#[derive(Debug, PartialEq, Eq)]
+struct NoClone<T>(T);
+
 #[test]
 fn test_from_slice() {
     let arr = [1, 2, 3, 4];
+    let gen_arr = GenericArray::<_, U3>::from_slice(&arr[..3]);
+    assert_eq!(&arr[..3], gen_arr.as_slice());
+    let arr = [NoClone(1u32), NoClone(2), NoClone(3), NoClone(4)];
     let gen_arr = GenericArray::<_, U3>::from_slice(&arr[..3]);
     assert_eq!(&arr[..3], gen_arr.as_slice());
 }
@@ -74,6 +80,12 @@ fn test_from_mut_slice() {
         gen_arr[2] = 10;
     }
     assert_eq!(arr, [1, 2, 10, 4]);
+    let mut arr = [NoClone(1u32), NoClone(2), NoClone(3), NoClone(4)];
+    {
+        let mut gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
+        gen_arr[2] = NoClone(10);
+    }
+    assert_eq!(arr, [NoClone(1), NoClone(2), NoClone(10), NoClone(4)]);
 }
 
 #[test]

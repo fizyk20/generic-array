@@ -165,6 +165,24 @@ impl<T, N> GenericArray<T, N>
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.deref_mut()
     }
+
+    /// Converts slice to a generic array reference with inferred length;
+    ///
+    /// Length of the slice must be equal to the length of the array
+    #[inline]
+    pub fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
+        assert_eq!(slice.len(), N::to_usize());
+        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
+    }
+
+    /// Converts mutable slice to a mutable generic array reference
+    ///
+    /// Length of the slice must be equal to the length of the array
+    #[inline]
+    pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
+        assert_eq!(slice.len(), N::to_usize());
+        unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
+    }
 }
 
 #[inline]
@@ -190,23 +208,5 @@ impl<T: Clone, N> GenericArray<T, N>
     pub fn clone_from_slice(list: &[T]) -> GenericArray<T, N> {
         assert_eq!(list.len(), N::to_usize());
         map_inner(list, |x: &T| x.clone())
-    }
-
-    /// Converts slice to a generic array reference with inferred length;
-    ///
-    /// Length of the slice must be equal to the length of the array
-    #[inline]
-    pub fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
-        assert_eq!(slice.len(), N::to_usize());
-        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
-    }
-
-    /// Converts mutable slice to a mutable generic array reference
-    ///
-    /// Length of the slice must be equal to the length of the array
-    #[inline]
-    pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
-        assert_eq!(slice.len(), N::to_usize());
-        unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
 }
