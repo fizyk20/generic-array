@@ -95,6 +95,13 @@ fn test_default() {
 }
 
 #[test]
+fn test_from() {
+    let data = [(1, 2, 3), (4, 5, 6), (7, 8, 9)];
+    let garray: GenericArray<(usize, usize, usize), U3> = data.into();
+    assert_eq!(&data, garray.as_slice());
+}
+
+#[test]
 fn test_unit_macro() {
     let arr = arr![f32; 3.14];
     assert_eq!(arr[0], 3.14);
