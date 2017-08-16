@@ -1,10 +1,11 @@
+#![recursion_limit="128"]
 #![no_std]
 #[macro_use]
 extern crate generic_array;
-use generic_array::typenum::{U1, U3, U97};
-use generic_array::GenericArray;
-use core::ops::Drop;
 use core::cell::Cell;
+use core::ops::Drop;
+use generic_array::GenericArray;
+use generic_array::typenum::{U1, U3, U97};
 
 #[test]
 fn test() {
@@ -54,9 +55,7 @@ fn test_copy() {
 
 #[test]
 fn test_iter_flat_map() {
-    assert!((0..5)
-                .flat_map(|i| arr![i32; 2 * i, 2 * i + 1])
-                .eq(0..10));
+    assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -110,7 +109,7 @@ fn test_empty_macro() {
 // fn test_empty_macro2(){
 //     let arr = arr![];
 // }
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 mod impl_serde {
     extern crate serde_json;
 

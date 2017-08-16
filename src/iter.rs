@@ -1,3 +1,5 @@
+//! `GenericArray` iterator implementation.
+
 use super::{ArrayLength, GenericArray};
 use core::cmp;
 use core::ptr;
@@ -14,7 +16,8 @@ pub struct GenericArrayIter<T, N: ArrayLength<T>> {
 }
 
 impl<T, N> IntoIterator for GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     type Item = T;
     type IntoIter = GenericArrayIter<T, N>;
@@ -29,7 +32,8 @@ impl<T, N> IntoIterator for GenericArray<T, N>
 }
 
 impl<T, N> Drop for GenericArrayIter<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     fn drop(&mut self) {
         // Drop values that are still alive.
@@ -42,7 +46,8 @@ impl<T, N> Drop for GenericArrayIter<T, N>
 }
 
 impl<T, N> Iterator for GenericArrayIter<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     type Item = T;
 
@@ -87,7 +92,8 @@ impl<T, N> Iterator for GenericArrayIter<T, N>
 }
 
 impl<T, N> DoubleEndedIterator for GenericArrayIter<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     fn next_back(&mut self) -> Option<T> {
         if self.len() > 0 {
@@ -103,7 +109,8 @@ impl<T, N> DoubleEndedIterator for GenericArrayIter<T, N>
 }
 
 impl<T, N> ExactSizeIterator for GenericArrayIter<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     fn len(&self) -> usize {
         self.index_back - self.index
