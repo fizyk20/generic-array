@@ -1,23 +1,16 @@
 use super::{ArrayLength, GenericArray};
-use core::{mem, ptr};
 use core::borrow::{Borrow, BorrowMut};
 use core::cmp::Ordering;
 use core::fmt::{self, Debug};
 use core::hash::{Hash, Hasher};
-use nodrop::NoDrop;
 
 impl<T: Default, N> Default for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    #[inline]
     fn default() -> Self {
-        unsafe {
-            let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
-            for r in res.iter_mut() {
-                ptr::write(r, T::default())
-            }
-            res.into_inner()
-        }
+        Self::generate(|_| T::default())
     }
 }
 
@@ -26,13 +19,7 @@ where
     N: ArrayLength<T>,
 {
     fn clone(&self) -> GenericArray<T, N> {
-        unsafe {
-            let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
-            for i in 0..N::to_usize() {
-                ptr::write(&mut res[i], self[i].clone())
-            }
-            res.into_inner()
-        }
+        self.map_ref(|x| x.clone())
     }
 }
 impl<T: Copy, N> Copy for GenericArray<T, N>
