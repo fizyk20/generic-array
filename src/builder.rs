@@ -188,7 +188,7 @@ impl<T, N: ArrayLength<T>> RecursiveArrayBuilder<T, N, U0> {
     ///
     /// If the generator function panics while initializing the array,
     /// any already initialized elements will be dropped.
-    #[inline(always)]
+    #[inline]
     pub fn generate<F>(generator: F) -> GenericArray<T, N>
     where
         F: Fn(usize) -> T,
@@ -207,6 +207,7 @@ impl<T, N: ArrayLength<T>> RecursiveArrayBuilder<T, N, U0> {
     ///
     /// If the mapping function panics, any already initialized elements in the new array
     /// will be dropped, AND any unused elements in the source array will also be dropped.
+    #[inline]
     pub fn map<U, F>(source: GenericArray<U, N>, f: F) -> GenericArray<T, N>
     where
         F: Fn(U) -> T,
@@ -225,6 +226,7 @@ impl<T, N: ArrayLength<T>> RecursiveArrayBuilder<T, N, U0> {
     /// Maps a `GenericArray` to another `GenericArray` by reference.
     ///
     /// If the mapping function panics, any already initialized elements will be dropped.
+    #[inline]
     pub fn map_ref<U, F>(source: &GenericArray<U, N>, f: F) -> GenericArray<T, N>
     where
         F: Fn(&U) -> T,
@@ -238,6 +240,7 @@ impl<T, N: ArrayLength<T>> RecursiveArrayBuilder<T, N, U0> {
     ///
     /// If the mapping function panics, any already initialized elements in the new array
     /// will be dropped, AND any unused elements in the source arrays will also be dropped.
+    #[inline]
     pub fn zip<A, B, F>(
         lhs: GenericArray<A, N>,
         rhs: GenericArray<B, N>,
@@ -262,6 +265,7 @@ impl<T, N: ArrayLength<T>> RecursiveArrayBuilder<T, N, U0> {
     /// initializing a new `GenericArray` with the result of the zipped mapping function.
     ///
     /// If the mapping function panics, any already initialized elements will be dropped.
+    #[inline]
     pub fn zip_ref<A, B, F>(
         lhs: &GenericArray<A, N>,
         rhs: &GenericArray<B, N>,
@@ -408,7 +412,7 @@ impl<T, N: ArrayLength<T>> IterableArrayLength<T, N> for UTerm {
     #[doc(hidden)]
     type Index = N;
 
-    #[inline(always)]
+    #[inline]
     fn generate<F>(builder: RecursiveArrayBuilder<T, N, Self::Index>, _: F) -> GenericArray<T, N>
     where
         F: Fn(usize) -> T,
@@ -420,7 +424,7 @@ impl<T, N: ArrayLength<T>> IterableArrayLength<T, N> for UTerm {
         array.into_inner()
     }
 
-    #[inline(always)]
+    #[inline]
     fn map<U, F>(
         builder: RecursiveArrayBuilder<T, N, Self::Index>,
         source: GenericArrayConsumer<U, N, Self::Index>,
@@ -438,7 +442,7 @@ impl<T, N: ArrayLength<T>> IterableArrayLength<T, N> for UTerm {
         array.into_inner()
     }
 
-    #[inline(always)]
+    #[inline]
     fn zip<A, B, F>(
         builder: RecursiveArrayBuilder<T, N, Self::Index>,
         lhs: GenericArrayConsumer<A, N, Self::Index>,
@@ -469,7 +473,7 @@ where
     #[doc(hidden)]
     type Index = <N as Sub<UInt<U, B>>>::Output;
 
-    #[inline(always)]
+    #[inline]
     fn generate<F>(builder: RecursiveArrayBuilder<T, N, Self::Index>, generator: F) -> GenericArray<T, N>
     where
         F: Fn(usize) -> T
