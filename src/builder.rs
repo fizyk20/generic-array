@@ -6,6 +6,7 @@
 
 use super::{ArrayLength, GenericArray};
 use core::{mem, ptr};
+use core::iter::{FromIterator, repeat};
 use core::marker::PhantomData;
 use core::ops::{Add, Sub};
 
@@ -14,6 +15,37 @@ use typenum::{Add1, IsLess, Same, Sub1, Unsigned};
 use typenum::bit::{B1, Bit};
 use typenum::consts::{True, U0};
 use typenum::uint::{UInt, UTerm};
+
+impl<T, N: ArrayLength<T>> FromIterator<T> for GenericArray<T, N>
+where
+    T: Default,
+{
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = T>,
+    {
+        let mut destination = ArrayBuilder::new();
+
+        let defaults = repeat(()).map(|_| Default::default());
+
+        for (dst, src) in destination.array.iter_mut().zip(
+            iter.into_iter().chain(defaults),
+        )
+        {
+            unsafe {
+                ptr::write(dst, src);
+            }
+
+            destination.position += 1;
+        }
+
+        let array = unsafe { ptr::read(&destination.array) };
+
+        mem::forget(destination);
+
+        array.into_inner()
+    }
+}
 
 struct ArrayConsumer<T, N: ArrayLength<T>> {
     array: NoDrop<GenericArray<T, N>>,

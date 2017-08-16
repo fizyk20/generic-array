@@ -74,3 +74,12 @@ fn recursive_zip() {
     assert_eq!(sum, arr![i32; 3, 7, 11, 15]);
     assert_eq!(muls, arr![i32; 2, 12, 30, 56]);
 }
+
+#[test]
+fn from_iter() {
+    use core::iter::repeat;
+
+    let a: GenericArray<_, U4> = repeat(11).take(3).collect();
+
+    assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+}
