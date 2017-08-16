@@ -31,10 +31,12 @@
 //! assert_eq!(array[2], 3);
 //! # }
 //! ```
+
+#![deny(missing_docs)]
 #![no_std]
 pub extern crate typenum;
 extern crate nodrop;
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 extern crate serde;
 pub mod arr;
 pub mod iter;
@@ -42,15 +44,17 @@ pub use iter::GenericArrayIter;
 mod hex;
 mod impls;
 
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 pub mod impl_serde;
 
+pub mod builder;
+
+pub use self::builder::{IterableArrayLength, RecursiveArrayBuilder};
+
 use core::marker::PhantomData;
-use core::mem;
 pub use core::mem::transmute;
 use core::ops::{Deref, DerefMut};
 use core::slice;
-use nodrop::NoDrop;
 use typenum::bit::{B0, B1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
@@ -121,7 +125,8 @@ pub struct GenericArray<T, U: ArrayLength<T>> {
 }
 
 impl<T, N> Deref for GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     type Target = [T];
 
@@ -131,7 +136,8 @@ impl<T, N> Deref for GenericArray<T, N>
 }
 
 impl<T, N> DerefMut for GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     fn deref_mut(&mut self) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_usize()) }
@@ -139,36 +145,99 @@ impl<T, N> DerefMut for GenericArray<T, N>
 }
 
 impl<T, N> GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
-    /// map a function over a  slice to a `GenericArray`.
-    /// The length of the slice *must* be equal to the length of the array
+    /// Initializes a new `GenericArray` instance using the given function.
+    ///
+    /// If the generator function panics while initializing the array,
+    /// any already initialized elements will be dropped.
+    #[inline]
+    pub fn generate<F>(f: F) -> GenericArray<T, N>
+    where
+        F: Fn(usize) -> T,
+    {
+        builder::generate(f)
+    }
+
+    /// Map a function over a slice to a `GenericArray`.
+    ///
+    /// The length of the slice *must* be equal to the length of the array.
+    #[inline]
     pub fn map_slice<S, F: Fn(&S) -> T>(s: &[S], f: F) -> GenericArray<T, N> {
         assert_eq!(s.len(), N::to_usize());
-        map_inner(s, f)
+
+        builder::generate(|i| f(unsafe { s.get_unchecked(i) }))
     }
 
-    /// map a function over a `GenericArray`.
+    /// Maps a `GenericArray` to another `GenericArray`.
+    ///
+    /// If the mapping function panics, any already initialized elements in the new array
+    /// will be dropped, AND any unused elements in the source array will also be dropped.
+    #[inline]
     pub fn map<U, F>(self, f: F) -> GenericArray<U, N>
-        where F: Fn(&T) -> U,
-              N: ArrayLength<U>
+    where
+        F: Fn(T) -> U,
+        N: ArrayLength<U>,
     {
-        map_inner(&self, f)
+        builder::map(self, f)
     }
 
-    /// Extracts a slice containing the entire array
+    /// Maps a `GenericArray` to another `GenericArray` by reference.
+    ///
+    /// If the mapping function panics, any already initialized elements will be dropped.
+    #[inline]
+    pub fn map_ref<U, F>(&self, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(&T) -> U,
+        N: ArrayLength<U>,
+    {
+        builder::generate(|i| f(unsafe { self.get_unchecked(i) }))
+    }
+
+    /// Combines two `GenericArray` instances and iterates through both of them,
+    /// initializing a new `GenericArray` with the result of the zipped mapping function.
+    ///
+    /// If the mapping function panics, any already initialized elements in the new array
+    /// will be dropped, AND any unused elements in the source arrays will also be dropped.
+    #[inline]
+    pub fn zip<B, U, F>(self, rhs: GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(T, B) -> U,
+        N: ArrayLength<B> + ArrayLength<U>,
+    {
+        builder::zip(self, rhs, f)
+    }
+
+    /// Combines two `GenericArray` instances and iterates through both of them by reference,
+    /// initializing a new `GenericArray` with the result of the zipped mapping function.
+    ///
+    /// If the mapping function panics, any already initialized elements will be dropped.
+    pub fn zip_ref<B, U, F>(&self, rhs: &GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(&T, &B) -> U,
+        N: ArrayLength<B> + ArrayLength<U>,
+    {
+        builder::generate(|i| unsafe {
+            f(self.get_unchecked(i), rhs.get_unchecked(i))
+        })
+    }
+
+    /// Extracts a slice containing the entire array.
+    #[inline]
     pub fn as_slice(&self) -> &[T] {
         self.deref()
     }
 
-    /// Extracts a mutable slice containing the entire array
+    /// Extracts a mutable slice containing the entire array.
+    #[inline]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         self.deref_mut()
     }
 
     /// Converts slice to a generic array reference with inferred length;
     ///
-    /// Length of the slice must be equal to the length of the array
+    /// Length of the slice must be equal to the length of the array.
     #[inline]
     pub fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
         assert_eq!(slice.len(), N::to_usize());
@@ -177,36 +246,143 @@ impl<T, N> GenericArray<T, N>
 
     /// Converts mutable slice to a mutable generic array reference
     ///
-    /// Length of the slice must be equal to the length of the array
+    /// Length of the slice must be equal to the length of the array.
     #[inline]
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
         assert_eq!(slice.len(), N::to_usize());
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
+
+    /// Recursively converts one `GenericArray` to another via the `From` trait.
+    ///
+    /// If `From::from` panics, any already initialized elements will be dropped.
+    #[inline]
+    pub fn convert<U>(self) -> GenericArray<U, N>
+    where
+        U: From<T>,
+        N: ArrayLength<U>,
+    {
+        self.map(From::from)
+    }
 }
 
-#[inline]
-fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
-    where F: Fn(&S) -> T,
-          N: ArrayLength<T>
+impl<T, N> GenericArray<T, N>
+where
+    N: IterableArrayLength<T, N>,
 {
-    unsafe {
-        let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
-        for (s, r) in list.iter().zip(res.iter_mut()) {
-            core::ptr::write(r, f(s))
-        }
-        res.into_inner()
+    /// Recursively initializes a new `GenericArray` instance using the given function.
+    ///
+    /// If the generator function panics while initializing the array,
+    /// any already initialized elements will be dropped.
+    #[inline]
+    pub fn generate_recursive<F>(f: F) -> GenericArray<T, N>
+    where
+        F: Fn(usize) -> T,
+    {
+        RecursiveArrayBuilder::generate(f)
+    }
+
+    /// Recursively map a function over a  slice to a `GenericArray`.
+    ///
+    /// The length of the slice *must* be equal to the length of the array.
+    ///
+    /// If the mapping function panics, any already initialized elements will be dropped.
+    #[inline]
+    pub fn map_slice_recursive<S, F: Fn(&S) -> T>(s: &[S], f: F) -> GenericArray<T, N> {
+        assert_eq!(s.len(), N::to_usize());
+
+        RecursiveArrayBuilder::generate(|i| f(unsafe { s.get_unchecked(i) }))
+    }
+
+    /// Recursively maps a `GenericArray` to another `GenericArray`.
+    ///
+    /// If the mapping function panics, any already initialized elements in the new array
+    /// will be dropped, AND any unused elements in the source array will also be dropped.
+    #[inline]
+    pub fn map_recursive<U, F>(self, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(T) -> U,
+        N: IterableArrayLength<U, N>,
+    {
+        RecursiveArrayBuilder::map(self, f)
+    }
+
+    /// Recursively maps a `GenericArray` to another `GenericArray` by reference.
+    ///
+    /// If the mapping function panics, any already initialized elements will be dropped.
+    #[inline]
+    pub fn map_ref_recursive<U, F>(&self, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(&T) -> U,
+        N: IterableArrayLength<U, N>,
+    {
+        RecursiveArrayBuilder::map_ref(self, f)
+    }
+
+    /// Recursively ombines two `GenericArray` instances and iterates through both of them,
+    /// initializing a new `GenericArray` with the result of the zipped mapping function.
+    ///
+    /// If the mapping function panics, any already initialized elements in the new array
+    /// will be dropped, AND any unused elements in the source arrays will also be dropped.
+    #[inline]
+    pub fn zip_recursive<B, U, F>(self, rhs: GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(T, B) -> U,
+        N: ArrayLength<B> + IterableArrayLength<U, N>,
+    {
+        RecursiveArrayBuilder::zip(self, rhs, f)
+    }
+
+    /// Recursively combines two `GenericArray` instances and iterates through both of them by reference,
+    /// initializing a new `GenericArray` with the result of the zipped mapping function.
+    ///
+    /// If the mapping function panics, any already initialized elements will be dropped.
+    #[inline]
+    pub fn zip_ref_recursive<B, U, F>(&self, rhs: &GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    where
+        F: Fn(&T, &B) -> U,
+        N: ArrayLength<B> + IterableArrayLength<U, N>,
+    {
+        RecursiveArrayBuilder::zip_ref(self, rhs, f)
+    }
+
+    /// Recursively converts one `GenericArray` to another via the `From` trait.
+    ///
+    /// If `From::from` panics, any already initialized elements will be dropped.
+    #[inline]
+    pub fn convert_recursive<U>(self) -> GenericArray<U, N>
+    where
+        U: From<T>,
+        N: IterableArrayLength<U, N>,
+    {
+        self.map_recursive(From::from)
     }
 }
 
 impl<T: Clone, N> GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
-    /// Function constructing an array from a slice by clonning its content
+    /// Construct a `GenericArray` from a slice by cloning its content
     ///
     /// Length of the slice must be equal to the length of the array
+    #[inline]
     pub fn clone_from_slice(list: &[T]) -> GenericArray<T, N> {
+        GenericArray::map_slice(list, |x: &T| x.clone())
+    }
+}
+
+impl<T: Clone, N> GenericArray<T, N>
+where
+    N: IterableArrayLength<T, N>,
+{
+    /// Recursively Construct a `GenericArray` from a slice by cloning its content
+    ///
+    /// Length of the slice must be equal to the length of the array
+    #[inline]
+    pub fn clone_from_slice_recursive(list: &[T]) -> GenericArray<T, N> {
         assert_eq!(list.len(), N::to_usize());
-        map_inner(list, |x: &T| x.clone())
+
+        GenericArray::map_slice(list, |x: &T| x.clone())
     }
 }
