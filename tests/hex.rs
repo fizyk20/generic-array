@@ -2,8 +2,8 @@
 extern crate generic_array;
 extern crate typenum;
 
-use std::str::from_utf8;
 use generic_array::GenericArray;
+use std::str::from_utf8;
 use typenum::U2048;
 
 
