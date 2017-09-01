@@ -72,12 +72,14 @@ pub unsafe trait ArrayLength<T>: Unsigned {
 }
 
 unsafe impl<T> ArrayLength<T> for UTerm {
+    #[doc(hidden)]
     type ArrayType = ();
 }
 
 /// Internal type used to generate a struct of appropriate size
 #[allow(dead_code)]
 #[repr(C)]
+#[doc(hidden)]
 pub struct GenericArrayImplEven<T, U> {
     parent1: U,
     parent2: U,
@@ -99,6 +101,7 @@ impl<T: Copy, U: Copy> Copy for GenericArrayImplEven<T, U> {}
 /// Internal type used to generate a struct of appropriate size
 #[allow(dead_code)]
 #[repr(C)]
+#[doc(hidden)]
 pub struct GenericArrayImplOdd<T, U> {
     parent1: U,
     parent2: U,
@@ -118,10 +121,12 @@ impl<T: Clone, U: Clone> Clone for GenericArrayImplOdd<T, U> {
 impl<T: Copy, U: Copy> Copy for GenericArrayImplOdd<T, U> {}
 
 unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B0> {
+    #[doc(hidden)]
     type ArrayType = GenericArrayImplEven<T, N::ArrayType>;
 }
 
 unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B1> {
+    #[doc(hidden)]
     type ArrayType = GenericArrayImplOdd<T, N::ArrayType>;
 }
 
@@ -323,6 +328,7 @@ where
             f(self.get_unchecked(i), rhs.get_unchecked(i))
         })
     }
+
     /// Extracts a slice containing the entire array.
     #[inline]
     pub fn as_slice(&self) -> &[T] {

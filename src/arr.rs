@@ -22,7 +22,7 @@ where
 /// Helper type for `arr!` macro
 pub type Inc<T, U> = <U as AddLength<T, U1>>::Output;
 
-/// Proper implementation of `arr!`
+#[doc(hidden)]
 #[macro_export]
 macro_rules! arr_impl {
     ($T:ty; $N:ty, [$($x:expr),*], []) => ({
