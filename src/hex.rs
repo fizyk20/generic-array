@@ -26,8 +26,9 @@ static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";
 
 
 impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
-    where T: Add<T>,
-          <T as Add<T>>::Output: ArrayLength<u8>
+where
+    T: Add<T>,
+    <T as Add<T>>::Output: ArrayLength<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let max_digits = f.precision().unwrap_or(self.len());
@@ -39,7 +40,9 @@ impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
                 res[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
             }
-            f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) })?;
+            f.write_str(
+                unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) },
+            )?;
         } else {
             // For large array use chunks of up to 1024 bytes (2048 hex chars)
             let mut buf = [0u8; 2048];
@@ -48,7 +51,9 @@ impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
                     buf[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
                 }
-                f.write_str(unsafe { str::from_utf8_unchecked(&buf[..chunk.len() * 2]) })?;
+                f.write_str(unsafe {
+                    str::from_utf8_unchecked(&buf[..chunk.len() * 2])
+                })?;
             }
         }
         Ok(())
@@ -56,8 +61,9 @@ impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
 }
 
 impl<T: ArrayLength<u8>> fmt::UpperHex for GenericArray<u8, T>
-    where T: Add<T>,
-          <T as Add<T>>::Output: ArrayLength<u8>
+where
+    T: Add<T>,
+    <T as Add<T>>::Output: ArrayLength<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let max_digits = f.precision().unwrap_or(self.len());
@@ -69,7 +75,9 @@ impl<T: ArrayLength<u8>> fmt::UpperHex for GenericArray<u8, T>
                 res[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
             }
-            f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) })?;
+            f.write_str(
+                unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) },
+            )?;
         } else {
             // For large array use chunks of up to 1024 bytes (2048 hex chars)
             let mut buf = [0u8; 2048];
@@ -78,7 +86,9 @@ impl<T: ArrayLength<u8>> fmt::UpperHex for GenericArray<u8, T>
                     buf[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
                 }
-                f.write_str(unsafe { str::from_utf8_unchecked(&buf[..chunk.len() * 2]) })?;
+                f.write_str(unsafe {
+                    str::from_utf8_unchecked(&buf[..chunk.len() * 2])
+                })?;
             }
         }
         Ok(())

@@ -8,9 +8,10 @@ pub trait AddLength<T, N: ArrayLength<T>>: ArrayLength<T> {
 }
 
 impl<T, N1, N2> AddLength<T, N2> for N1
-    where N1: ArrayLength<T> + Add<N2>,
-          N2: ArrayLength<T>,
-          <N1 as Add<N2>>::Output: ArrayLength<T>
+where
+    N1: ArrayLength<T> + Add<N2>,
+    N2: ArrayLength<T>,
+    <N1 as Add<N2>>::Output: ArrayLength<T>,
 {
     type Output = <N1 as Add<N2>>::Output;
 }
