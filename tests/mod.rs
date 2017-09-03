@@ -1,10 +1,10 @@
 #![no_std]
 #[macro_use]
 extern crate generic_array;
-use generic_array::typenum::{U1, U3, U97};
-use generic_array::GenericArray;
-use core::ops::Drop;
 use core::cell::Cell;
+use core::ops::Drop;
+use generic_array::GenericArray;
+use generic_array::typenum::{U1, U3, U97};
 
 #[test]
 fn test() {
@@ -32,7 +32,11 @@ fn test_drop() {
 
     let drop_counter = Cell::new(0);
     {
-        let _: GenericArray<TestDrop, U3> = arr![TestDrop; TestDrop(&drop_counter), TestDrop(&drop_counter), TestDrop(&drop_counter)];
+        let _: GenericArray<TestDrop, U3> =
+            arr![TestDrop;
+                 TestDrop(&drop_counter),
+                 TestDrop(&drop_counter),
+                 TestDrop(&drop_counter)];
     }
     assert_eq!(drop_counter.get(), 3);
 }
@@ -54,9 +58,7 @@ fn test_copy() {
 
 #[test]
 fn test_iter_flat_map() {
-    assert!((0..5)
-                .flat_map(|i| arr![i32; 2 * i, 2 * i + 1])
-                .eq(0..10));
+    assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
 }
 
 #[derive(Debug, PartialEq, Eq)]
@@ -123,7 +125,7 @@ fn test_cmp() {
 // fn test_empty_macro2(){
 //     let arr = arr![];
 // }
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 mod impl_serde {
     extern crate serde_json;
 

@@ -1,5 +1,6 @@
 //! This crate implements a structure that can be used as a generic array type.use
-//! Core Rust array types `[T; N]` can't be used generically with respect to `N`, so for example this:
+//! Core Rust array types `[T; N]` can't be used generically with respect to `N`,
+//! so for example this:
 //!
 //! ```{should_fail}
 //! struct Foo<T, N> {
@@ -18,7 +19,8 @@
 //! }
 //! ```
 //!
-//! The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).
+//! The `ArrayLength<T>` trait is implemented by default for
+//! [unsigned integer types](../typenum/uint/index.html) from [typenum](../typenum/index.html).
 //!
 //! For ease of use, an `arr!` macro is provided - example below:
 //!
@@ -34,7 +36,7 @@
 #![no_std]
 pub extern crate typenum;
 extern crate nodrop;
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 extern crate serde;
 pub mod arr;
 pub mod iter;
@@ -42,7 +44,7 @@ pub use iter::GenericArrayIter;
 mod hex;
 mod impls;
 
-#[cfg(feature="serde")]
+#[cfg(feature = "serde")]
 pub mod impl_serde;
 
 use core::marker::PhantomData;
@@ -121,7 +123,8 @@ pub struct GenericArray<T, U: ArrayLength<T>> {
 }
 
 impl<T, N> Deref for GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     type Target = [T];
 
@@ -131,7 +134,8 @@ impl<T, N> Deref for GenericArray<T, N>
 }
 
 impl<T, N> DerefMut for GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     fn deref_mut(&mut self) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_usize()) }
@@ -139,7 +143,8 @@ impl<T, N> DerefMut for GenericArray<T, N>
 }
 
 impl<T, N> GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     /// map a function over a  slice to a `GenericArray`.
     /// The length of the slice *must* be equal to the length of the array
@@ -150,8 +155,9 @@ impl<T, N> GenericArray<T, N>
 
     /// map a function over a `GenericArray`.
     pub fn map<U, F>(self, f: F) -> GenericArray<U, N>
-        where F: Fn(&T) -> U,
-              N: ArrayLength<U>
+    where
+        F: Fn(&T) -> U,
+        N: ArrayLength<U>,
     {
         map_inner(&self, f)
     }
@@ -187,8 +193,9 @@ impl<T, N> GenericArray<T, N>
 
 #[inline]
 fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
-    where F: Fn(&S) -> T,
-          N: ArrayLength<T>
+where
+    F: Fn(&S) -> T,
+    N: ArrayLength<T>,
 {
     unsafe {
         let mut res: NoDrop<GenericArray<T, N>> = NoDrop::new(mem::uninitialized());
@@ -200,7 +207,8 @@ fn map_inner<S, F, T, N>(list: &[S], f: F) -> GenericArray<T, N>
 }
 
 impl<T: Clone, N> GenericArray<T, N>
-    where N: ArrayLength<T>
+where
+    N: ArrayLength<T>,
 {
     /// Function constructing an array from a slice by clonning its content
     ///
