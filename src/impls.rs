@@ -52,7 +52,7 @@ impl<T: PartialOrd, N> PartialOrd for GenericArray<T, N>
     where N: ArrayLength<T>
 {
     fn partial_cmp(&self, other: &GenericArray<T, N>) -> Option<Ordering> {
-        PartialOrd::partial_cmp(&self, &other)
+        PartialOrd::partial_cmp(self.as_slice(), other.as_slice())
     }
 }
 
@@ -60,7 +60,7 @@ impl<T: Ord, N> Ord for GenericArray<T, N>
     where N: ArrayLength<T>
 {
     fn cmp(&self, other: &GenericArray<T, N>) -> Ordering {
-        Ord::cmp(&self, &other)
+        Ord::cmp(self.as_slice(), other.as_slice())
     }
 }
 
