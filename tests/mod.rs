@@ -112,6 +112,12 @@ fn test_empty_macro() {
     let arr = arr![f32;];
 }
 
+#[test]
+fn test_cmp() {
+    use core::cmp::Ordering;
+    assert_eq!(arr![u8; 0x00].cmp(&arr![u8; 0x00]), Ordering::Equal);
+}
+
 /// This test should cause a helpful compile error if uncommented.
 // #[test]
 // fn test_empty_macro2(){
