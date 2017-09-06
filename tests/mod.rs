@@ -116,8 +116,7 @@ fn test_empty_macro() {
 
 #[test]
 fn test_cmp() {
-    use core::cmp::Ordering;
-    assert_eq!(arr![u8; 0x00].cmp(&arr![u8; 0x00]), Ordering::Equal);
+    arr![u8; 0x00].cmp(&arr![u8; 0x00]);
 }
 
 /// This test should cause a helpful compile error if uncommented.
@@ -167,9 +166,4 @@ fn test_from_iter() {
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
 
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
-}
-
-#[test]
-fn test_cmp() {
-    arr![u8; 0x00].cmp(&arr![u8; 0x00]);
 }
