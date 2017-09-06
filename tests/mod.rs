@@ -97,6 +97,13 @@ fn test_default() {
 }
 
 #[test]
+fn test_from() {
+    let data = [(1, 2, 3), (4, 5, 6), (7, 8, 9)];
+    let garray: GenericArray<(usize, usize, usize), U3> = data.into();
+    assert_eq!(&data, garray.as_slice());
+}
+
+#[test]
 fn test_unit_macro() {
     let arr = arr![f32; 3.14];
     assert_eq!(arr[0], 3.14);
@@ -105,6 +112,12 @@ fn test_unit_macro() {
 #[test]
 fn test_empty_macro() {
     let _arr = arr![f32;];
+}
+
+#[test]
+fn test_cmp() {
+    use core::cmp::Ordering;
+    assert_eq!(arr![u8; 0x00].cmp(&arr![u8; 0x00]), Ordering::Equal);
 }
 
 /// This test should cause a helpful compile error if uncommented.
