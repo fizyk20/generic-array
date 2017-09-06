@@ -40,7 +40,6 @@
 #![no_std]
 
 pub extern crate typenum;
-
 #[cfg(feature = "serde")]
 extern crate serde;
 

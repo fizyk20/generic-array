@@ -41,7 +41,6 @@ where
                 res[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
             }
-
             f.write_str(
                 unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) },
             )?;
@@ -54,7 +53,6 @@ where
                     buf[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
                 }
-
                 f.write_str(unsafe {
                     str::from_utf8_unchecked(&buf[..chunk.len() * 2])
                 })?;
@@ -81,7 +79,6 @@ where
                 res[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
             }
-
             f.write_str(
                 unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) },
             )?;
@@ -94,7 +91,6 @@ where
                     buf[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
                 }
-
                 f.write_str(unsafe {
                     str::from_utf8_unchecked(&buf[..chunk.len() * 2])
                 })?;
