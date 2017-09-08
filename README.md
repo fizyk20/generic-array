@@ -30,5 +30,5 @@ In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays
 
 ```rust
 let array = arr![u32; 1, 2, 3];
-assert_eq!(arr[2], 3);
+assert_eq!(array[2], 3);
 ```
