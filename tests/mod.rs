@@ -1,10 +1,11 @@
+#![recursion_limit="128"]
 #![no_std]
 #[macro_use]
 extern crate generic_array;
 use core::cell::Cell;
 use core::ops::Drop;
 use generic_array::GenericArray;
-use generic_array::typenum::{U1, U3, U97};
+use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
 fn test() {
@@ -33,10 +34,9 @@ fn test_drop() {
     let drop_counter = Cell::new(0);
     {
         let _: GenericArray<TestDrop, U3> =
-            arr![TestDrop;
-                 TestDrop(&drop_counter),
-                 TestDrop(&drop_counter),
-                 TestDrop(&drop_counter)];
+            arr![TestDrop; TestDrop(&drop_counter),
+                           TestDrop(&drop_counter),
+                           TestDrop(&drop_counter)];
     }
     assert_eq!(drop_counter.get(), 3);
 }
@@ -78,13 +78,13 @@ fn test_from_slice() {
 fn test_from_mut_slice() {
     let mut arr = [1, 2, 3, 4];
     {
-        let mut gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
+        let gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
         gen_arr[2] = 10;
     }
     assert_eq!(arr, [1, 2, 10, 4]);
     let mut arr = [NoClone(1u32), NoClone(2), NoClone(3), NoClone(4)];
     {
-        let mut gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
+        let gen_arr = GenericArray::<_, U3>::from_mut_slice(&mut arr[..3]);
         gen_arr[2] = NoClone(10);
     }
     assert_eq!(arr, [NoClone(1), NoClone(2), NoClone(10), NoClone(4)]);
@@ -111,13 +111,12 @@ fn test_unit_macro() {
 
 #[test]
 fn test_empty_macro() {
-    let arr = arr![f32;];
+    let _arr = arr![f32;];
 }
 
 #[test]
 fn test_cmp() {
-    use core::cmp::Ordering;
-    assert_eq!(arr![u8; 0x00].cmp(&arr![u8; 0x00]), Ordering::Equal);
+    arr![u8; 0x00].cmp(&arr![u8; 0x00]);
 }
 
 /// This test should cause a helpful compile error if uncommented.
@@ -141,4 +140,30 @@ mod impl_serde {
         let test_array: GenericArray<f64, U6> = serde_json::from_str(&string).unwrap();
         assert_eq!(test_array, array);
     }
+}
+
+#[test]
+fn test_map() {
+    let b: GenericArray<i32, U4> = GenericArray::generate(|i| i as i32 * 4).map(|x| x - 3);
+
+    assert_eq!(b, arr![i32; -3, 1, 5, 9]);
+}
+
+#[test]
+fn test_zip() {
+    let a: GenericArray<_, U4> = GenericArray::generate(|i| i + 1);
+    let b: GenericArray<_, U4> = GenericArray::generate(|i| i as i32 * 4);
+
+    let c = a.zip(b, |r, l| r as i32 + l);
+
+    assert_eq!(c, arr![i32; 1, 6, 11, 16]);
+}
+
+#[test]
+fn test_from_iter() {
+    use core::iter::repeat;
+
+    let a: GenericArray<_, U4> = repeat(11).take(3).collect();
+
+    assert_eq!(a, arr![i32; 11, 11, 11, 0]);
 }
