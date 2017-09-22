@@ -36,7 +36,7 @@
 //! # }
 //! ```
 
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 #![no_std]
 
 pub extern crate typenum;
@@ -54,9 +54,10 @@ use core::{mem, ptr, slice};
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 pub use core::mem::transmute;
-use core::ops::{Deref, DerefMut};
+use core::ops::{Deref, DerefMut, Add, Sub};
 
 use typenum::bit::{B0, B1};
+use typenum::operator_aliases::{Add1, Sub1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
 #[cfg_attr(test, macro_use)]
@@ -73,6 +74,126 @@ pub unsafe trait ArrayLength<T>: Unsigned {
 unsafe impl<T> ArrayLength<T> for UTerm {
     #[doc(hidden)]
     type ArrayType = ();
+}
+
+/// Defines some `GenericArray` sequence with an associated length.
+///
+/// This is useful for passing N-length generic arrays as generics.
+pub unsafe trait GenericSequence<T>: Sized {
+    /// `GenericArray` associated length
+    type Length: ArrayLength<T>;
+}
+
+unsafe impl<T, N: ArrayLength<T>> GenericSequence<T> for GenericArray<T, N> {
+    type Length = N;
+}
+
+/// Defines any `GenericSequence` which can be lengthened or extended by appending
+/// an element to the end of it.
+///
+/// Any lengthened sequence can be shortened back to the original
+/// by removed the last element.
+pub unsafe trait Lengthen<T>: GenericSequence<T> {
+    /// `GenericSequence` that has one more element than `Self`
+    type Longer: Shorten<T, Shorter=Self>;
+
+    /// Moves all the current elements into a new array with one more element than the current one.
+    ///
+    /// The last element of the new array is set to `last`
+    ///
+    /// Example:
+    ///
+    /// ```ignore
+    /// let a = arr![i32; 1, 2, 3, 4];
+    /// let b = arr![i32; 1, 2, 3];
+    ///
+    /// assert_eq!(a, b.lengthen(4));
+    /// ```
+    fn lengthen(self, last: T) -> Self::Longer;
+}
+
+/// Defines a `GenericSequence` which can be shortened by removing the last element in it.
+///
+/// Additionally, any shortened sequence can be lengthened by
+/// adding an element to the end of it.
+pub unsafe trait Shorten<T>: GenericSequence<T> {
+    /// `GenericSequence` that has one less element than `Self`
+    type Shorter: Lengthen<T, Longer=Self>;
+
+    /// Moves all but the last element into a `GenericArray` with one
+    /// less element than the current one.
+    ///
+    /// Example:
+    ///
+    /// ```ignore
+    /// let a = arr![i32; 1, 2, 3, 4];
+    /// let b = arr![i32; 1, 2, 3];
+    ///
+    /// let (init, last) = a.shorten();
+    ///
+    /// assert_eq!(init, b);
+    /// assert_eq!(last, 4);
+    /// ```
+    fn shorten(self) -> (Self::Shorter, T);
+}
+
+unsafe impl<T, N: ArrayLength<T>> Lengthen<T> for GenericArray<T, N>
+where
+    N: Add<B1>,
+    Add1<N>: ArrayLength<T>,
+    Add1<N>: Sub<B1, Output=N>,
+    Sub1<Add1<N>>: ArrayLength<T>
+{
+    type Longer = GenericArray<T, Add1<N>>;
+
+    fn lengthen(self, last: T) -> Self::Longer {
+        let mut longer: ManuallyDrop<GenericArray<T, Add1<N>>> =
+            ManuallyDrop::new(unsafe { mem::uninitialized() });
+
+        for (dst, src) in longer.iter_mut().zip(self.iter()) {
+            unsafe {
+                ptr::write(dst, ptr::read(src));
+            }
+        }
+
+        unsafe {
+            ptr::write(&mut longer[N::to_usize()], last);
+        }
+
+        mem::forget(self);
+
+        ManuallyDrop::into_inner(longer)
+    }
+}
+
+
+unsafe impl<T, N: ArrayLength<T>> Shorten<T> for GenericArray<T, N>
+where
+    N: Sub<B1>,
+    Sub1<N>: ArrayLength<T>,
+    Sub1<N>: Add<B1, Output=N>,
+    Add1<Sub1<N>>: ArrayLength<T>,
+{
+    type Shorter = GenericArray<T, Sub1<N>>;
+
+    fn shorten(self) -> (Self::Shorter, T) {
+        let mut shorter: ManuallyDrop<GenericArray<T, Sub1<N>>> =
+            ManuallyDrop::new(unsafe { mem::uninitialized() });
+
+        for (dst, src) in shorter.iter_mut().zip(self.iter()) {
+            unsafe {
+                ptr::write(dst, ptr::read(src));
+            }
+        }
+
+        // Move out last element
+        let last = unsafe { ptr::read(&self[N::to_usize() - 1]) };
+
+        // Forget all moved elements before the last one is dropped
+        mem::forget(self);
+
+        (ManuallyDrop::into_inner(shorter), last)
+    }
 }
 
 /// Internal type used to generate a struct of appropriate size
@@ -380,6 +501,9 @@ impl<T, N> GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    /// Creates a new `GenericArray` instance from an iterator with a known exact size.
+    ///
+    /// Returns `None` if the size is not equal to the number of elements in the `GenericArray`.
     pub fn from_exact_iter<I>(iter: I) -> Option<Self>
     where
         I: IntoIterator<Item = T>,
