@@ -4,7 +4,7 @@
 extern crate generic_array;
 use core::cell::Cell;
 use core::ops::Drop;
-use generic_array::GenericArray;
+use generic_array::{GenericArray, Shorten, Lengthen};
 use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
@@ -166,4 +166,45 @@ fn test_from_iter() {
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
 
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+}
+
+#[test]
+fn test_sizes() {
+    #![allow(dead_code)]
+    use core::mem::{size_of, size_of_val};
+
+    #[derive(Debug)]
+    #[repr(C)]
+    #[repr(packed)]
+    #[derive(Default)]
+    struct Test {
+        t: u16,
+        s: u32,
+        r: u16,
+        f: u16,
+        o: u32,
+    }
+
+    assert_eq!(size_of::<Test>(), 14);
+
+    assert_eq!(size_of_val(&arr![u8; 1, 2, 3]), size_of::<u8>() * 3);
+    assert_eq!(size_of_val(&arr![u32; 1]), size_of::<u32>() * 1);
+    assert_eq!(size_of_val(&arr![u64; 1, 2, 3, 4]), size_of::<u64>() * 4);
+
+    assert_eq!(size_of::<GenericArray<Test, U97>>(), size_of::<Test>() * 97);
+}
+
+#[test]
+fn test_resize() {
+    let a = arr![i32; 1, 2, 3, 4];
+    let b = arr![i32; 1, 2, 3];
+
+    let (init, last) = a.shorten();
+
+    assert_eq!(init, b);
+    assert_eq!(last, 4);
+
+    let c = init.lengthen(5);
+
+    assert_eq!(c, arr![i32; 1, 2, 3, 5]);
 }
