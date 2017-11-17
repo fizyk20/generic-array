@@ -21,27 +21,6 @@ fn test() {
 }
 
 #[test]
-fn test_drop() {
-    #[derive(Clone)]
-    struct TestDrop<'a>(&'a Cell<u32>);
-
-    impl<'a> Drop for TestDrop<'a> {
-        fn drop(&mut self) {
-            self.0.set(self.0.get() + 1);
-        }
-    }
-
-    let drop_counter = Cell::new(0);
-    {
-        let _: GenericArray<TestDrop, U3> =
-            arr![TestDrop; TestDrop(&drop_counter),
-                           TestDrop(&drop_counter),
-                           TestDrop(&drop_counter)];
-    }
-    assert_eq!(drop_counter.get(), 3);
-}
-
-#[test]
 fn test_arr() {
     let test: GenericArray<u32, U3> = arr![u32; 1, 2, 3];
     assert_eq!(test[1], 2);
@@ -166,4 +145,72 @@ fn test_from_iter() {
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
 
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+}
+
+#[derive(Clone)]
+struct TestDrop<'a>(&'a Cell<u32>);
+
+impl<'a> Drop for TestDrop<'a> {
+    fn drop(&mut self) {
+        self.0.set(self.0.get() + 1);
+    }
+}
+
+#[test]
+fn test_drop() {
+    let drop_counter = Cell::new(0);
+    {
+        let _: GenericArray<TestDrop, U3> =
+            arr![TestDrop; TestDrop(&drop_counter),
+                           TestDrop(&drop_counter),
+                           TestDrop(&drop_counter)];
+    }
+    assert_eq!(drop_counter.get(), 3);
+}
+
+#[test]
+fn test_split() {
+    let a = arr![i32; 1, 2, 3, 4];
+    let (b, c) = a.split::<U1>();
+    assert_eq!(b, arr![i32; 1]);
+    assert_eq!(c, arr![i32; 2, 3, 4]);
+}
+
+#[test]
+fn test_split_drop() {
+    let drop_counter = Cell::new(0);
+    {
+        let a: GenericArray<TestDrop, U3> =
+            arr![TestDrop; TestDrop(&drop_counter),
+                           TestDrop(&drop_counter),
+                           TestDrop(&drop_counter)];
+        let (_b, _c) = a.split::<U1>();
+        assert_eq!(drop_counter.get(), 0);
+    }
+    assert_eq!(drop_counter.get(), 3);
+}
+
+#[test]
+fn test_append() {
+    let b = arr![i32; 1];
+    let c = arr![i32; 2, 3, 4];
+    let a = b.append(c);
+    assert_eq!(a, arr![i32; 1, 2, 3, 4]);
+}
+
+#[test]
+fn test_append_drop() {
+    let drop_counter = Cell::new(0);
+    {
+        let a: GenericArray<TestDrop, _> =
+            arr![TestDrop; TestDrop(&drop_counter),
+                           TestDrop(&drop_counter),
+                           TestDrop(&drop_counter)];
+        let b: GenericArray<TestDrop, _> =
+            arr![TestDrop; TestDrop(&drop_counter),
+                           TestDrop(&drop_counter)];
+        let _c = a.append(b);
+        assert_eq!(drop_counter.get(), 0);
+    }
+    assert_eq!(drop_counter.get(), 5);
 }
