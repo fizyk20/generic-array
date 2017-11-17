@@ -36,7 +36,7 @@
 //! # }
 //! ```
 
-//#![deny(missing_docs)]
+#![deny(missing_docs)]
 #![no_std]
 
 pub extern crate typenum;
@@ -54,9 +54,11 @@ use core::{mem, ptr, slice};
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 pub use core::mem::transmute;
-use core::ops::{Deref, DerefMut};
+use core::ops::{Add, Deref, DerefMut, Sub};
 
+use typenum::U1;
 use typenum::bit::{B0, B1};
+use typenum::operator_aliases::{Add1, Diff, Sum};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
 #[cfg_attr(test, macro_use)]
@@ -73,6 +75,18 @@ pub unsafe trait ArrayLength<T>: Unsigned {
 unsafe impl<T> ArrayLength<T> for UTerm {
     #[doc(hidden)]
     type ArrayType = ();
+}
+
+/// Defines some `GenericArray` sequence with an associated length.
+///
+/// This is useful for passing N-length generic arrays as generics.
+pub unsafe trait GenericSequence<T>: Sized {
+    /// `GenericArray` associated length
+    type Length: ArrayLength<T>;
+}
+
+unsafe impl<T, N: ArrayLength<T>> GenericSequence<T> for GenericArray<T, N> {
+    type Length = N;
 }
 
 /// Internal type used to generate a struct of appropriate size
@@ -359,6 +373,104 @@ where
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
+
+    /// Consumes a generic array, splitting it at a given position.
+    pub fn split<M: ArrayLength<T>>(self) -> (GenericArray<T, M>, GenericArray<T, Diff<N, M>>)
+    where
+        N: Sub<M>,
+        Diff<N, M>: ArrayLength<T>,
+    {
+        unsafe {
+            let array_ptr = &self as *const GenericArray<T, N> as *const T;
+            let ptr1 = array_ptr as *const GenericArray<T, M>;
+            let ptr2 = array_ptr.offset(M::to_usize() as isize) as
+                *const GenericArray<T, Diff<N, M>>;
+            // prevent from dropping the values stored in self
+            mem::forget(self);
+            (ptr::read(ptr1), ptr::read(ptr2))
+        }
+    }
+
+    /// Merges the two arrays into one
+    pub fn append<M: ArrayLength<T>>(self, other: GenericArray<T, M>) -> GenericArray<T, Sum<N, M>>
+    where
+        N: Add<M>,
+        Sum<N, M>: ArrayLength<T>,
+    {
+        unsafe {
+            let mut result = mem::uninitialized();
+            let ptr: *mut T = mem::transmute(&mut result);
+            ptr::write(ptr as *mut GenericArray<T, N>, self);
+            ptr::write(
+                ptr.offset(N::to_usize() as isize) as *mut GenericArray<T, M>,
+                other,
+            );
+            result
+        }
+    }
+
+    /// Prepends a value to the front of the array
+    pub fn push_front(self, x: T) -> GenericArray<T, Add1<N>>
+    where
+        N: Add<B1>,
+        Add1<N>: ArrayLength<T>,
+    {
+        unsafe {
+            let mut result = mem::uninitialized();
+            let ptr: *mut T = mem::transmute(&mut result);
+            ptr::write(ptr, x);
+            ptr::write(ptr.offset(1) as *mut GenericArray<T, N>, self);
+            result
+        }
+    }
+
+    /// Appends a value to the array
+    pub fn push_back(self, x: T) -> GenericArray<T, Add1<N>>
+    where
+        N: Add<B1>,
+        Add1<N>: ArrayLength<T>,
+    {
+        unsafe {
+            let mut result = mem::uninitialized();
+            let ptr: *mut T = mem::transmute(&mut result);
+            ptr::write(ptr as *mut GenericArray<T, N>, self);
+            ptr::write(ptr.offset(N::to_usize() as isize), x);
+            result
+        }
+    }
+
+    /// Pops one element from the front of the array
+    pub fn pop_front(self) -> (T, GenericArray<T, Diff<N, U1>>)
+    where
+        N: Sub<U1>,
+        Diff<N, U1>: ArrayLength<T>,
+    {
+        unsafe {
+            let array_ptr = &self as *const GenericArray<T, N> as *const T;
+            let ptr1 = array_ptr;
+            let ptr2 = array_ptr.offset(1) as *const GenericArray<T, Diff<N, U1>>;
+            // prevent from dropping the values stored in self
+            mem::forget(self);
+            (ptr::read(ptr1), ptr::read(ptr2))
+        }
+    }
+
+    /// Pops one element from the end of the array
+    pub fn pop_back(self) -> (GenericArray<T, Diff<N, U1>>, T)
+    where
+        N: Sub<U1> + Sub<Diff<N, U1>>,
+        Diff<N, U1>: ArrayLength<T>,
+        Diff<N, Diff<N, U1>>: ArrayLength<T>,
+    {
+        unsafe {
+            let array_ptr = &self as *const GenericArray<T, N> as *const T;
+            let ptr1 = array_ptr as *const GenericArray<T, Diff<N, U1>>;
+            let ptr2 = array_ptr.offset(N::to_usize() as isize - 1);
+            // prevent from dropping the values stored in self
+            mem::forget(self);
+            (ptr::read(ptr1), ptr::read(ptr2))
+        }
+    }
 }
 
 impl<T: Clone, N> GenericArray<T, N>
@@ -380,6 +492,9 @@ impl<T, N> GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    /// Creates a new `GenericArray` instance from an iterator with a known exact size.
+    ///
+    /// Returns `None` if the size is not equal to the number of elements in the `GenericArray`.
     pub fn from_exact_iter<I>(iter: I) -> Option<Self>
     where
         I: IntoIterator<Item = T>,
