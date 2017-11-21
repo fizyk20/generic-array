@@ -4,7 +4,8 @@
 extern crate generic_array;
 use core::cell::Cell;
 use core::ops::Drop;
-use generic_array::{GenericArray, Shorten, Lengthen};
+use generic_array::GenericArray;
+use generic_array::sequence::*;
 use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
@@ -207,4 +208,30 @@ fn test_resize() {
     let c = init.lengthen(5);
 
     assert_eq!(c, arr![i32; 1, 2, 3, 5]);
+
+    let d = init.shorten().0.lengthen(1)
+                .shorten().0.lengthen(2)
+                .shorten().0.lengthen(34);
+
+    assert_eq!(d, arr![i32; 1, 2, 34]);
+}
+
+#[test]
+fn test_split() {
+    let a = arr![i32; 1, 2, 3, 4];
+
+    let (b, c) = a.split();
+
+    assert_eq!(b, arr![i32; 1]);
+    assert_eq!(c, arr![i32; 2, 3, 4]);
+
+    let (e, f) = a.split();
+
+    assert_eq!(e, arr![i32; 1, 2]);
+    assert_eq!(f, arr![i32; 3, 4]);
+}
+
+#[test]
+fn test_concat() {
+
 }
