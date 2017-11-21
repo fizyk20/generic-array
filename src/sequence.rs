@@ -79,15 +79,14 @@ where
     type Longer = GenericArray<T, Add1<N>>;
 
     fn lengthen(self, last: T) -> Self::Longer {
-        let mut longer: ManuallyDrop<GenericArray<T, Add1<N>>> =
-            ManuallyDrop::new(unsafe { mem::uninitialized() });
+        let mut longer: Self::Longer = unsafe { mem::uninitialized() };
 
         unsafe {
             ptr::write(longer.as_mut_ptr() as *mut _, self);
             ptr::write(&mut longer[N::to_usize()], last);
         }
 
-        ManuallyDrop::into_inner(longer)
+        longer
     }
 }
 
