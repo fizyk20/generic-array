@@ -196,24 +196,36 @@ fn test_sizes() {
 }
 
 #[test]
-fn test_resize() {
+fn test_append() {
+    let a = arr![i32; 1, 2, 3];
+
+    let b = a.append(4);
+
+    assert_eq!(b, arr![i32; 1, 2, 3, 4]);
+}
+
+#[test]
+fn test_prepend() {
+    let a = arr![i32; 1, 2, 3];
+
+    let b = a.prepend(4);
+
+    assert_eq!(b, arr![i32; 4, 1, 2, 3]);
+}
+
+#[test]
+fn test_pop() {
     let a = arr![i32; 1, 2, 3, 4];
-    let b = arr![i32; 1, 2, 3];
 
-    let (init, last) = a.shorten();
+    let (init, last) = a.pop_back();
 
-    assert_eq!(init, b);
+    assert_eq!(init, arr![i32; 1, 2, 3]);
     assert_eq!(last, 4);
 
-    let c = init.lengthen(5);
+    let (head, tail) = a.pop_front();
 
-    assert_eq!(c, arr![i32; 1, 2, 3, 5]);
-
-    let d = init.shorten().0.lengthen(1)
-                .shorten().0.lengthen(2)
-                .shorten().0.lengthen(34);
-
-    assert_eq!(d, arr![i32; 1, 2, 34]);
+    assert_eq!(head, 1);
+    assert_eq!(tail, arr![i32; 2, 3, 4]);
 }
 
 #[test]

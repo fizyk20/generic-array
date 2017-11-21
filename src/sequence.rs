@@ -1,11 +1,8 @@
 //! Useful traits for manipulating sequences of data stored in `GenericArray`s
-#![allow(missing_docs)]
 
 use super::*;
 use core::{mem, ptr};
 use core::ops::{Add, Sub};
-use typenum::consts::*;
-use typenum::marker_traits::*;
 use typenum::operator_aliases::*;
 
 /// Defines some `GenericArray` sequence with an associated length.
@@ -21,52 +18,74 @@ unsafe impl<T, N: ArrayLength<T>> GenericSequence<T> for GenericArray<T, N> {
 }
 
 /// Defines any `GenericSequence` which can be lengthened or extended by appending
-/// an element to the end of it.
+/// or prepending an element to it.
 ///
-/// Any lengthened sequence can be shortened back to the original
-/// by removed the last element.
+/// Any lengthened sequence can be shortened back to the original using `pop_front` or `pop_back`
 pub unsafe trait Lengthen<T>: GenericSequence<T> {
     /// `GenericSequence` that has one more element than `Self`
     type Longer: Shorten<T, Shorter = Self>;
 
-    /// Moves all the current elements into a new array with one more element than the current one.
-    ///
-    /// The last element of the new array is set to `last`
+    /// Returns a new array with the given element appended to the end of it.
     ///
     /// Example:
     ///
     /// ```ignore
-    /// let a = arr![i32; 1, 2, 3, 4];
-    /// let b = arr![i32; 1, 2, 3];
+    /// let a = arr![i32; 1, 2, 3];
     ///
-    /// assert_eq!(a, b.lengthen(4));
+    /// let b = a.append(4);
+    ///
+    /// assert_eq!(b, arr![i32; 1, 2, 3, 4]);
     /// ```
-    fn lengthen(self, last: T) -> Self::Longer;
+    fn append(self, last: T) -> Self::Longer;
+
+    /// Returns a new array with the given element prepended to the front of it.
+    ///
+    /// Example:
+    ///
+    /// ```ignore
+    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let b = a.prepend(4);
+    ///
+    /// assert_eq!(b, arr![i32; 4, 1, 2, 3]);
+    /// ```
+    fn prepend(self, first: T) -> Self::Longer;
 }
 
-/// Defines a `GenericSequence` which can be shortened by removing the last element in it.
+/// Defines a `GenericSequence` which can be shortened by removing the first or last element from it.
 ///
 /// Additionally, any shortened sequence can be lengthened by
-/// adding an element to the end of it.
+/// appending or prepending an element to it.
 pub unsafe trait Shorten<T>: GenericSequence<T> {
     /// `GenericSequence` that has one less element than `Self`
     type Shorter: Lengthen<T, Longer = Self>;
 
-    /// Moves all but the last element into a `GenericArray` with one
-    /// less element than the current one.
+    /// Returns a new array without the last element, and the last element.
     ///
     /// Example:
     ///
     /// ```ignore
     /// let a = arr![i32; 1, 2, 3, 4];
-    /// let b = arr![i32; 1, 2, 3];
     ///
-    /// let (init, last) = a.shorten();
+    /// let (init, last) = a.pop_back();
     ///
-    /// assert_eq!(init, b);
+    /// assert_eq!(init, arr![i32; 1, 2, 3]);
     /// assert_eq!(last, 4);
     /// ```
-    fn shorten(self) -> (Self::Shorter, T);
+    fn pop_back(self) -> (Self::Shorter, T);
+
+    /// Returns a new array without the first element, and the first element.
+        /// Example:
+    ///
+    /// ```ignore
+    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let (head, tail) = a.pop_front();
+    ///
+    /// assert_eq!(head, 1);
+    /// assert_eq!(tail, arr![i32; 2, 3, 4]);
+    /// ```
+    fn pop_front(self) -> (T, Self::Shorter);
 }
 
 unsafe impl<T, N: ArrayLength<T>> Lengthen<T> for GenericArray<T, N>
@@ -78,7 +97,7 @@ where
 {
     type Longer = GenericArray<T, Add1<N>>;
 
-    fn lengthen(self, last: T) -> Self::Longer {
+    fn append(self, last: T) -> Self::Longer {
         let mut longer: Self::Longer = unsafe { mem::uninitialized() };
 
         unsafe {
@@ -88,8 +107,20 @@ where
 
         longer
     }
-}
 
+    fn prepend(self, first: T) -> Self::Longer {
+        let mut longer: Self::Longer = unsafe { mem::uninitialized() };
+
+        let longer_ptr = longer.as_mut_ptr();
+
+        unsafe {
+            ptr::write(longer_ptr as *mut _, first);
+            ptr::write(longer_ptr.offset(1) as *mut _, self);
+        }
+
+        longer
+    }
+}
 
 unsafe impl<T, N: ArrayLength<T>> Shorten<T> for GenericArray<T, N>
 where
@@ -100,26 +131,42 @@ where
 {
     type Shorter = GenericArray<T, Sub1<N>>;
 
-    fn shorten(self) -> (Self::Shorter, T) {
-        let head_ptr = self.as_ptr();
-        let last_ptr = unsafe { head_ptr.offset(Sub1::<N>::to_usize() as isize) };
+    fn pop_back(self) -> (Self::Shorter, T) {
+        let init_ptr = self.as_ptr();
+        let last_ptr = unsafe { init_ptr.offset(Sub1::<N>::to_usize() as isize) };
 
-        let head = unsafe { ptr::read(head_ptr as _) };
+        let init = unsafe { ptr::read(init_ptr as _) };
         let last = unsafe { ptr::read(last_ptr as _) };
 
         mem::forget(self);
 
-        (head, last)
+        (init, last)
+    }
+
+    fn pop_front(self) -> (T, Self::Shorter) {
+        let head_ptr = self.as_ptr();
+        let tail_ptr = unsafe { head_ptr.offset(1) };
+
+        let head = unsafe { ptr::read(head_ptr as _) };
+        let tail = unsafe { ptr::read(tail_ptr as _) };
+
+        mem::forget(self);
+
+        (head, tail)
     }
 }
 
+/// Defines a `GenericSequence` that can be split into two parts at a given pivot index.
 pub unsafe trait Split<T, K>: GenericSequence<T>
 where
     K: ArrayLength<T>,
 {
+    /// First part of the resulting split array
     type Head: GenericSequence<T>;
+    /// Second part of the resulting split array
     type Tail: GenericSequence<T>;
 
+    /// Splits an array at the given index, returning the head and tail arrays.
     fn split(self) -> (Self::Head, Self::Tail);
 }
 
@@ -146,13 +193,18 @@ where
     }
 }
 
+/// Defines `GenericSequence`s which can be joined together, forming a larger array.
 pub unsafe trait Concat<T, M>: GenericSequence<T>
 where
     M: ArrayLength<T>,
 {
+    /// Sequence to be concatenated with `self`
     type Rest: GenericSequence<T, Length = M>;
+
+    /// Resulting sequence formed by the concatenation.
     type Output: GenericSequence<T>;
 
+    /// Concatenate, or join, two sequences.
     fn concat(self, rest: Self::Rest) -> Self::Output;
 }
 
