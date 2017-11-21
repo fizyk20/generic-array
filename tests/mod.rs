@@ -233,5 +233,15 @@ fn test_split() {
 
 #[test]
 fn test_concat() {
+    let a = arr![i32; 1, 2];
+    let b = arr![i32; 3, 4];
 
+    let c = a.concat(b);
+
+    assert_eq!(c, arr![i32; 1, 2, 3, 4]);
+
+    let (d, e) = c.split();
+
+    assert_eq!(d, arr![i32; 1]);
+    assert_eq!(e, arr![i32; 2, 3, 4]);
 }
