@@ -162,12 +162,12 @@ where
     K: ArrayLength<T>,
 {
     /// First part of the resulting split array
-    type Head: GenericSequence<T>;
+    type First: GenericSequence<T>;
     /// Second part of the resulting split array
-    type Tail: GenericSequence<T>;
+    type Second: GenericSequence<T>;
 
-    /// Splits an array at the given index, returning the head and tail arrays.
-    fn split(self) -> (Self::Head, Self::Tail);
+    /// Splits an array at the given index, returning the separate parts of the array.
+    fn split(self) -> (Self::First, Self::Second);
 }
 
 unsafe impl<T, N, K> Split<T, K> for GenericArray<T, N>
@@ -177,10 +177,10 @@ where
     N: Sub<K>,
     Diff<N, K>: ArrayLength<T>,
 {
-    type Head = GenericArray<T, K>;
-    type Tail = GenericArray<T, Diff<N, K>>;
+    type First = GenericArray<T, K>;
+    type Second = GenericArray<T, Diff<N, K>>;
 
-    fn split(self) -> (Self::Head, Self::Tail) {
+    fn split(self) -> (Self::First, Self::Second) {
         let head_ptr = self.as_ptr();
         let tail_ptr = unsafe { head_ptr.offset(K::to_usize() as isize) };
 
