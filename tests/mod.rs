@@ -5,6 +5,7 @@ extern crate generic_array;
 use core::cell::Cell;
 use core::ops::Drop;
 use generic_array::GenericArray;
+use generic_array::sequence::*;
 use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
@@ -166,4 +167,93 @@ fn test_from_iter() {
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
 
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+}
+
+#[test]
+fn test_sizes() {
+    #![allow(dead_code)]
+    use core::mem::{size_of, size_of_val};
+
+    #[derive(Debug)]
+    #[repr(C)]
+    #[repr(packed)]
+    #[derive(Default)]
+    struct Test {
+        t: u16,
+        s: u32,
+        r: u16,
+        f: u16,
+        o: u32,
+    }
+
+    assert_eq!(size_of::<Test>(), 14);
+
+    assert_eq!(size_of_val(&arr![u8; 1, 2, 3]), size_of::<u8>() * 3);
+    assert_eq!(size_of_val(&arr![u32; 1]), size_of::<u32>() * 1);
+    assert_eq!(size_of_val(&arr![u64; 1, 2, 3, 4]), size_of::<u64>() * 4);
+
+    assert_eq!(size_of::<GenericArray<Test, U97>>(), size_of::<Test>() * 97);
+}
+
+#[test]
+fn test_append() {
+    let a = arr![i32; 1, 2, 3];
+
+    let b = a.append(4);
+
+    assert_eq!(b, arr![i32; 1, 2, 3, 4]);
+}
+
+#[test]
+fn test_prepend() {
+    let a = arr![i32; 1, 2, 3];
+
+    let b = a.prepend(4);
+
+    assert_eq!(b, arr![i32; 4, 1, 2, 3]);
+}
+
+#[test]
+fn test_pop() {
+    let a = arr![i32; 1, 2, 3, 4];
+
+    let (init, last) = a.pop_back();
+
+    assert_eq!(init, arr![i32; 1, 2, 3]);
+    assert_eq!(last, 4);
+
+    let (head, tail) = a.pop_front();
+
+    assert_eq!(head, 1);
+    assert_eq!(tail, arr![i32; 2, 3, 4]);
+}
+
+#[test]
+fn test_split() {
+    let a = arr![i32; 1, 2, 3, 4];
+
+    let (b, c) = a.split();
+
+    assert_eq!(b, arr![i32; 1]);
+    assert_eq!(c, arr![i32; 2, 3, 4]);
+
+    let (e, f) = a.split();
+
+    assert_eq!(e, arr![i32; 1, 2]);
+    assert_eq!(f, arr![i32; 3, 4]);
+}
+
+#[test]
+fn test_concat() {
+    let a = arr![i32; 1, 2];
+    let b = arr![i32; 3, 4];
+
+    let c = a.concat(b);
+
+    assert_eq!(c, arr![i32; 1, 2, 3, 4]);
+
+    let (d, e) = c.split();
+
+    assert_eq!(d, arr![i32; 1]);
+    assert_eq!(e, arr![i32; 2, 3, 4]);
 }
