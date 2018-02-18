@@ -3,10 +3,20 @@
 name = "generic-array"
 version = "0.9.0"
 authors = [ "Bartłomiej Kamiński <fizyk20@gmail.com>" ]
+
 description = "Generic types implementing functionality of arrays"
+readme = "README.md"
+
 license = "MIT"
-repository = "https://github.com/fizyk20/generic-array.git"
+
 documentation = "http://fizyk20.github.io/generic-array/generic_array/"
+repository = "https://github.com/fizyk20/generic-array.git"
+
+keywords = ["generic", "array"]
+categories = ["data-structures", "no-std"]
+
+[badges]
+travis-ci = { repository = "fizyk20/generic-array" }
 
 [lib]
 name = "generic_array"
