@@ -41,9 +41,7 @@ where
                 res[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
             }
-            f.write_str(
-                unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) },
-            )?;
+            f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) })?;
         } else {
             // For large array use chunks of up to 1024 bytes (2048 hex chars)
             let mut buf = [0u8; 2048];
@@ -53,9 +51,7 @@ where
                     buf[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
                 }
-                f.write_str(unsafe {
-                    str::from_utf8_unchecked(&buf[..chunk.len() * 2])
-                })?;
+                f.write_str(unsafe { str::from_utf8_unchecked(&buf[..chunk.len() * 2]) })?;
             }
         }
         Ok(())
@@ -79,9 +75,7 @@ where
                 res[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
             }
-            f.write_str(
-                unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) },
-            )?;
+            f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits * 2]) })?;
         } else {
             // For large array use chunks of up to 1024 bytes (2048 hex chars)
             let mut buf = [0u8; 2048];
@@ -91,9 +85,7 @@ where
                     buf[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
                 }
-                f.write_str(unsafe {
-                    str::from_utf8_unchecked(&buf[..chunk.len() * 2])
-                })?;
+                f.write_str(unsafe { str::from_utf8_unchecked(&buf[..chunk.len() * 2]) })?;
             }
         }
         Ok(())

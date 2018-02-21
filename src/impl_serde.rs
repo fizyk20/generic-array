@@ -42,9 +42,8 @@ where
     {
         let mut result = GenericArray::default();
         for i in 0..N::to_usize() {
-            result[i] = seq.next_element()?.ok_or_else(
-                || de::Error::invalid_length(i, &self),
-            )?;
+            result[i] = seq.next_element()?
+                .ok_or_else(|| de::Error::invalid_length(i, &self))?;
         }
         Ok(result)
     }
