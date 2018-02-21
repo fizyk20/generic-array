@@ -75,7 +75,7 @@ pub unsafe trait Shorten<T>: GenericSequence<T> {
     fn pop_back(self) -> (Self::Shorter, T);
 
     /// Returns a new array without the first element, and the first element.
-        /// Example:
+    /// Example:
     ///
     /// ```ignore
     /// let a = arr![i32; 1, 2, 3, 4];

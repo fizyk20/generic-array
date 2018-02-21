@@ -39,9 +39,9 @@
 #![deny(missing_docs)]
 #![no_std]
 
-pub extern crate typenum;
 #[cfg(feature = "serde")]
 extern crate serde;
+pub extern crate typenum;
 
 mod hex;
 mod impls;
@@ -50,11 +50,9 @@ mod impls;
 pub mod impl_serde;
 
 use core::{mem, ptr, slice};
-
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
-
 use typenum::bit::{B0, B1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
@@ -298,10 +296,10 @@ where
 
         let mut destination = ArrayBuilder::new();
 
-        for (dst, (lhs, rhs)) in
-            destination.array.iter_mut().zip(left.array.iter().zip(
-                right.array.iter(),
-            ))
+        for (dst, (lhs, rhs)) in destination
+            .array
+            .iter_mut()
+            .zip(left.array.iter().zip(right.array.iter()))
         {
             unsafe {
                 ptr::write(dst, f(ptr::read(lhs), ptr::read(rhs)));
@@ -324,9 +322,7 @@ where
         F: Fn(&T, &B) -> U,
         N: ArrayLength<B> + ArrayLength<U>,
     {
-        GenericArray::generate(|i| unsafe {
-            f(self.get_unchecked(i), rhs.get_unchecked(i))
-        })
+        GenericArray::generate(|i| unsafe { f(self.get_unchecked(i), rhs.get_unchecked(i)) })
     }
 
     /// Extracts a slice containing the entire array.
@@ -371,9 +367,8 @@ where
     /// Length of the slice must be equal to the length of the array
     #[inline]
     pub fn clone_from_slice(list: &[T]) -> GenericArray<T, N> {
-        Self::from_exact_iter(list.iter().cloned()).expect(
-            "Slice must be the same length as the array",
-        )
+        Self::from_exact_iter(list.iter().cloned())
+            .expect("Slice must be the same length as the array")
     }
 }
 
@@ -426,9 +421,10 @@ where
 
         let defaults = ::core::iter::repeat(()).map(|_| T::default());
 
-        for (dst, src) in destination.array.iter_mut().zip(
-            iter.into_iter().chain(defaults),
-        )
+        for (dst, src) in destination
+            .array
+            .iter_mut()
+            .zip(iter.into_iter().chain(defaults))
         {
             unsafe {
                 ptr::write(dst, src);
@@ -439,7 +435,10 @@ where
     }
 }
 
+/// A reimplementation of the `transmute` function, avoiding problems
+/// when the compiler can't prove equal sizes.
 #[inline]
+#[doc(hidden)]
 pub unsafe fn transmute<A, B>(a: A) -> B {
     let b = ::core::ptr::read(&a as *const A as *const B);
     ::core::mem::forget(a);
