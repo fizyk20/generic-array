@@ -53,7 +53,6 @@ use core::{mem, ptr, slice};
 
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
-pub use core::mem::transmute;
 use core::ops::{Deref, DerefMut};
 
 use typenum::bit::{B0, B1};
@@ -438,6 +437,13 @@ where
 
         destination.into_inner()
     }
+}
+
+#[inline]
+pub unsafe fn transmute<A, B>(a: A) -> B {
+    let b = ::core::ptr::read(&a as *const A as *const B);
+    ::core::mem::forget(a);
+    b
 }
 
 #[cfg(test)]
