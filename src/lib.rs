@@ -281,9 +281,9 @@ where
     type Length = N;
     type Sequence = Self;
 
-    fn generate<F>(f: F) -> GenericArray<T, N>
+    fn generate<F>(mut f: F) -> GenericArray<T, N>
     where
-        F: Fn(usize) -> T,
+        F: FnMut(usize) -> T,
     {
         let mut destination = ArrayBuilder::new();
 
@@ -312,11 +312,11 @@ where
     N: ArrayLength<T>,
     Self: GenericSequence<T, Item=T>
 {
-    fn map<U, F>(self, f: F) -> MappedSequence<Self, T, U>
+    fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
     where
         Self::Length: ArrayLength<U>,
         Self: MappedGenericSequence<T, U>,
-        F: Fn(T) -> U,
+        F: FnMut(T) -> U,
     {
         let mut source = ArrayConsumer::new(self);
 
@@ -331,12 +331,12 @@ where
         }))
     }
 
-    fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
+    fn zip<B, Rhs, U, F>(self, rhs: Rhs, mut f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         Rhs: GenericSequence<B>,
-        F: Fn(T, SequenceItem<Rhs>) -> U,
+        F: FnMut(T, SequenceItem<Rhs>) -> U,
     {
         let mut left = ArrayConsumer::new(self);
 

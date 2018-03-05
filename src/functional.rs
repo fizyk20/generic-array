@@ -37,7 +37,7 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
         where
             Self: MappedGenericSequence<T, U>,
             Self::Length: ArrayLength<U>,
-            F: Fn(SequenceItem<Self>) -> U,
+            F: FnMut(SequenceItem<Self>) -> U,
     {
         FromIterator::from_iter(self.into_iter().map(f))
     }
@@ -47,12 +47,12 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     ///
     /// If the mapping function panics, any already initialized elements in the new sequence
     /// will be dropped, AND any unused elements in the source sequences will also be dropped.
-    fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
+    fn zip<B, Rhs, U, F>(self, rhs: Rhs, mut f: F) -> MappedSequence<Self, T, U>
         where
             Self: MappedGenericSequence<T, U>,
             Self::Length: ArrayLength<B> + ArrayLength<U>,
             Rhs: GenericSequence<B>,
-            F: Fn(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
+            F: FnMut(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
     {
         FromIterator::from_iter(self.into_iter().zip(rhs.into_iter()).map(|(l, r)| f(l, r) ))
     }
