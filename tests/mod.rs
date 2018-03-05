@@ -6,6 +6,7 @@ use core::cell::Cell;
 use core::ops::Drop;
 use generic_array::GenericArray;
 use generic_array::sequence::*;
+use generic_array::functional::*;
 use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
@@ -155,16 +156,26 @@ fn test_zip() {
     let a: GenericArray<_, U4> = GenericArray::generate(|i| i + 1);
     let b: GenericArray<_, U4> = GenericArray::generate(|i| i as i32 * 4);
 
-    let c = a.zip(b, |r, l| r as i32 + l);
+    let c = (&a).zip(&b, |r, l| *r as i32 + l);
 
     assert_eq!(c, arr![i32; 1, 6, 11, 16]);
 }
 
 #[test]
-fn test_from_iter() {
+#[should_panic]
+fn test_from_iter_short() {
     use core::iter::repeat;
 
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
+
+    assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+}
+
+#[test]
+fn test_from_iter() {
+    use core::iter::{repeat, once};
+
+    let a: GenericArray<_, U4> = repeat(11).take(3).chain(once(0)).collect();
 
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
 }
@@ -174,10 +185,9 @@ fn test_sizes() {
     #![allow(dead_code)]
     use core::mem::{size_of, size_of_val};
 
-    #[derive(Debug)]
+    #[derive(Debug, Copy, Clone)]
     #[repr(C)]
     #[repr(packed)]
-    #[derive(Default)]
     struct Test {
         t: u16,
         s: u32,

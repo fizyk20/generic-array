@@ -5,23 +5,62 @@ use core::{mem, ptr};
 use core::ops::{Add, Sub};
 use typenum::operator_aliases::*;
 
-/// Defines some `GenericArray` sequence with an associated length.
+/// Defines some sequence with an associated length and iteration capabilities.
 ///
 /// This is useful for passing N-length generic arrays as generics.
-pub unsafe trait GenericSequence<T>: Sized {
+pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// `GenericArray` associated length
     type Length: ArrayLength<T>;
+
+    /// Concrete sequence type used in conjuction with reference implementations of `GenericSequence`
+    type Sequence: GenericSequence<T, Length=Self::Length> + FromIterator<T>;
+
+    /// Initializes a new sequence instance using the given function.
+    ///
+    /// If the generator function panics while initializing the sequence,
+    /// any already initialized elements will be dropped.
+    fn generate<F>(f: F) -> Self::Sequence
+        where F: Fn(usize) -> T;
 }
 
-unsafe impl<T, N: ArrayLength<T>> GenericSequence<T> for GenericArray<T, N> {
-    type Length = N;
+/// Accessor type for iteration items from `GenericSequence`
+pub type SequenceItem<S> = <S as IntoIterator>::Item;
+
+unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a S
+where
+    &'a S: IntoIterator
+{
+    type Length = S::Length;
+    type Sequence = S::Sequence;
+
+    #[inline]
+    fn generate<F>(f: F) -> Self::Sequence
+        where F: Fn(usize) -> T
+    {
+        S::generate(f)
+    }
+}
+
+unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a mut S
+where
+    &'a mut S: IntoIterator
+{
+    type Length = S::Length;
+    type Sequence = S::Sequence;
+
+    #[inline]
+    fn generate<F>(f: F) -> Self::Sequence
+        where F: Fn(usize) -> T
+    {
+        S::generate(f)
+    }
 }
 
 /// Defines any `GenericSequence` which can be lengthened or extended by appending
 /// or prepending an element to it.
 ///
 /// Any lengthened sequence can be shortened back to the original using `pop_front` or `pop_back`
-pub unsafe trait Lengthen<T>: GenericSequence<T> {
+pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     /// `GenericSequence` that has one more element than `Self`
     type Longer: Shorten<T, Shorter = Self>;
 
@@ -56,7 +95,7 @@ pub unsafe trait Lengthen<T>: GenericSequence<T> {
 ///
 /// Additionally, any shortened sequence can be lengthened by
 /// appending or prepending an element to it.
-pub unsafe trait Shorten<T>: GenericSequence<T> {
+pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     /// `GenericSequence` that has one less element than `Self`
     type Shorter: Lengthen<T, Longer = Self>;
 
