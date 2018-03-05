@@ -156,7 +156,8 @@ fn test_zip() {
     let a: GenericArray<_, U4> = GenericArray::generate(|i| i + 1);
     let b: GenericArray<_, U4> = GenericArray::generate(|i| i as i32 * 4);
 
-    let c = (&a).zip(&b, |r, l| *r as i32 + l);
+    // Uses reference and non-reference arguments
+    let c = (&a).zip(b, |r, l| *r as i32 + l);
 
     assert_eq!(c, arr![i32; 1, 6, 11, 16]);
 }
