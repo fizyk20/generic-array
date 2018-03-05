@@ -20,7 +20,7 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// If the generator function panics while initializing the sequence,
     /// any already initialized elements will be dropped.
     fn generate<F>(f: F) -> Self::Sequence
-        where F: Fn(usize) -> T;
+        where F: FnMut(usize) -> T;
 }
 
 /// Accessor type for iteration items from `GenericSequence`
@@ -35,7 +35,7 @@ where
 
     #[inline]
     fn generate<F>(f: F) -> Self::Sequence
-        where F: Fn(usize) -> T
+        where F: FnMut(usize) -> T
     {
         S::generate(f)
     }
@@ -50,7 +50,7 @@ where
 
     #[inline]
     fn generate<F>(f: F) -> Self::Sequence
-        where F: Fn(usize) -> T
+        where F: FnMut(usize) -> T
     {
         S::generate(f)
     }
