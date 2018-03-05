@@ -218,9 +218,9 @@ where
     ///
     /// If the generator function panics while initializing the array,
     /// any already initialized elements will be dropped.
-    pub fn generate<F>(f: F) -> GenericArray<T, N>
+    pub fn generate<F>(mut f: F) -> GenericArray<T, N>
     where
-        F: Fn(usize) -> T,
+        F: FnMut(usize) -> T,
     {
         let mut destination = ArrayBuilder::new();
 
@@ -239,7 +239,7 @@ where
     ///
     /// The length of the slice *must* be equal to the length of the array.
     #[inline]
-    pub fn map_slice<S, F: Fn(&S) -> T>(s: &[S], f: F) -> GenericArray<T, N> {
+    pub fn map_slice<S, F: FnMut(&S) -> T>(s: &[S], mut f: F) -> GenericArray<T, N> {
         assert_eq!(s.len(), N::to_usize());
 
         Self::generate(|i| f(unsafe { s.get_unchecked(i) }))
@@ -249,9 +249,9 @@ where
     ///
     /// If the mapping function panics, any already initialized elements in the new array
     /// will be dropped, AND any unused elements in the source array will also be dropped.
-    pub fn map<U, F>(self, f: F) -> GenericArray<U, N>
+    pub fn map<U, F>(self, mut f: F) -> GenericArray<U, N>
     where
-        F: Fn(T) -> U,
+        F: FnMut(T) -> U,
         N: ArrayLength<U>,
     {
         let mut source = ArrayConsumer::new(self);
@@ -273,9 +273,9 @@ where
     ///
     /// If the mapping function panics, any already initialized elements will be dropped.
     #[inline]
-    pub fn map_ref<U, F>(&self, f: F) -> GenericArray<U, N>
+    pub fn map_ref<U, F>(&self, mut f: F) -> GenericArray<U, N>
     where
-        F: Fn(&T) -> U,
+        F: FnMut(&T) -> U,
         N: ArrayLength<U>,
     {
         GenericArray::generate(|i| f(unsafe { self.get_unchecked(i) }))
@@ -286,9 +286,9 @@ where
     ///
     /// If the mapping function panics, any already initialized elements in the new array
     /// will be dropped, AND any unused elements in the source arrays will also be dropped.
-    pub fn zip<B, U, F>(self, rhs: GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    pub fn zip<B, U, F>(self, rhs: GenericArray<B, N>, mut f: F) -> GenericArray<U, N>
     where
-        F: Fn(T, B) -> U,
+        F: FnMut(T, B) -> U,
         N: ArrayLength<B> + ArrayLength<U>,
     {
         let mut left = ArrayConsumer::new(self);
@@ -317,9 +317,9 @@ where
     /// initializing a new `GenericArray` with the result of the zipped mapping function.
     ///
     /// If the mapping function panics, any already initialized elements will be dropped.
-    pub fn zip_ref<B, U, F>(&self, rhs: &GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    pub fn zip_ref<B, U, F>(&self, rhs: &GenericArray<B, N>, mut f: F) -> GenericArray<U, N>
     where
-        F: Fn(&T, &B) -> U,
+        F: FnMut(&T, &B) -> U,
         N: ArrayLength<B> + ArrayLength<U>,
     {
         GenericArray::generate(|i| unsafe { f(self.get_unchecked(i), rhs.get_unchecked(i)) })
