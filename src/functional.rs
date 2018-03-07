@@ -43,10 +43,10 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     /// If the mapping function panics, any already initialized elements in the new sequence
     /// will be dropped, AND any unused elements in the source sequence will also be dropped.
     fn map<U, F>(self, f: F) -> MappedSequence<Self, T, U>
-        where
-            Self: MappedGenericSequence<T, U>,
-            Self::Length: ArrayLength<U>,
-            F: FnMut(SequenceItem<Self>) -> U,
+    where
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<U>,
+        F: FnMut(SequenceItem<Self>) -> U,
     {
         FromIterator::from_iter(self.into_iter().map(f))
     }
@@ -58,14 +58,24 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     /// will be dropped, AND any unused elements in the source sequences will also be dropped.
     #[inline]
     fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
-        where
-            Self: MappedGenericSequence<T, U>,
-            Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
-            Self::Length: ArrayLength<B> + ArrayLength<U>,
-            Rhs: GenericSequence<B, Length=Self::Length>,
-            F: FnMut(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
+    where
+        Self: MappedGenericSequence<T, U>,
+        Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        Rhs: GenericSequence<B, Length=Self::Length>,
+        F: FnMut(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
     {
         rhs.inverted_zip2(self, f)
+    }
+
+    /// Folds (or reduces) a sequence of data into a single value.
+    ///
+    /// If the fold function panics, any unused elements will be dropped.
+    fn fold<U, F>(self, init: U, f: F) -> U
+    where
+        F: FnMut(U, SequenceItem<Self>) -> U,
+    {
+        self.into_iter().fold(init, f)
     }
 }
 
