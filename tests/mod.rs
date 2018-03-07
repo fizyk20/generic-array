@@ -279,8 +279,8 @@ fn test_fold() {
 fn sum_generic<S>(s: S) -> i32
 where
     S: FunctionalSequence<i32>,
-    SequenceItem<S>: Add<i32, Output=i32>, // `+`
-    i32: Add<SequenceItem<S>, Output=i32>, // reflexive
+    S::Item: Add<i32, Output=i32>, // `+`
+    i32: Add<S::Item, Output=i32>, // reflexive
 {
     s.fold(0, |a, x| a + x)
 }

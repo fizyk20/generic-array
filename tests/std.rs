@@ -12,7 +12,7 @@ use generic_array::functional::*;
 pub fn test_generic<S>(s: S)
 where
     S: FunctionalSequence<i32>,            // `.map`
-    SequenceItem<S>: Add<i32, Output=i32>, // `+`
+    S::Item: Add<i32, Output=i32>, // `+`
     S: MappedGenericSequence<i32, i32>,    // `i32` -> `i32`
     MappedSequence<S, i32, i32>: Debug     // println!
 {

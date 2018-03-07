@@ -52,14 +52,11 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
-        F: FnMut(SequenceItem<Lhs>, SequenceItem<Self>) -> U
+        F: FnMut(Lhs::Item, Self::Item) -> U
     {
         FromIterator::from_iter(lhs.into_iter().zip(self.into_iter()).map(|(l, r)| f(l, r) ))
     }
 }
-
-/// Accessor type for iteration items from `GenericSequence`
-pub type SequenceItem<S> = <S as IntoIterator>::Item;
 
 unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a S
 where

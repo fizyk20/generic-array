@@ -330,7 +330,7 @@ where
         Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
-        F: FnMut(SequenceItem<Lhs>, SequenceItem<Self>) -> U
+        F: FnMut(Lhs::Item, Self::Item) -> U
     {
         let mut right = ArrayConsumer::new(self);
 
@@ -385,7 +385,7 @@ where
         Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         Rhs: GenericSequence<B, Length=Self::Length>,
-        F: FnMut(T, SequenceItem<Rhs>) -> U,
+        F: FnMut(T, Rhs::Item) -> U,
     {
         rhs.inverted_zip(self, f)
     }

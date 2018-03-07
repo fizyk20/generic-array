@@ -46,7 +46,7 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     where
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<U>,
-        F: FnMut(SequenceItem<Self>) -> U,
+        F: FnMut(Self::Item) -> U,
     {
         FromIterator::from_iter(self.into_iter().map(f))
     }
@@ -63,7 +63,7 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
         Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         Rhs: GenericSequence<B, Length=Self::Length>,
-        F: FnMut(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
+        F: FnMut(Self::Item, Rhs::Item) -> U,
     {
         rhs.inverted_zip2(self, f)
     }
@@ -73,7 +73,7 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     /// If the fold function panics, any unused elements will be dropped.
     fn fold<U, F>(self, init: U, f: F) -> U
     where
-        F: FnMut(U, SequenceItem<Self>) -> U,
+        F: FnMut(U, Self::Item) -> U,
     {
         self.into_iter().fold(init, f)
     }
