@@ -3,9 +3,10 @@
 #[macro_use]
 extern crate generic_array;
 use core::cell::Cell;
-use core::ops::Drop;
+use core::ops::{Add, Drop};
 use generic_array::GenericArray;
 use generic_array::sequence::*;
+use generic_array::functional::*;
 use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
@@ -155,16 +156,27 @@ fn test_zip() {
     let a: GenericArray<_, U4> = GenericArray::generate(|i| i + 1);
     let b: GenericArray<_, U4> = GenericArray::generate(|i| i as i32 * 4);
 
-    let c = a.zip(b, |r, l| r as i32 + l);
+    // Uses reference and non-reference arguments
+    let c = (&a).zip(b, |r, l| *r as i32 + l);
 
     assert_eq!(c, arr![i32; 1, 6, 11, 16]);
 }
 
 #[test]
-fn test_from_iter() {
+#[should_panic]
+fn test_from_iter_short() {
     use core::iter::repeat;
 
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
+
+    assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+}
+
+#[test]
+fn test_from_iter() {
+    use core::iter::{repeat, once};
+
+    let a: GenericArray<_, U4> = repeat(11).take(3).chain(once(0)).collect();
 
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
 }
@@ -174,10 +186,9 @@ fn test_sizes() {
     #![allow(dead_code)]
     use core::mem::{size_of, size_of_val};
 
-    #[derive(Debug)]
+    #[derive(Debug, Copy, Clone)]
     #[repr(C)]
     #[repr(packed)]
-    #[derive(Default)]
     struct Test {
         t: u16,
         s: u32,
@@ -256,4 +267,27 @@ fn test_concat() {
 
     assert_eq!(d, arr![i32; 1]);
     assert_eq!(e, arr![i32; 2, 3, 4]);
+}
+
+#[test]
+fn test_fold() {
+    let a = arr![i32; 1, 2, 3, 4];
+
+    assert_eq!(10, a.fold(0, |a, x| a + x));
+}
+
+fn sum_generic<S>(s: S) -> i32
+where
+    S: FunctionalSequence<i32>,
+    S::Item: Add<i32, Output=i32>, // `+`
+    i32: Add<S::Item, Output=i32>, // reflexive
+{
+    s.fold(0, |a, x| a + x)
+}
+
+#[test]
+fn test_sum() {
+    let a = sum_generic(arr![i32; 1, 2, 3, 4]);
+
+    assert_eq!(a, 10);
 }

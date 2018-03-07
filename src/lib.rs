@@ -53,6 +53,7 @@ use core::{mem, ptr, slice};
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
+use core::iter::FromIterator;
 use typenum::bit::{B0, B1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
@@ -60,6 +61,10 @@ use typenum::uint::{UInt, UTerm, Unsigned};
 pub mod arr;
 pub mod iter;
 pub mod sequence;
+pub mod functional;
+
+use sequence::*;
+use functional::*;
 
 pub use iter::GenericArrayIter;
 
@@ -133,6 +138,9 @@ unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B1> {
 pub struct GenericArray<T, U: ArrayLength<T>> {
     data: U::ArrayType,
 }
+
+unsafe impl<T: Send, N: ArrayLength<T>> Send for GenericArray<T, N> {}
+unsafe impl<T: Sync, N: ArrayLength<T>> Sync for GenericArray<T, N> {}
 
 impl<T, N> Deref for GenericArray<T, N>
 where
@@ -210,17 +218,73 @@ impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
     }
 }
 
-impl<T, N> GenericArray<T, N>
+impl<'a, T: 'a, N> IntoIterator for &'a GenericArray<T, N>
+where
+    N: ArrayLength<T>
+{
+    type IntoIter = slice::Iter<'a, T>;
+    type Item = &'a T;
+
+    fn into_iter(self: &'a GenericArray<T, N>) -> Self::IntoIter {
+        self.as_slice().iter()
+    }
+}
+
+impl<'a, T: 'a, N> IntoIterator for &'a mut GenericArray<T, N>
+where
+    N: ArrayLength<T>
+{
+    type IntoIter = slice::IterMut<'a, T>;
+    type Item = &'a mut T;
+
+    fn into_iter(self: &'a mut GenericArray<T, N>) -> Self::IntoIter {
+        self.as_mut_slice().iter_mut()
+    }
+}
+
+impl<T, N> FromIterator<T> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
-    /// Initializes a new `GenericArray` instance using the given function.
-    ///
-    /// If the generator function panics while initializing the array,
-    /// any already initialized elements will be dropped.
-    pub fn generate<F>(f: F) -> GenericArray<T, N>
+    fn from_iter<I>(iter: I) -> GenericArray<T, N>
     where
-        F: Fn(usize) -> T,
+        I: IntoIterator<Item = T>,
+    {
+        let mut destination = ArrayBuilder::new();
+
+        for (src, dst) in iter.into_iter().zip(destination.array.iter_mut()) {
+            unsafe {
+                ptr::write(dst, src);
+            }
+
+            destination.position += 1;
+        }
+
+        if destination.position < N::to_usize() {
+            from_iter_length_fail(destination.position, N::to_usize());
+        }
+
+        destination.into_inner()
+    }
+}
+
+#[inline(never)]
+#[cold]
+fn from_iter_length_fail(length: usize, expected: usize) -> ! {
+    panic!("GenericArray::from_iter received {} elements but expected {}", length, expected);
+}
+
+unsafe impl<T, N> GenericSequence<T> for GenericArray<T, N>
+where
+    N: ArrayLength<T>,
+    Self: IntoIterator<Item=T>,
+{
+    type Length = N;
+    type Sequence = Self;
+
+    fn generate<F>(mut f: F) -> GenericArray<T, N>
+    where
+        F: FnMut(usize) -> T,
     {
         let mut destination = ArrayBuilder::new();
 
@@ -235,96 +299,119 @@ where
         destination.into_inner()
     }
 
-    /// Map a function over a slice to a `GenericArray`.
-    ///
-    /// The length of the slice *must* be equal to the length of the array.
-    #[inline]
-    pub fn map_slice<S, F: Fn(&S) -> T>(s: &[S], f: F) -> GenericArray<T, N> {
-        assert_eq!(s.len(), N::to_usize());
+    fn inverted_zip<B, U, F>(self, lhs: GenericArray<B, Self::Length>, mut f: F) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
+    where
+        GenericArray<B, Self::Length>:
+            GenericSequence<B, Length=Self::Length> +
+            MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(B, Self::Item) -> U
+    {
+        let mut left = ArrayConsumer::new(lhs);
+        let mut right = ArrayConsumer::new(self);
 
-        Self::generate(|i| f(unsafe { s.get_unchecked(i) }))
+        let ArrayConsumer { array: ref left_array, position: ref mut left_position } = left;
+        let ArrayConsumer { array: ref right_array, position: ref mut right_position } = right;
+
+        FromIterator::from_iter(left_array.iter().zip(right_array.iter()).map(|(l, r)| {
+            let left_value = unsafe { ptr::read(l) };
+            let right_value = unsafe { ptr::read(r) };
+
+            *left_position += 1;
+            *right_position += 1;
+
+            f(left_value, right_value)
+        }))
     }
 
-    /// Maps a `GenericArray` to another `GenericArray`.
-    ///
-    /// If the mapping function panics, any already initialized elements in the new array
-    /// will be dropped, AND any unused elements in the source array will also be dropped.
-    pub fn map<U, F>(self, f: F) -> GenericArray<U, N>
+    fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
     where
-        F: Fn(T) -> U,
-        N: ArrayLength<U>,
+        Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(Lhs::Item, Self::Item) -> U
+    {
+        let mut right = ArrayConsumer::new(self);
+
+        let ArrayConsumer { array: ref right_array, position: ref mut right_position } = right;
+
+        FromIterator::from_iter(lhs.into_iter().zip(right_array.iter()).map(|(left_value, r)| {
+            let right_value = unsafe { ptr::read(r) };
+
+            *right_position += 1;
+
+            f(left_value, right_value)
+        }))
+    }
+}
+
+unsafe impl<T, U, N> MappedGenericSequence<T, U> for GenericArray<T, N>
+where
+    N: ArrayLength<T> + ArrayLength<U>,
+    GenericArray<U, N>: GenericSequence<U, Length=N>,
+{
+    type Mapped = GenericArray<U, N>;
+}
+
+unsafe impl<T, N> FunctionalSequence<T> for GenericArray<T, N>
+where
+    N: ArrayLength<T>,
+    Self: GenericSequence<T, Item=T, Length=N>
+{
+    fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
+    where
+        Self::Length: ArrayLength<U>,
+        Self: MappedGenericSequence<T, U>,
+        F: FnMut(T) -> U,
     {
         let mut source = ArrayConsumer::new(self);
-        let mut destination = ArrayBuilder::new();
 
-        for (dst, src) in destination.array.iter_mut().zip(source.array.iter()) {
-            unsafe {
-                ptr::write(dst, f(ptr::read(src)));
-            }
+        let ArrayConsumer { ref array, ref mut position } = source;
 
-            source.position += 1;
-            destination.position += 1;
-        }
+        FromIterator::from_iter(array.iter().map(|src| {
+            let value = unsafe { ptr::read(src) };
 
-        destination.into_inner()
+            *position += 1;
+
+            f(value)
+        }))
     }
 
-    /// Maps a `GenericArray` to another `GenericArray` by reference.
-    ///
-    /// If the mapping function panics, any already initialized elements will be dropped.
     #[inline]
-    pub fn map_ref<U, F>(&self, f: F) -> GenericArray<U, N>
+    fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
     where
-        F: Fn(&T) -> U,
-        N: ArrayLength<U>,
+        Self: MappedGenericSequence<T, U>,
+        Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        Rhs: GenericSequence<B, Length=Self::Length>,
+        F: FnMut(T, Rhs::Item) -> U,
     {
-        GenericArray::generate(|i| f(unsafe { self.get_unchecked(i) }))
+        rhs.inverted_zip(self, f)
     }
 
-    /// Combines two `GenericArray` instances and iterates through both of them,
-    /// initializing a new `GenericArray` with the result of the zipped mapping function.
-    ///
-    /// If the mapping function panics, any already initialized elements in the new array
-    /// will be dropped, AND any unused elements in the source arrays will also be dropped.
-    pub fn zip<B, U, F>(self, rhs: GenericArray<B, N>, f: F) -> GenericArray<U, N>
+    fn fold<U, F>(self, init: U, mut f: F) -> U
     where
-        F: Fn(T, B) -> U,
-        N: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(U, T) -> U
     {
-        let mut left = ArrayConsumer::new(self);
-        let mut right = ArrayConsumer::new(rhs);
+        let mut source = ArrayConsumer::new(self);
 
-        let mut destination = ArrayBuilder::new();
+        let ArrayConsumer { ref array, ref mut position } = source;
 
-        for (dst, (lhs, rhs)) in destination
-            .array
-            .iter_mut()
-            .zip(left.array.iter().zip(right.array.iter()))
-        {
-            unsafe {
-                ptr::write(dst, f(ptr::read(lhs), ptr::read(rhs)));
-            }
+        array.iter().fold(init, |acc, src| {
+            let value = unsafe { ptr::read(src) };
 
-            destination.position += 1;
-            left.position += 1;
-            right.position += 1;
-        }
+            *position += 1;
 
-        destination.into_inner()
+            f(acc, value)
+        })
     }
+}
 
-    /// Combines two `GenericArray` instances and iterates through both of them by reference,
-    /// initializing a new `GenericArray` with the result of the zipped mapping function.
-    ///
-    /// If the mapping function panics, any already initialized elements will be dropped.
-    pub fn zip_ref<B, U, F>(&self, rhs: &GenericArray<B, N>, f: F) -> GenericArray<U, N>
-    where
-        F: Fn(&T, &B) -> U,
-        N: ArrayLength<B> + ArrayLength<U>,
-    {
-        GenericArray::generate(|i| unsafe { f(self.get_unchecked(i), rhs.get_unchecked(i)) })
-    }
-
+impl<T, N> GenericArray<T, N>
+where
+    N: ArrayLength<T>,
+{
     /// Extracts a slice containing the entire array.
     #[inline]
     pub fn as_slice(&self) -> &[T] {
@@ -342,9 +429,7 @@ where
     /// Length of the slice must be equal to the length of the array.
     #[inline]
     pub fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
-        assert_eq!(slice.len(), N::to_usize());
-
-        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
+        slice.into()
     }
 
     /// Converts mutable slice to a mutable generic array reference
@@ -352,6 +437,28 @@ where
     /// Length of the slice must be equal to the length of the array.
     #[inline]
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
+        slice.into()
+    }
+}
+
+impl<'a, T, N: ArrayLength<T>> From<&'a [T]> for &'a GenericArray<T, N> {
+    /// Converts slice to a generic array reference with inferred length;
+    ///
+    /// Length of the slice must be equal to the length of the array.
+    #[inline]
+    fn from(slice: &[T]) -> &GenericArray<T, N> {
+        assert_eq!(slice.len(), N::to_usize());
+
+        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
+    }
+}
+
+impl<'a, T, N: ArrayLength<T>> From<&'a mut [T]> for &'a mut GenericArray<T, N> {
+    /// Converts mutable slice to a mutable generic array reference
+    ///
+    /// Length of the slice must be equal to the length of the array.
+    #[inline]
+    fn from(slice: &mut [T]) -> &mut GenericArray<T, N> {
         assert_eq!(slice.len(), N::to_usize());
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
@@ -397,41 +504,10 @@ where
                 destination.position += 1;
             }
 
-            let array = unsafe { ptr::read(&destination.array) };
-
-            mem::forget(destination);
-
-            Some(ManuallyDrop::into_inner(array))
+            Some(destination.into_inner())
         } else {
             None
         }
-    }
-}
-
-impl<T, N> ::core::iter::FromIterator<T> for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-    T: Default,
-{
-    fn from_iter<I>(iter: I) -> GenericArray<T, N>
-    where
-        I: IntoIterator<Item = T>,
-    {
-        let mut destination = ArrayBuilder::new();
-
-        let defaults = ::core::iter::repeat(()).map(|_| T::default());
-
-        for (dst, src) in destination
-            .array
-            .iter_mut()
-            .zip(iter.into_iter().chain(defaults))
-        {
-            unsafe {
-                ptr::write(dst, src);
-            }
-        }
-
-        destination.into_inner()
     }
 }
 
@@ -464,11 +540,17 @@ mod test {
 
     #[test]
     fn test_assembly() {
+        use functional::*;
+
         let a = black_box(arr![i32; 1, 3, 5, 7]);
         let b = black_box(arr![i32; 2, 4, 6, 8]);
 
-        let c = a.zip_ref(&b, |l, r| l + r);
+        let c = (&a).zip(b, |l, r| l + r);
+
+        let d = a.fold(0, |a, x| a + x);
 
         assert_eq!(c, arr![i32; 3, 7, 11, 15]);
+
+        assert_eq!(d, 16);
     }
 }
