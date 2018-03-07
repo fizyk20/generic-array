@@ -3,7 +3,7 @@
 #[macro_use]
 extern crate generic_array;
 use core::cell::Cell;
-use core::ops::Drop;
+use core::ops::{Add, Drop};
 use generic_array::GenericArray;
 use generic_array::sequence::*;
 use generic_array::functional::*;
@@ -267,4 +267,27 @@ fn test_concat() {
 
     assert_eq!(d, arr![i32; 1]);
     assert_eq!(e, arr![i32; 2, 3, 4]);
+}
+
+#[test]
+fn test_fold() {
+    let a = arr![i32; 1, 2, 3, 4];
+
+    assert_eq!(10, a.fold(0, |a, x| a + x));
+}
+
+fn sum_generic<S>(s: S) -> i32
+where
+    S: FunctionalSequence<i32>,
+    SequenceItem<S>: Add<i32, Output=i32>, // `+`
+    i32: Add<SequenceItem<S>, Output=i32>, // reflexive
+{
+    s.fold(0, |a, x| a + x)
+}
+
+#[test]
+fn test_sum() {
+    let a = sum_generic(arr![i32; 1, 2, 3, 4]);
+
+    assert_eq!(a, 10);
 }

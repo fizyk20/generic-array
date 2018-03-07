@@ -389,6 +389,23 @@ where
     {
         rhs.inverted_zip(self, f)
     }
+
+    fn fold<U, F>(self, init: U, mut f: F) -> U
+    where
+        F: FnMut(U, T) -> U
+    {
+        let mut source = ArrayConsumer::new(self);
+
+        let ArrayConsumer { ref array, ref mut position } = source;
+
+        array.iter().fold(init, |acc, src| {
+            let value = unsafe { ptr::read(src) };
+
+            *position += 1;
+
+            f(acc, value)
+        })
+    }
 }
 
 impl<T, N> GenericArray<T, N>
@@ -526,10 +543,14 @@ mod test {
         use functional::*;
 
         let a = black_box(arr![i32; 1, 3, 5, 7]);
-        let mut b = black_box(arr![i32; 2, 4, 6, 8]);
+        let b = black_box(arr![i32; 2, 4, 6, 8]);
 
-        let c = (a).zip(&mut b, |l, r| l + *r);
+        let c = (&a).zip(b, |l, r| l + r);
+
+        let d = a.fold(0, |a, x| a + x);
 
         assert_eq!(c, arr![i32; 3, 7, 11, 15]);
+
+        assert_eq!(d, 16);
     }
 }
