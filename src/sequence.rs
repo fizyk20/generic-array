@@ -5,23 +5,94 @@ use core::{mem, ptr};
 use core::ops::{Add, Sub};
 use typenum::operator_aliases::*;
 
-/// Defines some `GenericArray` sequence with an associated length.
+/// Defines some sequence with an associated length and iteration capabilities.
 ///
 /// This is useful for passing N-length generic arrays as generics.
-pub unsafe trait GenericSequence<T>: Sized {
+pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// `GenericArray` associated length
     type Length: ArrayLength<T>;
+
+    /// Concrete sequence type used in conjuction with reference implementations of `GenericSequence`
+    type Sequence: GenericSequence<T, Length=Self::Length> + FromIterator<T>;
+
+    /// Initializes a new sequence instance using the given function.
+    ///
+    /// If the generator function panics while initializing the sequence,
+    /// any already initialized elements will be dropped.
+    fn generate<F>(f: F) -> Self::Sequence
+        where F: FnMut(usize) -> T;
+
+    #[doc(hidden)]
+    fn inverted_zip<B, U, F>(self, lhs: GenericArray<B, Self::Length>, mut f: F) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
+    where
+        GenericArray<B, Self::Length>:
+            GenericSequence<B, Length=Self::Length> +
+            MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(B, Self::Item) -> U
+    {
+
+        let mut left = ArrayConsumer::new(lhs);
+
+        let ArrayConsumer { array: ref left_array, position: ref mut left_position } = left;
+
+        FromIterator::from_iter(left_array.iter().zip(self.into_iter()).map(|(l, right_value)| {
+            let left_value = unsafe { ptr::read(l) };
+
+            *left_position += 1;
+
+            f(left_value, right_value)
+        }))
+    }
+
+    #[doc(hidden)]
+    fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
+    where
+        Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(Lhs::Item, Self::Item) -> U
+    {
+        FromIterator::from_iter(lhs.into_iter().zip(self.into_iter()).map(|(l, r)| f(l, r) ))
+    }
 }
 
-unsafe impl<T, N: ArrayLength<T>> GenericSequence<T> for GenericArray<T, N> {
-    type Length = N;
+unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a S
+where
+    &'a S: IntoIterator
+{
+    type Length = S::Length;
+    type Sequence = S::Sequence;
+
+    #[inline]
+    fn generate<F>(f: F) -> Self::Sequence
+        where F: FnMut(usize) -> T
+    {
+        S::generate(f)
+    }
+}
+
+unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a mut S
+where
+    &'a mut S: IntoIterator
+{
+    type Length = S::Length;
+    type Sequence = S::Sequence;
+
+    #[inline]
+    fn generate<F>(f: F) -> Self::Sequence
+        where F: FnMut(usize) -> T
+    {
+        S::generate(f)
+    }
 }
 
 /// Defines any `GenericSequence` which can be lengthened or extended by appending
 /// or prepending an element to it.
 ///
 /// Any lengthened sequence can be shortened back to the original using `pop_front` or `pop_back`
-pub unsafe trait Lengthen<T>: GenericSequence<T> {
+pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     /// `GenericSequence` that has one more element than `Self`
     type Longer: Shorten<T, Shorter = Self>;
 
@@ -56,7 +127,7 @@ pub unsafe trait Lengthen<T>: GenericSequence<T> {
 ///
 /// Additionally, any shortened sequence can be lengthened by
 /// appending or prepending an element to it.
-pub unsafe trait Shorten<T>: GenericSequence<T> {
+pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     /// `GenericSequence` that has one less element than `Self`
     type Shorter: Lengthen<T, Longer = Self>;
 
