@@ -50,8 +50,9 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     fn zip<B, Rhs, U, F>(self, rhs: Rhs, mut f: F) -> MappedSequence<Self, T, U>
         where
             Self: MappedGenericSequence<T, U>,
+            Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
             Self::Length: ArrayLength<B> + ArrayLength<U>,
-            Rhs: GenericSequence<B>,
+            Rhs: GenericSequence<B, Length=Self::Length>,
             F: FnMut(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
     {
         FromIterator::from_iter(self.into_iter().zip(rhs.into_iter()).map(|(l, r)| f(l, r) ))

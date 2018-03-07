@@ -21,6 +21,30 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// any already initialized elements will be dropped.
     fn generate<F>(f: F) -> Self::Sequence
         where F: FnMut(usize) -> T;
+
+    #[doc(hidden)]
+    fn inverted_zip<B, U, F>(self, lhs: GenericArray<B, Self::Length>, mut f: F) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
+    where
+        GenericArray<B, Self::Length>:
+            GenericSequence<B, Length=Self::Length> +
+            MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(B, Self::Item) -> U
+    {
+
+        let mut left = ArrayConsumer::new(lhs);
+
+        let ArrayConsumer { array: ref left_array, position: ref mut left_position } = left;
+
+        FromIterator::from_iter(left_array.iter().zip(self.into_iter()).map(|(l, right_value)| {
+            let left_value = unsafe { ptr::read(l) };
+
+            *left_position += 1;
+
+            f(left_value, right_value)
+        }))
+    }
 }
 
 /// Accessor type for iteration items from `GenericSequence`
