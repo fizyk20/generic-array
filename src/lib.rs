@@ -324,6 +324,26 @@ where
             f(left_value, right_value)
         }))
     }
+
+    fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
+    where
+        Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(SequenceItem<Lhs>, SequenceItem<Self>) -> U
+    {
+        let mut right = ArrayConsumer::new(self);
+
+        let ArrayConsumer { array: ref right_array, position: ref mut right_position } = right;
+
+        FromIterator::from_iter(lhs.into_iter().zip(right_array.iter()).map(|(left_value, r)| {
+            let right_value = unsafe { ptr::read(r) };
+
+            *right_position += 1;
+
+            f(left_value, right_value)
+        }))
+    }
 }
 
 unsafe impl<T, U, N> MappedGenericSequence<T, U> for GenericArray<T, N>
@@ -506,9 +526,9 @@ mod test {
         use functional::*;
 
         let a = black_box(arr![i32; 1, 3, 5, 7]);
-        let b = black_box(arr![i32; 2, 4, 6, 8]);
+        let mut b = black_box(arr![i32; 2, 4, 6, 8]);
 
-        let c = a.zip(b, |l, r| l + r);
+        let c = (a).zip(&mut b, |l, r| l + *r);
 
         assert_eq!(c, arr![i32; 3, 7, 11, 15]);
     }

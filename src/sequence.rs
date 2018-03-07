@@ -45,6 +45,17 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
             f(left_value, right_value)
         }))
     }
+
+    #[doc(hidden)]
+    fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
+    where
+        Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(SequenceItem<Lhs>, SequenceItem<Self>) -> U
+    {
+        FromIterator::from_iter(lhs.into_iter().zip(self.into_iter()).map(|(l, r)| f(l, r) ))
+    }
 }
 
 /// Accessor type for iteration items from `GenericSequence`

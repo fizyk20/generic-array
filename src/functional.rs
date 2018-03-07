@@ -24,6 +24,15 @@ where
     type Mapped = <S as MappedGenericSequence<T, U>>::Mapped;
 }
 
+unsafe impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U> for &'a mut S
+where
+    &'a mut S: GenericSequence<T>,
+    S: GenericSequence<T, Length=<&'a mut S as GenericSequence<T>>::Length>,
+    <S as GenericSequence<T>>::Length: ArrayLength<U>,
+{
+    type Mapped = <S as MappedGenericSequence<T, U>>::Mapped;
+}
+
 /// Accessor type for a mapped generic sequence
 pub type MappedSequence<S, T, U> = <<S as MappedGenericSequence<T, U>>::Mapped as GenericSequence<U>>::Sequence;
 
@@ -47,7 +56,8 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     ///
     /// If the mapping function panics, any already initialized elements in the new sequence
     /// will be dropped, AND any unused elements in the source sequences will also be dropped.
-    fn zip<B, Rhs, U, F>(self, rhs: Rhs, mut f: F) -> MappedSequence<Self, T, U>
+    #[inline]
+    fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
         where
             Self: MappedGenericSequence<T, U>,
             Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
@@ -55,7 +65,7 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
             Rhs: GenericSequence<B, Length=Self::Length>,
             F: FnMut(SequenceItem<Self>, SequenceItem<Rhs>) -> U,
     {
-        FromIterator::from_iter(self.into_iter().zip(rhs.into_iter()).map(|(l, r)| f(l, r) ))
+        rhs.inverted_zip2(self, f)
     }
 }
 
