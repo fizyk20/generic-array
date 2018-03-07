@@ -277,6 +277,7 @@ fn from_iter_length_fail(length: usize, expected: usize) -> ! {
 unsafe impl<T, N> GenericSequence<T> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
+    Self: IntoIterator<Item=T>,
 {
     type Length = N;
     type Sequence = Self;
@@ -297,6 +298,32 @@ where
 
         destination.into_inner()
     }
+
+    fn inverted_zip<B, U, F>(self, lhs: GenericArray<B, Self::Length>, mut f: F) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
+    where
+        GenericArray<B, Self::Length>:
+            GenericSequence<B, Length=Self::Length> +
+            MappedGenericSequence<B, U>,
+        Self: MappedGenericSequence<T, U>,
+        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        F: FnMut(B, Self::Item) -> U
+    {
+        let mut left = ArrayConsumer::new(lhs);
+        let mut right = ArrayConsumer::new(self);
+
+        let ArrayConsumer { array: ref left_array, position: ref mut left_position } = left;
+        let ArrayConsumer { array: ref right_array, position: ref mut right_position } = right;
+
+        FromIterator::from_iter(left_array.iter().zip(right_array.iter()).map(|(l, r)| {
+            let left_value = unsafe { ptr::read(l) };
+            let right_value = unsafe { ptr::read(r) };
+
+            *left_position += 1;
+            *right_position += 1;
+
+            f(left_value, right_value)
+        }))
+    }
 }
 
 unsafe impl<T, U, N> MappedGenericSequence<T, U> for GenericArray<T, N>
@@ -310,7 +337,7 @@ where
 unsafe impl<T, N> FunctionalSequence<T> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
-    Self: GenericSequence<T, Item=T>
+    Self: GenericSequence<T, Item=T, Length=N>
 {
     fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
     where
@@ -331,24 +358,16 @@ where
         }))
     }
 
-    fn zip<B, Rhs, U, F>(self, rhs: Rhs, mut f: F) -> MappedSequence<Self, T, U>
+    #[inline]
+    fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
+        Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
-        Rhs: GenericSequence<B>,
+        Rhs: GenericSequence<B, Length=Self::Length>,
         F: FnMut(T, SequenceItem<Rhs>) -> U,
     {
-        let mut left = ArrayConsumer::new(self);
-
-        let ArrayConsumer { ref array, ref mut position } = left;
-
-        FromIterator::from_iter(array.iter().zip(rhs.into_iter()).map(|(l, right_value)| {
-            let left_value = unsafe { ptr::read(l) };
-
-            *position += 1;
-
-            f(left_value, right_value)
-        }))
+        rhs.inverted_zip(self, f)
     }
 }
 
@@ -489,7 +508,7 @@ mod test {
         let a = black_box(arr![i32; 1, 3, 5, 7]);
         let b = black_box(arr![i32; 2, 4, 6, 8]);
 
-        let c = a.zip(&b, |l: i32, r: &i32| l + r);
+        let c = a.zip(b, |l, r| l + r);
 
         assert_eq!(c, arr![i32; 3, 7, 11, 15]);
     }
