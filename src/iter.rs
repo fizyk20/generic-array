@@ -57,9 +57,7 @@ where
     #[inline]
     fn next(&mut self) -> Option<T> {
         if self.index < self.index_back {
-            let p = unsafe {
-                Some(ptr::read(self.array.get_unchecked(self.index)))
-            };
+            let p = unsafe { Some(ptr::read(self.array.get_unchecked(self.index))) };
 
             self.index += 1;
 
@@ -107,9 +105,7 @@ where
         if self.index < self.index_back {
             self.index_back -= 1;
 
-            unsafe {
-                Some(ptr::read(self.array.get_unchecked(self.index_back)))
-            }
+            unsafe { Some(ptr::read(self.array.get_unchecked(self.index_back))) }
         } else {
             None
         }

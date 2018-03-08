@@ -1,11 +1,10 @@
+use super::{ArrayLength, GenericArray};
 use core::borrow::{Borrow, BorrowMut};
 use core::cmp::Ordering;
 use core::fmt::{self, Debug};
 use core::hash::{Hash, Hasher};
-
-use super::{ArrayLength, GenericArray};
-use sequence::*;
 use functional::*;
+use sequence::*;
 
 impl<T: Default, N> Default for GenericArray<T, N>
 where
