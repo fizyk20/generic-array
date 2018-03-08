@@ -1,12 +1,12 @@
-#![recursion_limit="128"]
+#![recursion_limit = "128"]
 #![no_std]
 #[macro_use]
 extern crate generic_array;
 use core::cell::Cell;
 use core::ops::{Add, Drop};
 use generic_array::GenericArray;
-use generic_array::sequence::*;
 use generic_array::functional::*;
+use generic_array::sequence::*;
 use generic_array::typenum::{U1, U3, U4, U97};
 
 #[test]
@@ -35,8 +35,7 @@ fn test_drop() {
 
     let drop_counter = Cell::new(0);
     {
-        let _: GenericArray<TestDrop, U3> =
-            arr![TestDrop; TestDrop(&drop_counter),
+        let _: GenericArray<TestDrop, U3> = arr![TestDrop; TestDrop(&drop_counter),
                            TestDrop(&drop_counter),
                            TestDrop(&drop_counter)];
     }
@@ -174,7 +173,7 @@ fn test_from_iter_short() {
 
 #[test]
 fn test_from_iter() {
-    use core::iter::{repeat, once};
+    use core::iter::{once, repeat};
 
     let a: GenericArray<_, U4> = repeat(11).take(3).chain(once(0)).collect();
 
@@ -279,8 +278,8 @@ fn test_fold() {
 fn sum_generic<S>(s: S) -> i32
 where
     S: FunctionalSequence<i32>,
-    S::Item: Add<i32, Output=i32>, // `+`
-    i32: Add<S::Item, Output=i32>, // reflexive
+    S::Item: Add<i32, Output = i32>, // `+`
+    i32: Add<S::Item, Output = i32>, // reflexive
 {
     s.fold(0, |a, x| a + x)
 }

@@ -16,10 +16,10 @@
 //!
 
 use {ArrayLength, GenericArray};
+use core::cmp::min;
 use core::fmt;
 use core::ops::Add;
 use core::str;
-use core::cmp::min;
 use typenum::*;
 
 static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
@@ -31,7 +31,7 @@ where
     <T as Add<T>>::Output: ArrayLength<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let max_digits = f.precision().unwrap_or_else(|| self.len()*2);
+        let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
         if T::to_usize() < 1024 {
@@ -69,7 +69,7 @@ where
     <T as Add<T>>::Output: ArrayLength<u8>,
 {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let max_digits = f.precision().unwrap_or_else(|| self.len()*2);
+        let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
         if T::to_usize() < 1024 {

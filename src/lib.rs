@@ -50,10 +50,10 @@ mod impls;
 pub mod impl_serde;
 
 use core::{mem, ptr, slice};
+use core::iter::FromIterator;
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
-use core::iter::FromIterator;
 use typenum::bit::{B0, B1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
@@ -63,10 +63,9 @@ pub mod iter;
 pub mod sequence;
 pub mod functional;
 
-use sequence::*;
 use functional::*;
-
 pub use iter::GenericArrayIter;
+use sequence::*;
 
 /// Trait making `GenericArray` work, marking types to be used as length of an array
 pub unsafe trait ArrayLength<T>: Unsigned {
@@ -220,7 +219,7 @@ impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
 
 impl<'a, T: 'a, N> IntoIterator for &'a GenericArray<T, N>
 where
-    N: ArrayLength<T>
+    N: ArrayLength<T>,
 {
     type IntoIter = slice::Iter<'a, T>;
     type Item = &'a T;
@@ -232,7 +231,7 @@ where
 
 impl<'a, T: 'a, N> IntoIterator for &'a mut GenericArray<T, N>
 where
-    N: ArrayLength<T>
+    N: ArrayLength<T>,
 {
     type IntoIter = slice::IterMut<'a, T>;
     type Item = &'a mut T;
@@ -271,13 +270,16 @@ where
 #[inline(never)]
 #[cold]
 fn from_iter_length_fail(length: usize, expected: usize) -> ! {
-    panic!("GenericArray::from_iter received {} elements but expected {}", length, expected);
+    panic!(
+        "GenericArray::from_iter received {} elements but expected {}",
+        length, expected
+    );
 }
 
 unsafe impl<T, N> GenericSequence<T> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
-    Self: IntoIterator<Item=T>,
+    Self: IntoIterator<Item = T>,
 {
     type Length = N;
     type Sequence = Self;
@@ -300,20 +302,29 @@ where
     }
 
     #[doc(hidden)]
-    fn inverted_zip<B, U, F>(self, lhs: GenericArray<B, Self::Length>, mut f: F) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
+    fn inverted_zip<B, U, F>(
+        self,
+        lhs: GenericArray<B, Self::Length>,
+        mut f: F,
+    ) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
     where
-        GenericArray<B, Self::Length>:
-            GenericSequence<B, Length=Self::Length> +
-            MappedGenericSequence<B, U>,
+        GenericArray<B, Self::Length>: GenericSequence<B, Length = Self::Length>
+            + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
-        F: FnMut(B, Self::Item) -> U
+        F: FnMut(B, Self::Item) -> U,
     {
         let mut left = ArrayConsumer::new(lhs);
         let mut right = ArrayConsumer::new(self);
 
-        let ArrayConsumer { array: ref left_array, position: ref mut left_position } = left;
-        let ArrayConsumer { array: ref right_array, position: ref mut right_position } = right;
+        let ArrayConsumer {
+            array: ref left_array,
+            position: ref mut left_position,
+        } = left;
+        let ArrayConsumer {
+            array: ref right_array,
+            position: ref mut right_position,
+        } = right;
 
         FromIterator::from_iter(left_array.iter().zip(right_array.iter()).map(|(l, r)| {
             let left_value = unsafe { ptr::read(l) };
@@ -329,29 +340,36 @@ where
     #[doc(hidden)]
     fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
     where
-        Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
+        Lhs: GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
-        F: FnMut(Lhs::Item, Self::Item) -> U
+        F: FnMut(Lhs::Item, Self::Item) -> U,
     {
         let mut right = ArrayConsumer::new(self);
 
-        let ArrayConsumer { array: ref right_array, position: ref mut right_position } = right;
+        let ArrayConsumer {
+            array: ref right_array,
+            position: ref mut right_position,
+        } = right;
 
-        FromIterator::from_iter(lhs.into_iter().zip(right_array.iter()).map(|(left_value, r)| {
-            let right_value = unsafe { ptr::read(r) };
+        FromIterator::from_iter(
+            lhs.into_iter()
+                .zip(right_array.iter())
+                .map(|(left_value, r)| {
+                    let right_value = unsafe { ptr::read(r) };
 
-            *right_position += 1;
+                    *right_position += 1;
 
-            f(left_value, right_value)
-        }))
+                    f(left_value, right_value)
+                }),
+        )
     }
 }
 
 unsafe impl<T, U, N> MappedGenericSequence<T, U> for GenericArray<T, N>
 where
     N: ArrayLength<T> + ArrayLength<U>,
-    GenericArray<U, N>: GenericSequence<U, Length=N>,
+    GenericArray<U, N>: GenericSequence<U, Length = N>,
 {
     type Mapped = GenericArray<U, N>;
 }
@@ -359,7 +377,7 @@ where
 unsafe impl<T, N> FunctionalSequence<T> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
-    Self: GenericSequence<T, Item=T, Length=N>
+    Self: GenericSequence<T, Item = T, Length = N>,
 {
     fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
     where
@@ -369,7 +387,10 @@ where
     {
         let mut source = ArrayConsumer::new(self);
 
-        let ArrayConsumer { ref array, ref mut position } = source;
+        let ArrayConsumer {
+            ref array,
+            ref mut position,
+        } = source;
 
         FromIterator::from_iter(array.iter().map(|src| {
             let value = unsafe { ptr::read(src) };
@@ -384,9 +405,9 @@ where
     fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
-        Rhs: MappedGenericSequence<B, U, Mapped=MappedSequence<Self, T, U>>,
+        Rhs: MappedGenericSequence<B, U, Mapped = MappedSequence<Self, T, U>>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
-        Rhs: GenericSequence<B, Length=Self::Length>,
+        Rhs: GenericSequence<B, Length = Self::Length>,
         F: FnMut(T, Rhs::Item) -> U,
     {
         rhs.inverted_zip(self, f)
@@ -394,11 +415,14 @@ where
 
     fn fold<U, F>(self, init: U, mut f: F) -> U
     where
-        F: FnMut(U, T) -> U
+        F: FnMut(U, T) -> U,
     {
         let mut source = ArrayConsumer::new(self);
 
-        let ArrayConsumer { ref array, ref mut position } = source;
+        let ArrayConsumer {
+            ref array,
+            ref mut position,
+        } = source;
 
         array.iter().fold(init, |acc, src| {
             let value = unsafe { ptr::read(src) };

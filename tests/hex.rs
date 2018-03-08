@@ -6,7 +6,6 @@ use generic_array::GenericArray;
 use std::str::from_utf8;
 use typenum::U2048;
 
-
 #[test]
 fn short_lower_hex() {
     let ar = arr![u8; 10, 20, 30];
