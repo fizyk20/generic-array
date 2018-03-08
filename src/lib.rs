@@ -299,6 +299,7 @@ where
         destination.into_inner()
     }
 
+    #[doc(hidden)]
     fn inverted_zip<B, U, F>(self, lhs: GenericArray<B, Self::Length>, mut f: F) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
     where
         GenericArray<B, Self::Length>:
@@ -325,6 +326,7 @@ where
         }))
     }
 
+    #[doc(hidden)]
     fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
     where
         Lhs: GenericSequence<B, Length=Self::Length> + MappedGenericSequence<B, U>,
