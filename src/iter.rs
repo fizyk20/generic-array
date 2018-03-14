@@ -14,8 +14,17 @@ pub struct GenericArrayIter<T, N: ArrayLength<T>> {
     index_back: usize,
 }
 
-unsafe impl<T: Send, N: ArrayLength<T>> Send for GenericArrayIter<T, N> {}
-unsafe impl<T: Sync, N: ArrayLength<T>> Sync for GenericArrayIter<T, N> {}
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn send<I: Send>(_iter: I) {}
+
+    #[test]
+    fn test_send_iter() {
+        send(GenericArray::from([1, 2, 3, 4]).into_iter());
+    }
+}
 
 impl<T, N> IntoIterator for GenericArray<T, N>
 where
