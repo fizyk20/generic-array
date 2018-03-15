@@ -59,7 +59,7 @@ where
     }
 }
 
-// Based on work in rust-land/rust#49000
+// Based on work in rust-lang/rust#49000
 impl<T: fmt::Debug, N> fmt::Debug for GenericArrayIter<T, N>
 where
     N: ArrayLength<T>,
@@ -86,6 +86,7 @@ where
     }
 }
 
+// Based on work in rust-lang/rust#49000
 impl<T: Clone, N> Clone for GenericArrayIter<T, N>
 where
     N: ArrayLength<T>,
