@@ -57,11 +57,6 @@ fn test_copy() {
     assert_eq!(test2[0], 1);
 }
 
-#[test]
-fn test_iter_flat_map() {
-    assert!((0..5).flat_map(|i| arr![i32; 2 * i, 2 * i + 1]).eq(0..10));
-}
-
 #[derive(Debug, PartialEq, Eq)]
 struct NoClone<T>(T);
 
