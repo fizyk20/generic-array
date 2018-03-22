@@ -69,6 +69,12 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     }
 }
 
+/// Accessor for `GenericSequence` item type, which is really `IntoIterator::Item`
+///
+/// For deeply nested generic mapped sequence types, like shown in `tests/generics.rs`,
+/// this can be useful for keeping things organized.
+pub type SequenceItem<T> = <T as IntoIterator>::Item;
+
 unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a S
 where
     &'a S: IntoIterator,
