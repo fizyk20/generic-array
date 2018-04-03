@@ -161,20 +161,23 @@ where
     }
 }
 
-struct ArrayBuilder<T, N: ArrayLength<T>> {
-    array: ManuallyDrop<GenericArray<T, N>>,
-    position: usize,
+#[doc(hidden)]
+pub struct ArrayBuilder<T, N: ArrayLength<T>> {
+    pub array: ManuallyDrop<GenericArray<T, N>>,
+    pub position: usize,
 }
 
 impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
-    fn new() -> ArrayBuilder<T, N> {
+    #[doc(hidden)]
+    pub fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
             array: ManuallyDrop::new(unsafe { mem::uninitialized() }),
             position: 0,
         }
     }
 
-    fn into_inner(self) -> GenericArray<T, N> {
+    #[doc(hidden)]
+    pub fn into_inner(self) -> GenericArray<T, N> {
         let array = unsafe { ptr::read(&self.array) };
 
         mem::forget(self);
@@ -193,13 +196,15 @@ impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
     }
 }
 
-struct ArrayConsumer<T, N: ArrayLength<T>> {
-    array: ManuallyDrop<GenericArray<T, N>>,
-    position: usize,
+#[doc(hidden)]
+pub struct ArrayConsumer<T, N: ArrayLength<T>> {
+    pub array: ManuallyDrop<GenericArray<T, N>>,
+    pub position: usize,
 }
 
 impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
-    fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
+    #[doc(hidden)]
+    pub fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
         ArrayConsumer {
             array: ManuallyDrop::new(array),
             position: 0,
