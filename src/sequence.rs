@@ -36,25 +36,23 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
     {
-        let mut left = unsafe { ArrayConsumer::new(lhs) };
+        unsafe {
+            let mut left = ArrayConsumer::new(lhs);
 
-        let ArrayConsumer {
-            array: ref left_array,
-            position: ref mut left_position,
-        } = left;
+            let (left_array_iter, left_position) = left.iter_position();
 
-        FromIterator::from_iter(
-            left_array
-                .iter()
-                .zip(self.into_iter())
-                .map(|(l, right_value)| {
-                    let left_value = unsafe { ptr::read(l) };
+            FromIterator::from_iter(
+                left_array_iter
+                    .zip(self.into_iter())
+                    .map(|(l, right_value)| {
+                        let left_value = ptr::read(l);
 
-                    *left_position += 1;
+                        *left_position += 1;
 
-                    f(left_value, right_value)
-                }),
-        )
+                        f(left_value, right_value)
+                    })
+            )
+        }
     }
 
     #[doc(hidden)]
