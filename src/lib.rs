@@ -161,14 +161,20 @@ where
     }
 }
 
+/// Creates an array one element at a time using a mutable iterator
+/// you can write to with `ptr::write`.
+///
+/// Incremenent the position while iterating to mark off created elements,
+/// which will be dropped if `into_inner` is not called.
 #[doc(hidden)]
 pub struct ArrayBuilder<T, N: ArrayLength<T>> {
-    pub array: ManuallyDrop<GenericArray<T, N>>,
-    pub position: usize,
+    array: ManuallyDrop<GenericArray<T, N>>,
+    position: usize,
 }
 
 impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[doc(hidden)]
+    #[inline]
     pub unsafe fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
             array: ManuallyDrop::new(mem::uninitialized()),
@@ -176,7 +182,20 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
         }
     }
 
+    /// Creates a mutable iterator for writing to the array using `ptr::write`.
+    ///
+    /// Increment the position value given as a mutable reference as you iterate
+    /// to mark how many elements have been created.
     #[doc(hidden)]
+    #[inline]
+    pub unsafe fn iter_position(&mut self) -> (slice::IterMut<T>, &mut usize) {
+        (self.array.iter_mut(), &mut self.position)
+    }
+
+    /// When done writing (assuming all elements have been written to),
+    /// get the inner array.
+    #[doc(hidden)]
+    #[inline]
     pub unsafe fn into_inner(self) -> GenericArray<T, N> {
         let array = ptr::read(&self.array);
 
@@ -188,7 +207,7 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
 
 impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
     fn drop(&mut self) {
-        for value in self.array.iter_mut().take(self.position) {
+        for value in &mut self.array[..self.position] {
             unsafe {
                 ptr::drop_in_place(value);
             }
@@ -196,27 +215,42 @@ impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
     }
 }
 
+/// Consumes an array.
+///
+/// Increment the position while iterating and any leftover elements
+/// will be dropped if position does not go to N
 #[doc(hidden)]
 pub struct ArrayConsumer<T, N: ArrayLength<T>> {
-    pub array: ManuallyDrop<GenericArray<T, N>>,
-    pub position: usize,
+    array: ManuallyDrop<GenericArray<T, N>>,
+    position: usize,
 }
 
 impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
     #[doc(hidden)]
+    #[inline]
     pub unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
         ArrayConsumer {
             array: ManuallyDrop::new(array),
             position: 0,
         }
     }
+
+    /// Creates an iterator and mutable reference to the internal position
+    /// to keep track of consumed elements.
+    ///
+    /// Increment the position as you iterate to mark off consumed elements
+    #[doc(hidden)]
+    #[inline]
+    pub unsafe fn iter_position(&mut self) -> (slice::Iter<T>, &mut usize) {
+        (self.array.iter(), &mut self.position)
+    }
 }
 
 impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
     fn drop(&mut self) {
-        for i in self.position..N::to_usize() {
+        for value in &mut self.array[self.position..N::to_usize()] {
             unsafe {
-                ptr::drop_in_place(self.array.get_unchecked_mut(i));
+                ptr::drop_in_place(value);
             }
         }
     }
@@ -254,21 +288,25 @@ where
     where
         I: IntoIterator<Item = T>,
     {
-        let mut destination = unsafe { ArrayBuilder::new() };
+        unsafe {
+            let mut destination = ArrayBuilder::new();
 
-        for (src, dst) in iter.into_iter().zip(destination.array.iter_mut()) {
-            unsafe {
-                ptr::write(dst, src);
+            {
+                let (destination_iter, position) = destination.iter_position();
+
+                for (src, dst) in iter.into_iter().zip(destination_iter) {
+                    ptr::write(dst, src);
+
+                    *position += 1;
+                }
             }
 
-            destination.position += 1;
-        }
+            if destination.position < N::to_usize() {
+                from_iter_length_fail(destination.position, N::to_usize());
+            }
 
-        if destination.position < N::to_usize() {
-            from_iter_length_fail(destination.position, N::to_usize());
+            destination.into_inner()
         }
-
-        unsafe { destination.into_inner() }
     }
 }
 
@@ -293,17 +331,21 @@ where
     where
         F: FnMut(usize) -> T,
     {
-        let mut destination = unsafe { ArrayBuilder::new() };
+        unsafe {
+            let mut destination = ArrayBuilder::new();
 
-        for (i, dst) in destination.array.iter_mut().enumerate() {
-            unsafe {
-                ptr::write(dst, f(i));
+            {
+                let (destination_iter, position) = destination.iter_position();
+
+                for (i, dst) in destination_iter.enumerate() {
+                    ptr::write(dst, f(i));
+
+                    *position += 1;
+                }
             }
 
-            destination.position += 1;
+            destination.into_inner()
         }
-
-        unsafe { destination.into_inner() }
     }
 
     #[doc(hidden)]
@@ -319,27 +361,23 @@ where
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
     {
-        let mut left = unsafe { ArrayConsumer::new(lhs) };
-        let mut right = unsafe { ArrayConsumer::new(self) };
+        unsafe {
+            let mut left = ArrayConsumer::new(lhs);
+            let mut right = ArrayConsumer::new(self);
 
-        let ArrayConsumer {
-            array: ref left_array,
-            position: ref mut left_position,
-        } = left;
-        let ArrayConsumer {
-            array: ref right_array,
-            position: ref mut right_position,
-        } = right;
+            let (left_array_iter, left_position) = left.iter_position();
+            let (right_array_iter, right_position) = right.iter_position();
 
-        FromIterator::from_iter(left_array.iter().zip(right_array.iter()).map(|(l, r)| {
-            let left_value = unsafe { ptr::read(l) };
-            let right_value = unsafe { ptr::read(r) };
+            FromIterator::from_iter(left_array_iter.zip(right_array_iter).map(|(l, r)| {
+                let left_value = ptr::read(l);
+                let right_value = ptr::read(r);
 
-            *left_position += 1;
-            *right_position += 1;
+                *left_position += 1;
+                *right_position += 1;
 
-            f(left_value, right_value)
-        }))
+                f(left_value, right_value)
+            }))
+        }
     }
 
     #[doc(hidden)]
@@ -350,24 +388,23 @@ where
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
-        let mut right = unsafe { ArrayConsumer::new(self) };
+        unsafe {
+            let mut right = ArrayConsumer::new(self);
 
-        let ArrayConsumer {
-            array: ref right_array,
-            position: ref mut right_position,
-        } = right;
+            let (right_array_iter, right_position) = right.iter_position();
 
-        FromIterator::from_iter(
-            lhs.into_iter()
-                .zip(right_array.iter())
-                .map(|(left_value, r)| {
-                    let right_value = unsafe { ptr::read(r) };
+            FromIterator::from_iter(
+                lhs.into_iter()
+                    .zip(right_array_iter)
+                    .map(|(left_value, r)| {
+                        let right_value = ptr::read(r);
 
-                    *right_position += 1;
+                        *right_position += 1;
 
-                    f(left_value, right_value)
-                }),
-        )
+                        f(left_value, right_value)
+                    }),
+            )
+        }
     }
 }
 
@@ -390,20 +427,19 @@ where
         Self: MappedGenericSequence<T, U>,
         F: FnMut(T) -> U,
     {
-        let mut source = unsafe { ArrayConsumer::new(self) };
+        unsafe {
+            let mut source = ArrayConsumer::new(self);
 
-        let ArrayConsumer {
-            ref array,
-            ref mut position,
-        } = source;
+            let (array_iter, position) = source.iter_position();
 
-        FromIterator::from_iter(array.iter().map(|src| {
-            let value = unsafe { ptr::read(src) };
+            FromIterator::from_iter(array_iter.map(|src| {
+                let value = ptr::read(src);
 
-            *position += 1;
+                *position += 1;
 
-            f(value)
-        }))
+                f(value)
+            }))
+        }
     }
 
     #[inline]
@@ -422,20 +458,19 @@ where
     where
         F: FnMut(U, T) -> U,
     {
-        let mut source = unsafe { ArrayConsumer::new(self) };
+        unsafe {
+            let mut source = ArrayConsumer::new(self);
 
-        let ArrayConsumer {
-            ref array,
-            ref mut position,
-        } = source;
+            let (array_iter, position) = source.iter_position();
 
-        array.iter().fold(init, |acc, src| {
-            let value = unsafe { ptr::read(src) };
+            array_iter.fold(init, |acc, src| {
+                let value = ptr::read(src);
 
-            *position += 1;
+                *position += 1;
 
-            f(acc, value)
-        })
+                f(acc, value)
+            })
+        }
     }
 }
 
@@ -525,17 +560,21 @@ where
         let iter = iter.into_iter();
 
         if iter.len() == N::to_usize() {
-            let mut destination = unsafe { ArrayBuilder::new() };
+            unsafe {
+                let mut destination = ArrayBuilder::new();
 
-            for (dst, src) in destination.array.iter_mut().zip(iter.into_iter()) {
-                unsafe {
-                    ptr::write(dst, src);
+                {
+                    let (destination_iter, position) = destination.iter_position();
+
+                    for (dst, src) in destination_iter.zip(iter.into_iter()) {
+                        ptr::write(dst, src);
+
+                        *position += 1;
+                    }
                 }
 
-                destination.position += 1;
+                Some(destination.into_inner())
             }
-
-            Some(unsafe { destination.into_inner() })
         } else {
             None
         }
