@@ -169,16 +169,16 @@ pub struct ArrayBuilder<T, N: ArrayLength<T>> {
 
 impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[doc(hidden)]
-    pub fn new() -> ArrayBuilder<T, N> {
+    pub unsafe fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
-            array: ManuallyDrop::new(unsafe { mem::uninitialized() }),
+            array: ManuallyDrop::new(mem::uninitialized()),
             position: 0,
         }
     }
 
     #[doc(hidden)]
-    pub fn into_inner(self) -> GenericArray<T, N> {
-        let array = unsafe { ptr::read(&self.array) };
+    pub unsafe fn into_inner(self) -> GenericArray<T, N> {
+        let array = ptr::read(&self.array);
 
         mem::forget(self);
 
@@ -204,7 +204,7 @@ pub struct ArrayConsumer<T, N: ArrayLength<T>> {
 
 impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
     #[doc(hidden)]
-    pub fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
+    pub unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
         ArrayConsumer {
             array: ManuallyDrop::new(array),
             position: 0,
@@ -254,7 +254,7 @@ where
     where
         I: IntoIterator<Item = T>,
     {
-        let mut destination = ArrayBuilder::new();
+        let mut destination = unsafe { ArrayBuilder::new() };
 
         for (src, dst) in iter.into_iter().zip(destination.array.iter_mut()) {
             unsafe {
@@ -268,7 +268,7 @@ where
             from_iter_length_fail(destination.position, N::to_usize());
         }
 
-        destination.into_inner()
+        unsafe { destination.into_inner() }
     }
 }
 
@@ -293,7 +293,7 @@ where
     where
         F: FnMut(usize) -> T,
     {
-        let mut destination = ArrayBuilder::new();
+        let mut destination = unsafe { ArrayBuilder::new() };
 
         for (i, dst) in destination.array.iter_mut().enumerate() {
             unsafe {
@@ -303,7 +303,7 @@ where
             destination.position += 1;
         }
 
-        destination.into_inner()
+        unsafe { destination.into_inner() }
     }
 
     #[doc(hidden)]
@@ -319,8 +319,8 @@ where
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
     {
-        let mut left = ArrayConsumer::new(lhs);
-        let mut right = ArrayConsumer::new(self);
+        let mut left = unsafe { ArrayConsumer::new(lhs) };
+        let mut right = unsafe { ArrayConsumer::new(self) };
 
         let ArrayConsumer {
             array: ref left_array,
@@ -350,7 +350,7 @@ where
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
-        let mut right = ArrayConsumer::new(self);
+        let mut right = unsafe { ArrayConsumer::new(self) };
 
         let ArrayConsumer {
             array: ref right_array,
@@ -390,7 +390,7 @@ where
         Self: MappedGenericSequence<T, U>,
         F: FnMut(T) -> U,
     {
-        let mut source = ArrayConsumer::new(self);
+        let mut source = unsafe { ArrayConsumer::new(self) };
 
         let ArrayConsumer {
             ref array,
@@ -422,7 +422,7 @@ where
     where
         F: FnMut(U, T) -> U,
     {
-        let mut source = ArrayConsumer::new(self);
+        let mut source = unsafe { ArrayConsumer::new(self) };
 
         let ArrayConsumer {
             ref array,
@@ -525,7 +525,7 @@ where
         let iter = iter.into_iter();
 
         if iter.len() == N::to_usize() {
-            let mut destination = ArrayBuilder::new();
+            let mut destination = unsafe { ArrayBuilder::new() };
 
             for (dst, src) in destination.array.iter_mut().zip(iter.into_iter()) {
                 unsafe {
@@ -535,7 +535,7 @@ where
                 destination.position += 1;
             }
 
-            Some(destination.into_inner())
+            Some(unsafe { destination.into_inner() })
         } else {
             None
         }
