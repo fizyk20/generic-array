@@ -1,8 +1,8 @@
 [package]
 
 name = "generic-array"
-version = "0.11.0"
-authors = [ "Bartłomiej Kamiński <fizyk20@gmail.com>" ]
+version = "0.11.1"
+authors = [ "Bartłomiej Kamiński <fizyk20@gmail.com>", "Aaron Trent <novacrazy@gmail.com>" ]
 
 description = "Generic types implementing functionality of arrays"
 readme = "README.md"
