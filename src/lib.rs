@@ -41,6 +41,10 @@
 
 #[cfg(feature = "serde")]
 extern crate serde;
+
+#[cfg(test)]
+extern crate bincode;
+
 pub extern crate typenum;
 
 mod hex;
@@ -49,19 +53,19 @@ mod impls;
 #[cfg(feature = "serde")]
 pub mod impl_serde;
 
-use core::{mem, ptr, slice};
 use core::iter::FromIterator;
 use core::marker::PhantomData;
 use core::mem::ManuallyDrop;
 use core::ops::{Deref, DerefMut};
+use core::{mem, ptr, slice};
 use typenum::bit::{B0, B1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
 #[cfg_attr(test, macro_use)]
 pub mod arr;
+pub mod functional;
 pub mod iter;
 pub mod sequence;
-pub mod functional;
 
 use functional::*;
 pub use iter::GenericArrayIter;
@@ -355,8 +359,8 @@ where
         mut f: F,
     ) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
     where
-        GenericArray<B, Self::Length>: GenericSequence<B, Length = Self::Length>
-            + MappedGenericSequence<B, U>,
+        GenericArray<B, Self::Length>:
+            GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
