@@ -29,16 +29,16 @@ macro_rules! arr_impl {
         unsafe { $crate::transmute::<_, $crate::GenericArray<$T, $N>>([$($x),*]) }
     });
     ($T:ty; $N:ty, [], [$x1:expr]) => (
-        arr_impl!($T; $crate::arr::Inc<$T, $N>, [$x1 as $T], [])
+        $crate::arr_impl!($T; $crate::arr::Inc<$T, $N>, [$x1 as $T], [])
     );
     ($T:ty; $N:ty, [], [$x1:expr, $($x:expr),+]) => (
-        arr_impl!($T; $crate::arr::Inc<$T, $N>, [$x1 as $T], [$($x),+])
+        $crate::arr_impl!($T; $crate::arr::Inc<$T, $N>, [$x1 as $T], [$($x),+])
     );
     ($T:ty; $N:ty, [$($y:expr),+], [$x1:expr]) => (
-        arr_impl!($T; $crate::arr::Inc<$T, $N>, [$($y),+, $x1 as $T], [])
+        $crate::arr_impl!($T; $crate::arr::Inc<$T, $N>, [$($y),+, $x1 as $T], [])
     );
     ($T:ty; $N:ty, [$($y:expr),+], [$x1:expr, $($x:expr),+]) => (
-        arr_impl!($T; $crate::arr::Inc<$T, $N>, [$($y),+, $x1 as $T], [$($x),+])
+        $crate::arr_impl!($T; $crate::arr::Inc<$T, $N>, [$($y),+, $x1 as $T], [$($x),+])
     );
 }
 
@@ -50,7 +50,7 @@ macro_rules! arr {
         unsafe { $crate::transmute::<[$T; 0], $crate::GenericArray<$T, $crate::typenum::U0>>([]) }
     });
     ($T:ty; $($x:expr),* $(,)*) => (
-        arr_impl!($T; $crate::typenum::U0, [], [$($x),*])
+        $crate::arr_impl!($T; $crate::typenum::U0, [], [$($x),*])
     );
     ($($x:expr,)+) => (arr![$($x),*]);
     () => ("""Macro requires a type, e.g. `let array = arr![u32; 1, 2, 3];`")
