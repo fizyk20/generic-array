@@ -204,6 +204,34 @@ where
             None
         }
     }
+
+    fn rfold<B, F>(mut self, init: B, mut f: F) -> B
+    where
+        F: FnMut(B, Self::Item) -> B,
+    {
+        let ret = unsafe {
+            let GenericArrayIter {
+                ref array,
+                index,
+                ref mut index_back,
+            } = self;
+
+            let remaining = &array[index..*index_back];
+
+            remaining.iter().rfold(init, |acc, src| {
+                let value = ptr::read(src);
+
+                *index_back -= 1;
+
+                f(acc, value)
+            })
+        };
+
+        // ensure the drop happens here after iteration
+        drop(self);
+
+        ret
+    }
 }
 
 impl<T, N> ExactSizeIterator for GenericArrayIter<T, N>

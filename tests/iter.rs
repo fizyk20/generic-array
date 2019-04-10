@@ -94,14 +94,19 @@ fn test_into_iter_flat_map() {
 
 #[test]
 fn test_into_iter_fold() {
-    assert_eq!(arr![i32; 1, 2, 3, 4].into_iter().fold(0, |sum, x| sum + x), 10);
+    assert_eq!(
+        arr![i32; 1, 2, 3, 4].into_iter().fold(0, |sum, x| sum + x),
+        10
+    );
 
     let mut iter = arr![i32; 0, 1, 2, 3, 4, 5].into_iter();
 
     iter.next();
     iter.next_back();
 
-    assert_eq!(iter.fold(0, |sum, x| sum + x), 10);
+    assert_eq!(iter.clone().fold(0, |sum, x| sum + x), 10);
+
+    assert_eq!(iter.rfold(0, |sum, x| sum + x), 10);
 }
 
 #[test]
