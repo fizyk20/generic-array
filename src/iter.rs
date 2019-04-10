@@ -1,8 +1,8 @@
 //! `GenericArray` iterator implementation.
 
 use super::{ArrayLength, GenericArray};
-use core::{cmp, ptr, fmt, mem};
 use core::mem::ManuallyDrop;
+use core::{cmp, fmt, mem, ptr};
 
 /// An iterator that moves out of a `GenericArray`
 pub struct GenericArrayIter<T, N: ArrayLength<T>> {
@@ -129,6 +129,34 @@ where
         } else {
             None
         }
+    }
+
+    fn fold<B, F>(mut self, init: B, mut f: F) -> B
+    where
+        F: FnMut(B, Self::Item) -> B,
+    {
+        let ret = unsafe {
+            let GenericArrayIter {
+                ref array,
+                ref mut index,
+                index_back,
+            } = self;
+
+            let remaining = &array[*index..index_back];
+
+            remaining.iter().fold(init, |acc, src| {
+                let value = ptr::read(src);
+
+                *index += 1;
+
+                f(acc, value)
+            })
+        };
+
+        // ensure the drop happens here after iteration
+        drop(self);
+
+        ret
     }
 
     #[inline]

@@ -98,8 +98,8 @@ impl<T: Clone, U: Clone> Clone for GenericArrayImplEven<T, U> {
             parent1: self.parent1.clone(),
             parent2: self.parent2.clone(),
             _marker: PhantomData,
-        }
     }
+}
 }
 
 impl<T: Copy, U: Copy> Copy for GenericArrayImplEven<T, U> {}
@@ -120,8 +120,8 @@ impl<T: Clone, U: Clone> Clone for GenericArrayImplOdd<T, U> {
             parent1: self.parent1.clone(),
             parent2: self.parent2.clone(),
             data: self.data.clone(),
-        }
     }
+}
 }
 
 impl<T: Copy, U: Copy> Copy for GenericArrayImplOdd<T, U> {}
@@ -298,11 +298,13 @@ where
             {
                 let (destination_iter, position) = destination.iter_position();
 
-                for (src, dst) in iter.into_iter().zip(destination_iter) {
-                    ptr::write(dst, src);
+                iter.into_iter()
+                    .zip(destination_iter)
+                    .for_each(|(src, dst)| {
+                        ptr::write(dst, src);
 
-                    *position += 1;
-                }
+                        *position += 1;
+                    });
             }
 
             if destination.position < N::to_usize() {
@@ -341,11 +343,11 @@ where
             {
                 let (destination_iter, position) = destination.iter_position();
 
-                for (i, dst) in destination_iter.enumerate() {
+                destination_iter.enumerate().for_each(|(i, dst)| {
                     ptr::write(dst, f(i));
 
                     *position += 1;
-                }
+                });
             }
 
             destination.into_inner()
@@ -570,11 +572,11 @@ where
                 {
                     let (destination_iter, position) = destination.iter_position();
 
-                    for (dst, src) in destination_iter.zip(iter.into_iter()) {
+                    destination_iter.zip(iter).for_each(|(dst, src)| {
                         ptr::write(dst, src);
 
                         *position += 1;
-                    }
+                    });
                 }
 
                 Some(destination.into_inner())
