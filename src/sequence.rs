@@ -219,7 +219,7 @@ where
 
     fn pop_back(self) -> (Self::Shorter, T) {
         let init_ptr = self.as_ptr();
-        let last_ptr = unsafe { init_ptr.offset(Sub1::<N>::to_usize() as isize) };
+        let last_ptr = unsafe { init_ptr.add(Sub1::<N>::to_usize()) };
 
         let init = unsafe { ptr::read(init_ptr as _) };
         let last = unsafe { ptr::read(last_ptr as _) };
@@ -268,7 +268,7 @@ where
 
     fn split(self) -> (Self::First, Self::Second) {
         let head_ptr = self.as_ptr();
-        let tail_ptr = unsafe { head_ptr.offset(K::to_usize() as isize) };
+        let tail_ptr = unsafe { head_ptr.add(K::to_usize()) };
 
         let head = unsafe { ptr::read(head_ptr as _) };
         let tail = unsafe { ptr::read(tail_ptr as _) };
@@ -310,7 +310,7 @@ where
 
         unsafe {
             ptr::write(output_ptr as *mut _, self);
-            ptr::write(output_ptr.offset(N::to_usize() as isize) as *mut _, rest);
+            ptr::write(output_ptr.add(N::to_usize()) as *mut _, rest);
         }
 
         output
