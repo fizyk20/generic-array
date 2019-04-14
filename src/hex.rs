@@ -15,12 +15,11 @@
 //! ```
 //!
 
-use core::cmp::min;
-use core::fmt;
-use core::ops::Add;
-use core::str;
+use core::{fmt, str, ops::Add, cmp::min};
+
 use typenum::*;
-use {ArrayLength, GenericArray};
+
+use ::{ArrayLength, GenericArray};
 
 static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
 static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";
@@ -30,7 +29,7 @@ where
     T: Add<T>,
     <T as Add<T>>::Output: ArrayLength<u8>,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
@@ -70,7 +69,7 @@ where
     T: Add<T>,
     <T as Add<T>>::Output: ArrayLength<u8>,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 

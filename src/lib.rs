@@ -67,9 +67,9 @@ pub mod functional;
 pub mod iter;
 pub mod sequence;
 
-use functional::*;
-pub use iter::GenericArrayIter;
-use sequence::*;
+use self::functional::*;
+pub use self::iter::GenericArrayIter;
+use self::sequence::*;
 
 /// Trait making `GenericArray` work, marking types to be used as length of an array
 pub unsafe trait ArrayLength<T>: Unsigned {
@@ -616,7 +616,7 @@ mod test {
 
     #[test]
     fn test_assembly() {
-        use functional::*;
+        use ::functional::*;
 
         let a = black_box(arr![i32; 1, 3, 5, 7]);
         let b = black_box(arr![i32; 2, 4, 6, 8]);
