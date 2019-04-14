@@ -1,6 +1,7 @@
 //! `GenericArray` iterator implementation.
 
 use super::{ArrayLength, GenericArray};
+use core::iter::FusedIterator;
 use core::mem::ManuallyDrop;
 use core::{cmp, fmt, mem, ptr};
 
@@ -243,4 +244,10 @@ where
     }
 }
 
-// TODO: Implement `FusedIterator` and `TrustedLen` when stabilized
+impl<T, N> FusedIterator for GenericArrayIter<T, N>
+where
+    N: ArrayLength<T>,
+{
+}
+
+// TODO: Implement `TrustedLen` when stabilized
