@@ -4,10 +4,10 @@
 extern crate generic_array;
 use core::cell::Cell;
 use core::ops::{Add, Drop};
-use generic_array::GenericArray;
 use generic_array::functional::*;
 use generic_array::sequence::*;
 use generic_array::typenum::{U1, U3, U4, U97};
+use generic_array::GenericArray;
 
 #[test]
 fn test() {
@@ -124,8 +124,8 @@ fn test_cmp() {
 mod impl_serde {
     extern crate serde_json;
 
-    use generic_array::GenericArray;
     use generic_array::typenum::U6;
+    use generic_array::GenericArray;
 
     #[test]
     fn test_serde_implementation() {
@@ -178,7 +178,15 @@ fn test_from_iter() {
 #[test]
 fn test_sizes() {
     #![allow(dead_code)]
+    use core::ffi::c_void;
     use core::mem::{size_of, size_of_val};
+
+    #[derive(Debug, Copy, Clone)]
+    enum E {
+        V,
+        V2(i32),
+        V3 { h: bool, i: i32 },
+    }
 
     #[derive(Debug, Copy, Clone)]
     #[repr(C)]
@@ -186,12 +194,21 @@ fn test_sizes() {
     struct Test {
         t: u16,
         s: u32,
+        mm: bool,
         r: u16,
         f: u16,
+        p: (),
         o: u32,
+        ff: *const extern "C" fn(*const char) -> *const c_void,
+        l: *const c_void,
+        w: bool,
+        q: bool,
+        v: E,
     }
 
-    assert_eq!(size_of::<Test>(), 14);
+    assert_eq!(size_of::<E>(), 8);
+
+    assert_eq!(size_of::<Test>(), 25 + size_of::<usize>() * 2);
 
     assert_eq!(size_of_val(&arr![u8; 1, 2, 3]), size_of::<u8>() * 3);
     assert_eq!(size_of_val(&arr![u32; 1]), size_of::<u32>() * 1);

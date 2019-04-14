@@ -21,7 +21,7 @@ where
     N: ArrayLength<T>,
 {
     fn clone(&self) -> GenericArray<T, N> {
-        self.map(|x| x.clone())
+        self.map(Clone::clone)
     }
 }
 
@@ -40,11 +40,7 @@ where
         **self == **other
     }
 }
-impl<T: Eq, N> Eq for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
-}
+impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
 
 impl<T: PartialOrd, N> PartialOrd for GenericArray<T, N>
 where

@@ -1,8 +1,8 @@
 //! Useful traits for manipulating sequences of data stored in `GenericArray`s
 
 use super::*;
-use core::{mem, ptr};
 use core::ops::{Add, Sub};
+use core::{mem, ptr};
 use typenum::operator_aliases::*;
 
 /// Defines some sequence with an associated length and iteration capabilities.
@@ -41,17 +41,15 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
 
             let (left_array_iter, left_position) = left.iter_position();
 
-            FromIterator::from_iter(
-                left_array_iter
-                    .zip(self.into_iter())
-                    .map(|(l, right_value)| {
+            FromIterator::from_iter(left_array_iter.zip(self.into_iter()).map(
+                |(l, right_value)| {
                         let left_value = ptr::read(l);
 
                         *left_position += 1;
 
                         f(left_value, right_value)
-                    })
-            )
+                },
+            ))
         }
     }
 

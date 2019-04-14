@@ -15,12 +15,12 @@
 //! ```
 //!
 
-use {ArrayLength, GenericArray};
 use core::cmp::min;
 use core::fmt;
 use core::ops::Add;
 use core::str;
 use typenum::*;
+use {ArrayLength, GenericArray};
 
 static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
 static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";
@@ -39,10 +39,11 @@ where
             // buffer of 2x number of bytes
             let mut res = GenericArray::<u8, Sum<T, T>>::default();
 
-            for (i, c) in self.iter().take(max_hex).enumerate() {
+            self.iter().take(max_hex).enumerate().for_each(|(i, c)| {
                 res[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
-            }
+            });
+
             f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits]) })?;
         } else {
             // For large array use chunks of up to 1024 bytes (2048 hex chars)
@@ -50,10 +51,11 @@ where
             let mut digits_left = max_digits;
 
             for chunk in self[..max_hex].chunks(1024) {
-                for (i, c) in chunk.iter().enumerate() {
+                chunk.iter().enumerate().for_each(|(i, c)| {
                     buf[i * 2] = LOWER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
-                }
+                });
+
                 let n = min(chunk.len() * 2, digits_left);
                 f.write_str(unsafe { str::from_utf8_unchecked(&buf[..n]) })?;
                 digits_left -= n;
@@ -77,10 +79,11 @@ where
             // buffer of 2x number of bytes
             let mut res = GenericArray::<u8, Sum<T, T>>::default();
 
-            for (i, c) in self.iter().take(max_hex).enumerate() {
+            self.iter().take(max_hex).enumerate().for_each(|(i, c)| {
                 res[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                 res[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
-            }
+            });
+
             f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits]) })?;
         } else {
             // For large array use chunks of up to 1024 bytes (2048 hex chars)
@@ -88,10 +91,11 @@ where
             let mut digits_left = max_digits;
 
             for chunk in self[..max_hex].chunks(1024) {
-                for (i, c) in chunk.iter().enumerate() {
+                chunk.iter().enumerate().for_each(|(i, c)| {
                     buf[i * 2] = UPPER_CHARS[(c >> 4) as usize];
                     buf[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
-                }
+                });
+
                 let n = min(chunk.len() * 2, digits_left);
                 f.write_str(unsafe { str::from_utf8_unchecked(&buf[..n]) })?;
                 digits_left -= n;
