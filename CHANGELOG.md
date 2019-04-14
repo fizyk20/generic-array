@@ -1,3 +1,10 @@
+* **`0.13.0`**
+    * Allow `arr!` to be imported with use syntax.
+        * Requires minumum Rust version of 1.30.1
+
+* **`0.12.2`**
+    * Implement `FusedIterator` for `GenericArrayIter`
+
 * **`0.12.1`**
     * Use internal iteration where possible and provide more efficient internal iteration methods.
 

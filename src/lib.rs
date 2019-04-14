@@ -616,7 +616,7 @@ mod test {
 
     #[test]
     fn test_assembly() {
-        use ::functional::*;
+        use crate::functional::*;
 
         let a = black_box(arr![i32; 1, 3, 5, 7]);
         let b = black_box(arr![i32; 2, 4, 6, 8]);

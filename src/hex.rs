@@ -19,7 +19,7 @@ use core::{fmt, str, ops::Add, cmp::min};
 
 use typenum::*;
 
-use ::{ArrayLength, GenericArray};
+use crate::{ArrayLength, GenericArray};
 
 static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
 static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";

@@ -4,6 +4,8 @@
 
 This crate implements generic array types for Rust.
 
+**Requires minumum Rust version of 1.30.1**
+
 [Documentation](http://fizyk20.github.io/generic-array/generic_array/)
 
 ## Usage
