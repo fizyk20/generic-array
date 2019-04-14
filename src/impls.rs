@@ -5,8 +5,8 @@ use core::hash::{Hash, Hasher};
 
 use super::{ArrayLength, GenericArray};
 
-use ::functional::*;
-use ::sequence::*;
+use crate::functional::*;
+use crate::sequence::*;
 
 impl<T: Default, N> Default for GenericArray<T, N>
 where
