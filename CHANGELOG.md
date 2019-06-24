@@ -1,8 +1,10 @@
+* **`0.13.1`**
+    * Mark `GenericArray` as `#[repr(transparent)]`
+    * Implement `Into<[T; N]>` for `GenericArray<T, N>` up to N=32
+
 * **`0.13.0`**
     * Allow `arr!` to be imported with use syntax.
         * Requires minumum Rust version of 1.30.1
-    * Mark `GenericArray` as `#[repr(transparent)]`
-    * Implement `Into<[T; N]>` for `GenericArray<T, N>` up to N=32
 
 * **`0.12.2`**
     * Implement `FusedIterator` for `GenericArrayIter`
