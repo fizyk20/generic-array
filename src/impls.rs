@@ -75,6 +75,7 @@ impl<T, N> Borrow<[T]> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    #[inline(always)]
     fn borrow(&self) -> &[T] {
         &self[..]
     }
@@ -84,6 +85,7 @@ impl<T, N> BorrowMut<[T]> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    #[inline(always)]
     fn borrow_mut(&mut self) -> &mut [T] {
         &mut self[..]
     }
@@ -93,6 +95,7 @@ impl<T, N> AsRef<[T]> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    #[inline(always)]
     fn as_ref(&self) -> &[T] {
         &self[..]
     }
@@ -102,6 +105,7 @@ impl<T, N> AsMut<[T]> for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    #[inline(always)]
     fn as_mut(&mut self) -> &mut [T] {
         &mut self[..]
     }

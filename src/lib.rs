@@ -152,6 +152,7 @@ where
 {
     type Target = [T];
 
+    #[inline(always)]
     fn deref(&self) -> &[T] {
         unsafe { slice::from_raw_parts(self as *const Self as *const T, N::to_usize()) }
     }
@@ -161,6 +162,7 @@ impl<T, N> DerefMut for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
+    #[inline(always)]
     fn deref_mut(&mut self) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_usize()) }
     }
