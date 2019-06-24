@@ -123,15 +123,19 @@ macro_rules! impl_from {
     ($($n: expr => $ty: ty),*) => {
         $(
             impl<T> From<[T; $n]> for GenericArray<T, $ty> {
+                #[inline(always)]
                 fn from(arr: [T; $n]) -> Self {
-                    use core::mem::{forget, transmute_copy};
-                    let x = unsafe { transmute_copy(&arr) };
-                    forget(arr);
-                    x
+                    unsafe { $crate::transmute(arr) }
+                }
+            }
+
+            impl<T> Into<[T; $n]> for GenericArray<T, $ty> {
+                #[inline(always)]
+                fn into(self) -> [T; $n] {
+                    unsafe { $crate::transmute(self) }
                 }
             }
         )*
-
     }
 }
 
