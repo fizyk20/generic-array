@@ -1,3 +1,6 @@
+* **`0.13.2`**
+    * Add feature `more_lengths`, which adds more `From`/`Into` implementations for arrays of various lengths.
+
 * **`0.13.1`**
     * Mark `GenericArray` as `#[repr(transparent)]`
     * Implement `Into<[T; N]>` for `GenericArray<T, N>` up to N=32
