@@ -3,12 +3,12 @@ script:
   - cd $TRAVIS_BUILD_DIR
   - cargo build
   - cargo test
-  - cargo build --features serde
-  - cargo test --features serde
+  - cargo build --all-features
+  - cargo test --all-features
 after_success: |-
   [ $TRAVIS_BRANCH = master ] &&
   [ $TRAVIS_PULL_REQUEST = false ] &&
-  cargo doc &&
+  cargo doc --all-features &&
   echo "<meta http-equiv=refresh content=0;url=`echo $TRAVIS_REPO_SLUG | cut -d '/' -f 2`/index.html>" > target/doc/index.html &&
   sudo pip install ghp-import &&
   ghp-import -n target/doc &&

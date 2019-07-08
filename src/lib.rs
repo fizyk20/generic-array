@@ -51,7 +51,7 @@ mod hex;
 mod impls;
 
 #[cfg(feature = "serde")]
-pub mod impl_serde;
+mod impl_serde;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
