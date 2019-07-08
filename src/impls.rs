@@ -175,8 +175,11 @@ impl_from! {
     29 => ::typenum::U29,
     30 => ::typenum::U30,
     31 => ::typenum::U31,
-    32 => ::typenum::U32,
+    32 => ::typenum::U32
+}
 
+#[cfg(feature = "more_lengths")]
+impl_from! {
     33 => ::typenum::U33,
     34 => ::typenum::U34,
     35 => ::typenum::U35,
