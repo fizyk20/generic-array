@@ -37,6 +37,7 @@
 //! ```
 
 #![deny(missing_docs)]
+#![deny(meta_variable_misuse)]
 #![no_std]
 
 #[cfg(feature = "serde")]
