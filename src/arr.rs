@@ -52,6 +52,6 @@ macro_rules! arr {
     ($T:ty; $($x:expr),* $(,)*) => (
         $crate::arr_impl!($T; $crate::typenum::U0, [], [$($x),*])
     );
-    ($($x:expr,)+) => (arr![$($x),*]);
+    ($($x:expr,)+) => (arr![$($x),+]);
     () => ("""Macro requires a type, e.g. `let array = arr![u32; 1, 2, 3];`")
 }
