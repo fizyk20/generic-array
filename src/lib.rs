@@ -483,6 +483,13 @@ where
     }
 }
 
+impl<T> GenericArray<T, typenum::consts::U0> {
+    /// Creates a new, empty array
+    pub fn new() -> Self {
+        GenericArray { data: () }
+    }
+}
+
 impl<T, N> GenericArray<T, N>
 where
     N: ArrayLength<T>,

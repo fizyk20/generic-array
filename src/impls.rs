@@ -144,6 +144,7 @@ macro_rules! impl_from {
 }
 
 impl_from! {
+    0  => ::typenum::U0,
     1  => ::typenum::U1,
     2  => ::typenum::U2,
     3  => ::typenum::U3,
