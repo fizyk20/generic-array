@@ -607,6 +607,18 @@ pub unsafe fn transmute<A, B>(a: A) -> B {
     b
 }
 
+/// Concrete conversion to a fixed-size array. Since there is only one fixed-size array
+/// type that each generic array type can convert to, this allows us to easier work with
+/// these in a generic way.
+pub trait IntoArray {
+    /// The concrete Rust-level fixed-size array type.
+    type Array;
+
+    /// Convert into the fixed-size array type. If you already know the input and output
+    /// types this is equivalent to `Into::into` but it can be useful in a generic context.
+    fn into_array(self) -> Self::Array;
+}
+
 #[cfg(test)]
 mod test {
     // Compile with:

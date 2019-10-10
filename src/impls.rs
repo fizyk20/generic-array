@@ -139,6 +139,14 @@ macro_rules! impl_from {
                     unsafe { $crate::transmute(self) }
                 }
             }
+
+            impl<T> $crate::IntoArray for GenericArray<T, $ty> {
+                type Array = [T; $n];
+
+                fn into_array(self) -> Self::Array {
+                    self.into()
+                }
+            }
         )*
     }
 }
