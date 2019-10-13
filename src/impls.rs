@@ -239,3 +239,22 @@ impl_from! {
     1000 => ::typenum::U1000,
     1024 => ::typenum::U1024
 }
+
+#[cfg(feature = "arrayvec")]
+unsafe impl<T, Size> arrayvec::Array for GenericArray<T, Size>
+where
+    Size: ArrayLength<T> + typenum::Unsigned,
+{
+    type Item = T;
+    // TODO: Have a trait that can tell the smallest int type that can hold a `typenum::Unsigned`
+    type Index = usize;
+    const CAPACITY: usize = Size::USIZE;
+
+    fn as_slice(&self) -> &[Self::Item] {
+        self.as_slice()
+    }
+
+    fn as_mut_slice(&mut self) -> &mut [Self::Item] {
+        self.as_mut_slice()
+    }
+}

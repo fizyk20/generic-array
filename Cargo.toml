@@ -27,6 +27,7 @@ more_lengths = []
 [dependencies]
 typenum = "1.10"
 serde = { version = "1.0", optional = true, default-features = false }
+arrayvec = { version = "0.5", optional = true }
 
 [dev_dependencies]
 # this can't yet be made optional, see https://github.com/rust-lang/cargo/issues/1596
