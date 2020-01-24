@@ -33,7 +33,7 @@ where
         let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
-        if T::to_usize() < 1024 {
+        if T::USIZE < 1024 {
             // For small arrays use a stack allocated
             // buffer of 2x number of bytes
             let mut res = GenericArray::<u8, Sum<T, T>>::default();
@@ -73,7 +73,7 @@ where
         let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
-        if T::to_usize() < 1024 {
+        if T::USIZE < 1024 {
             // For small arrays use a stack allocated
             // buffer of 2x number of bytes
             let mut res = GenericArray::<u8, Sum<T, T>>::default();
