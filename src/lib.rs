@@ -55,7 +55,7 @@ mod impl_serde;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
-use core::mem::ManuallyDrop;
+use core::mem::{MaybeUninit, ManuallyDrop};
 use core::ops::{Deref, DerefMut};
 use core::{mem, ptr, slice};
 use typenum::bit::{B0, B1};
@@ -154,7 +154,7 @@ where
 
     #[inline(always)]
     fn deref(&self) -> &[T] {
-        unsafe { slice::from_raw_parts(self as *const Self as *const T, N::to_usize()) }
+        unsafe { slice::from_raw_parts(self as *const Self as *const T, N::USIZE) }
     }
 }
 
@@ -164,7 +164,7 @@ where
 {
     #[inline(always)]
     fn deref_mut(&mut self) -> &mut [T] {
-        unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::to_usize()) }
+        unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::USIZE) }
     }
 }
 
@@ -175,7 +175,7 @@ where
 /// which will be dropped if `into_inner` is not called.
 #[doc(hidden)]
 pub struct ArrayBuilder<T, N: ArrayLength<T>> {
-    array: ManuallyDrop<GenericArray<T, N>>,
+    array: MaybeUninit<GenericArray<T, N>>,
     position: usize,
 }
 
@@ -184,7 +184,7 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[inline]
     pub unsafe fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
-            array: ManuallyDrop::new(mem::uninitialized()),
+            array: MaybeUninit::uninit(),
             position: 0,
         }
     }
@@ -196,7 +196,7 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn iter_position(&mut self) -> (slice::IterMut<T>, &mut usize) {
-        (self.array.iter_mut(), &mut self.position)
+        ((&mut *self.array.as_mut_ptr()).iter_mut(), &mut self.position)
     }
 
     /// When done writing (assuming all elements have been written to),
@@ -208,14 +208,14 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
 
         mem::forget(self);
 
-        ManuallyDrop::into_inner(array)
+        array.assume_init()
     }
 }
 
 impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
     fn drop(&mut self) {
-        for value in &mut self.array[..self.position] {
-            unsafe {
+        unsafe {
+            for value in &mut (&mut *self.array.as_mut_ptr())[..self.position] {
                 ptr::drop_in_place(value);
             }
         }
@@ -255,7 +255,7 @@ impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
 
 impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
     fn drop(&mut self) {
-        for value in &mut self.array[self.position..N::to_usize()] {
+        for value in &mut self.array[self.position..N::USIZE] {
             unsafe {
                 ptr::drop_in_place(value);
             }
@@ -310,8 +310,8 @@ where
                     });
             }
 
-            if destination.position < N::to_usize() {
-                from_iter_length_fail(destination.position, N::to_usize());
+            if destination.position < N::USIZE {
+                from_iter_length_fail(destination.position, N::USIZE);
             }
 
             destination.into_inner()
@@ -522,7 +522,7 @@ impl<'a, T, N: ArrayLength<T>> From<&'a [T]> for &'a GenericArray<T, N> {
     /// Length of the slice must be equal to the length of the array.
     #[inline]
     fn from(slice: &[T]) -> &GenericArray<T, N> {
-        assert_eq!(slice.len(), N::to_usize());
+        assert_eq!(slice.len(), N::USIZE);
 
         unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
     }
@@ -534,7 +534,7 @@ impl<'a, T, N: ArrayLength<T>> From<&'a mut [T]> for &'a mut GenericArray<T, N> 
     /// Length of the slice must be equal to the length of the array.
     #[inline]
     fn from(slice: &mut [T]) -> &mut GenericArray<T, N> {
-        assert_eq!(slice.len(), N::to_usize());
+        assert_eq!(slice.len(), N::USIZE);
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
@@ -568,7 +568,7 @@ where
     {
         let iter = iter.into_iter();
 
-        if iter.len() == N::to_usize() {
+        if iter.len() == N::USIZE {
             unsafe {
                 let mut destination = ArrayBuilder::new();
 
@@ -595,9 +595,8 @@ where
 #[inline]
 #[doc(hidden)]
 pub unsafe fn transmute<A, B>(a: A) -> B {
-    let b = ::core::ptr::read(&a as *const A as *const B);
-    ::core::mem::forget(a);
-    b
+    let a = ManuallyDrop::new(a);
+    ::core::ptr::read(&*a as *const A as *const B)
 }
 
 #[cfg(test)]

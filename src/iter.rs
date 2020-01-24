@@ -2,8 +2,8 @@
 
 use super::{ArrayLength, GenericArray};
 use core::iter::FusedIterator;
-use core::mem::ManuallyDrop;
-use core::{cmp, fmt, mem, ptr};
+use core::mem::{MaybeUninit, ManuallyDrop};
+use core::{cmp, fmt, ptr};
 
 /// An iterator that moves out of a `GenericArray`
 pub struct GenericArrayIter<T, N: ArrayLength<T>> {
@@ -55,7 +55,7 @@ where
         GenericArrayIter {
             array: ManuallyDrop::new(self),
             index: 0,
-            index_back: N::to_usize(),
+            index_back: N::USIZE,
         }
     }
 }
@@ -96,19 +96,20 @@ where
         // This places all cloned elements at the start of the new array iterator,
         // not at their original indices.
         unsafe {
-            let mut iter = GenericArrayIter {
-                array: ManuallyDrop::new(mem::uninitialized()),
-                index: 0,
-                index_back: 0,
-            };
+            let mut array: MaybeUninit<GenericArray<T, N>> = MaybeUninit::uninit();
+            let mut index_back = 0;
 
-            for (dst, src) in iter.array.iter_mut().zip(self.as_slice()) {
+            for (dst, src) in (&mut *array.as_mut_ptr()).iter_mut().zip(self.as_slice()) {
                 ptr::write(dst, src.clone());
 
-                iter.index_back += 1;
+                index_back += 1;
             }
 
-            iter
+            GenericArrayIter {
+                array: ManuallyDrop::new(array.assume_init()),
+                index: 0,
+                index_back
+            }
         }
     }
 }
@@ -186,6 +187,7 @@ where
         self.next()
     }
 
+    #[inline]
     fn last(mut self) -> Option<T> {
         // Note, everything else will correctly drop first as `self` leaves scope.
         self.next_back()

@@ -2,7 +2,8 @@
 
 use super::*;
 use core::ops::{Add, Sub};
-use core::{mem, ptr};
+use core::mem::MaybeUninit;
+use core::ptr;
 use typenum::operator_aliases::*;
 
 /// Defines some sequence with an associated length and iteration capabilities.
@@ -184,27 +185,27 @@ where
     type Longer = GenericArray<T, Add1<N>>;
 
     fn append(self, last: T) -> Self::Longer {
-        let mut longer: Self::Longer = unsafe { mem::uninitialized() };
+        let mut longer: MaybeUninit<Self::Longer> = MaybeUninit::uninit();
 
         unsafe {
             ptr::write(longer.as_mut_ptr() as *mut _, self);
-            ptr::write(&mut longer[N::to_usize()], last);
-        }
+            ptr::write((longer.as_mut_ptr() as *mut T).add(N::USIZE), last);
 
-        longer
+            longer.assume_init()
+        }
     }
 
     fn prepend(self, first: T) -> Self::Longer {
-        let mut longer: Self::Longer = unsafe { mem::uninitialized() };
+        let mut longer: MaybeUninit<Self::Longer> = MaybeUninit::uninit();
 
-        let longer_ptr = longer.as_mut_ptr();
+        let longer_ptr = longer.as_mut_ptr() as *mut T;
 
         unsafe {
-            ptr::write(longer_ptr as *mut _, first);
-            ptr::write(longer_ptr.offset(1) as *mut _, self);
-        }
+            ptr::write(longer_ptr, first);
+            ptr::write(longer_ptr.add(1) as *mut Self, self);
 
-        longer
+            longer.assume_init()
+        }
     }
 }
 
@@ -218,27 +219,26 @@ where
     type Shorter = GenericArray<T, Sub1<N>>;
 
     fn pop_back(self) -> (Self::Shorter, T) {
-        let init_ptr = self.as_ptr();
-        let last_ptr = unsafe { init_ptr.add(Sub1::<N>::to_usize()) };
+        let whole = ManuallyDrop::new(self);
 
-        let init = unsafe { ptr::read(init_ptr as _) };
-        let last = unsafe { ptr::read(last_ptr as _) };
+        unsafe {
+            let init = ptr::read(whole.as_ptr() as _);
+            let last = ptr::read(whole.as_ptr().add(Sub1::<N>::USIZE) as _);
 
-        mem::forget(self);
-
-        (init, last)
+            (init, last)
+        }
     }
 
     fn pop_front(self) -> (T, Self::Shorter) {
-        let head_ptr = self.as_ptr();
-        let tail_ptr = unsafe { head_ptr.offset(1) };
+        // ensure this doesn't get dropped
+        let whole = ManuallyDrop::new(self);
 
-        let head = unsafe { ptr::read(head_ptr as _) };
-        let tail = unsafe { ptr::read(tail_ptr as _) };
+        unsafe {
+            let head = ptr::read(whole.as_ptr() as _);
+            let tail = ptr::read(whole.as_ptr().offset(1) as _);
 
-        mem::forget(self);
-
-        (head, tail)
+            (head, tail)
+        }
     }
 }
 
@@ -267,15 +267,15 @@ where
     type Second = GenericArray<T, Diff<N, K>>;
 
     fn split(self) -> (Self::First, Self::Second) {
-        let head_ptr = self.as_ptr();
-        let tail_ptr = unsafe { head_ptr.add(K::to_usize()) };
+        unsafe {
+            // ensure this doesn't get dropped
+            let whole = ManuallyDrop::new(self);
 
-        let head = unsafe { ptr::read(head_ptr as _) };
-        let tail = unsafe { ptr::read(tail_ptr as _) };
+            let head = ptr::read(whole.as_ptr() as *const _);
+            let tail = ptr::read(whole.as_ptr().add(K::USIZE) as *const _);
 
-        mem::forget(self);
-
-        (head, tail)
+            (head, tail)
+        }
     }
 }
 
@@ -304,15 +304,13 @@ where
     type Output = GenericArray<T, Sum<N, M>>;
 
     fn concat(self, rest: Self::Rest) -> Self::Output {
-        let mut output: Self::Output = unsafe { mem::uninitialized() };
-
-        let output_ptr = output.as_mut_ptr();
+        let mut output: MaybeUninit<Self::Output> = MaybeUninit::uninit();
 
         unsafe {
-            ptr::write(output_ptr as *mut _, self);
-            ptr::write(output_ptr.add(N::to_usize()) as *mut _, rest);
-        }
+            ptr::write(output.as_mut_ptr() as *mut Self, self);
+            ptr::write((output.as_mut_ptr() as *mut Self).add(1) as *mut _, rest);
 
-        output
+            output.assume_init()
+        }
     }
 }
