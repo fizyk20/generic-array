@@ -1,6 +1,6 @@
 * **`0.14.0`**
     * Replace `Into` implementations with the more general `From`.
-        * Requires minumum Rust version of 1.40.0
+        * Requires minumum Rust version of 1.41.0
 
 * **`0.13.2`**
     * Add feature `more_lengths`, which adds more `From`/`Into` implementations for arrays of various lengths.
