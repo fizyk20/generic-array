@@ -139,6 +139,20 @@ macro_rules! impl_from {
                     unsafe { $crate::transmute(self) }
                 }
             }
+
+            impl<T> AsRef<[T; $n]> for GenericArray<T, $ty> {
+                #[inline]
+                fn as_ref(&self) -> &[T; $n] {
+                    unsafe { $crate::transmute(self) }
+                }
+            }
+
+            impl<T> AsMut<[T; $n]> for GenericArray<T, $ty> {
+                #[inline]
+                fn as_mut(&mut self) -> &mut [T; $n] {
+                    unsafe { $crate::transmute(self) }
+                }
+            }
         )*
     }
 }
