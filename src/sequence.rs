@@ -279,6 +279,46 @@ where
     }
 }
 
+unsafe impl<'a, T, N, K> Split<T, K> for &'a GenericArray<T, N>
+where
+    N: ArrayLength<T>,
+    K: ArrayLength<T> + 'static,
+    N: Sub<K>,
+    Diff<N, K>: ArrayLength<T>,
+{
+    type First = &'a GenericArray<T, K>;
+    type Second = &'a GenericArray<T, Diff<N, K>>;
+
+    fn split(self) -> (Self::First, Self::Second) {
+        unsafe {
+            let ptr_to_first: *const T = self.as_ptr();
+            let head = &*(ptr_to_first as *const _);
+            let tail = &*(ptr_to_first.add(K::USIZE) as *const _);
+            (head, tail)
+        }
+    }
+}
+
+unsafe impl<'a, T, N, K> Split<T, K> for &'a mut GenericArray<T, N>
+where
+    N: ArrayLength<T>,
+    K: ArrayLength<T> + 'static,
+    N: Sub<K>,
+    Diff<N, K>: ArrayLength<T>,
+{
+    type First = &'a mut GenericArray<T, K>;
+    type Second = &'a mut GenericArray<T, Diff<N, K>>;
+
+    fn split(self) -> (Self::First, Self::Second) {
+        unsafe {
+            let ptr_to_first: *mut T = self.as_mut_ptr();
+            let head = &mut *(ptr_to_first as *mut _);
+            let tail = &mut *(ptr_to_first.add(K::USIZE) as *mut _);
+            (head, tail)
+        }
+    }
+}
+
 /// Defines `GenericSequence`s which can be joined together, forming a larger array.
 pub unsafe trait Concat<T, M>: GenericSequence<T>
 where
