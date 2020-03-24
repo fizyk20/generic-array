@@ -266,6 +266,38 @@ fn test_split() {
 }
 
 #[test]
+fn test_split_ref() {
+    let a = arr![i32; 1, 2, 3, 4];
+    let a_ref = &a;
+
+    let (b_ref, c_ref) = a_ref.split();
+
+    assert_eq!(b_ref, &arr![i32; 1]);
+    assert_eq!(c_ref, &arr![i32; 2, 3, 4]);
+
+    let (e_ref, f_ref) = a_ref.split();
+
+    assert_eq!(e_ref, &arr![i32; 1, 2]);
+    assert_eq!(f_ref, &arr![i32; 3, 4]);
+}
+
+#[test]
+fn test_split_mut() {
+    let mut a = arr![i32; 1, 2, 3, 4];
+    let a_ref = &mut a;
+
+    let (b_ref, c_ref) = a_ref.split();
+
+    assert_eq!(b_ref, &mut arr![i32; 1]);
+    assert_eq!(c_ref, &mut arr![i32; 2, 3, 4]);
+
+    let (e_ref, f_ref) = a_ref.split();
+
+    assert_eq!(e_ref, &mut arr![i32; 1, 2]);
+    assert_eq!(f_ref, &mut arr![i32; 3, 4]);
+}
+
+#[test]
 fn test_concat() {
     let a = arr![i32; 1, 2];
     let b = arr![i32; 3, 4];
