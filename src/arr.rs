@@ -25,18 +25,18 @@ pub type Inc<T, U> = <U as AddLength<T, U1>>::Output;
 #[doc(hidden)]
 #[macro_export]
 macro_rules! arr_impl {
-    (@replace_expr $e:expr)=>{
-        1
-    };
+    (@replace_expr $e:expr) => { 1 };
     ($T:ty; $N:ty, [$($x:expr),*], []) => ({
-        const __ARR_LENGTH:usize=0 $(+ $crate::arr_impl!(@replace_expr $x) )*;
-        fn __do_transmute<'a, T, N: $crate::ArrayLength<T>>(arr: [T; __ARR_LENGTH]) -> $crate::GenericArray<T, N> {
+        const __ARR_LENGTH: usize = 0 $(+ $crate::arr_impl!(@replace_expr $x) )*;
+
+        #[inline(always)]
+        fn __do_transmute<T, N: $crate::ArrayLength<T>>(arr: [T; __ARR_LENGTH]) -> $crate::GenericArray<T, N> {
             unsafe { $crate::transmute(arr) }
         }
 
-        let _:[();<$N as $crate::typenum::Unsigned>::USIZE]=[();__ARR_LENGTH];
+        let _: [(); <$N as $crate::typenum::Unsigned>::USIZE] = [(); __ARR_LENGTH];
 
-        __do_transmute::<$T,$N>([$($x),*])
+        __do_transmute::<$T, $N>([$($x),*])
     });
     ($T:ty; $N:ty, [], [$x1:expr]) => (
         $crate::arr_impl!($T; $crate::arr::Inc<$T, $N>, [$x1], [])
@@ -66,8 +66,7 @@ macro_rules! arr {
     () => ("""Macro requires a type, e.g. `let array = arr![u32; 1, 2, 3];`")
 }
 
-
-mod doctests_only{
+mod doctests_only {
     ///
     /// # With ellision
     ///
@@ -92,7 +91,7 @@ mod doctests_only{
     /// ```
     ///
     /// # Without ellision
-    /// 
+    ///
     /// Testing that lifetimes aren't transmuted when they're specified explicitly.
     ///
     /// ```compile_fail
@@ -122,5 +121,5 @@ mod doctests_only{
     /// }
     /// ```
     #[allow(dead_code)]
-    pub enum DocTests{}
+    pub enum DocTests {}
 }
