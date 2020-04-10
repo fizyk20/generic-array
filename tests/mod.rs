@@ -6,7 +6,7 @@ use core::cell::Cell;
 use core::ops::{Add, Drop};
 use generic_array::functional::*;
 use generic_array::sequence::*;
-use generic_array::typenum::{U1, U3, U4, U97};
+use generic_array::typenum::{U3, U4, U97};
 use generic_array::GenericArray;
 
 #[test]
