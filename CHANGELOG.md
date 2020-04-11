@@ -1,3 +1,6 @@
+* **`0.14.1`**
+    * Fix element conversions in `arr!` macro.
+
 * **`0.14.0`**
     * Replace `Into` implementations with the more general `From`.
         * Requires minumum Rust version of 1.41.0
