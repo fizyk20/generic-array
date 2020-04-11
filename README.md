@@ -29,7 +29,7 @@ struct Foo<N: ArrayLength<i32>> {
 The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
 
 ```rust
-use typenum::U5;
+use generic_array::typenum::U5;
 
 struct Foo<N: ArrayLength<i32>> {
     data: GenericArray<i32, N>
@@ -43,7 +43,7 @@ fn main() {
 For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
 
 ```rust
-use typenum::U5;
+use generic_array::typenum::U5;
 
 struct Foo<T, N: ArrayLength<T>> {
     data: GenericArray<T, N>
