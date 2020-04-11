@@ -36,7 +36,7 @@ macro_rules! arr_impl {
 
         let _: [(); <$N as $crate::typenum::Unsigned>::USIZE] = [(); __ARR_LENGTH];
 
-        __do_transmute::<$T, $N>([$($x),*])
+        __do_transmute::<$T, $N>([$($x as $T),*])
     });
     ($T:ty; $N:ty, [], [$x1:expr]) => (
         $crate::arr_impl!($T; $crate::arr::Inc<$T, $N>, [$x1], [])
