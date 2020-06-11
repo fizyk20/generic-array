@@ -4,7 +4,7 @@
 
 This crate implements generic array types for Rust.
 
-**Requires minumum Rust version of 1.41.0**
+**Requires minumum Rust version of 1.36.0, or 1.41.0 for `From<[T; N]>` implementations**
 
 [Documentation](http://fizyk20.github.io/generic-array/generic_array/)
 

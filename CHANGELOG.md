@@ -1,3 +1,6 @@
+* **`0.14.2`**
+    * Lower MSRV to `1.36.0` without `From<[T; N]>` implementations.
+
 * **`0.14.1`**
     * Fix element conversions in `arr!` macro.
 
