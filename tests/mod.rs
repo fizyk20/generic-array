@@ -6,7 +6,7 @@ use core::cell::Cell;
 use core::ops::{Add, Drop};
 use generic_array::functional::*;
 use generic_array::sequence::*;
-use generic_array::typenum::{U1, U3, U4, U97};
+use generic_array::typenum::{U3, U4, U97};
 use generic_array::GenericArray;
 
 #[test]
@@ -88,8 +88,8 @@ fn test_from_mut_slice() {
 
 #[test]
 fn test_default() {
-    let arr = GenericArray::<u8, U1>::default();
-    assert_eq!(arr[0], 0);
+    let arr = GenericArray::<u8, U4>::default();
+    assert_eq!(arr.as_slice(), &[0, 0, 0, 0]);
 }
 
 #[test]
@@ -300,16 +300,16 @@ fn test_split_mut() {
 #[test]
 fn test_concat() {
     let a = arr![i32; 1, 2];
-    let b = arr![i32; 3, 4];
+    let b = arr![i32; 3, 4, 5];
 
     let c = a.concat(b);
 
-    assert_eq!(c, arr![i32; 1, 2, 3, 4]);
+    assert_eq!(c, arr![i32; 1, 2, 3, 4, 5]);
 
     let (d, e) = c.split();
 
-    assert_eq!(d, arr![i32; 1]);
-    assert_eq!(e, arr![i32; 2, 3, 4]);
+    assert_eq!(d, arr![i32; 1, 2]);
+    assert_eq!(e, arr![i32; 3, 4, 5]);
 }
 
 #[test]

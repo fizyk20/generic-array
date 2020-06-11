@@ -1,6 +1,18 @@
+* **`0.14.2`**
+    * Lower MSRV to `1.36.0` without `From<[T; N]>` implementations.
+
+* **`0.14.1`**
+    * Fix element conversions in `arr!` macro.
+
 * **`0.14.0`**
     * Replace `Into` implementations with the more general `From`.
         * Requires minumum Rust version of 1.41.0
+    * Fix unsoundness in `arr!` macro.
+    * Fix meta variable misuse
+    * Fix Undefined Behavior across the crate by switching to `MaybeUninit`
+    * Improve some documentation and doctests
+    * Add `AsRef<[T; N]>` and `AsMut<[T; N]>` impls to `GenericArray<T, N>`
+    * Add `Split` impl for `&GenericArray` and `&mut GenericArray`
 
 * **`0.13.2`**
     * Add feature `more_lengths`, which adds more `From`/`Into` implementations for arrays of various lengths.

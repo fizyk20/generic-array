@@ -116,12 +116,15 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     ///
     /// Example:
     ///
-    /// ```ignore
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Lengthen};
+    /// # fn main() {
     /// let a = arr![i32; 1, 2, 3];
     ///
     /// let b = a.append(4);
     ///
     /// assert_eq!(b, arr![i32; 1, 2, 3, 4]);
+    /// # }
     /// ```
     fn append(self, last: T) -> Self::Longer;
 
@@ -129,12 +132,15 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     ///
     /// Example:
     ///
-    /// ```ignore
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Lengthen};
+    /// # fn main() {
     /// let a = arr![i32; 1, 2, 3];
     ///
     /// let b = a.prepend(4);
     ///
     /// assert_eq!(b, arr![i32; 4, 1, 2, 3]);
+    /// # }
     /// ```
     fn prepend(self, first: T) -> Self::Longer;
 }
@@ -151,26 +157,32 @@ pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     ///
     /// Example:
     ///
-    /// ```ignore
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Shorten};
+    /// # fn main() {
     /// let a = arr![i32; 1, 2, 3, 4];
     ///
     /// let (init, last) = a.pop_back();
     ///
     /// assert_eq!(init, arr![i32; 1, 2, 3]);
     /// assert_eq!(last, 4);
+    /// # }
     /// ```
     fn pop_back(self) -> (Self::Shorter, T);
 
     /// Returns a new array without the first element, and the first element.
     /// Example:
     ///
-    /// ```ignore
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Shorten};
+    /// # fn main() {
     /// let a = arr![i32; 1, 2, 3, 4];
     ///
     /// let (head, tail) = a.pop_front();
     ///
     /// assert_eq!(head, 1);
     /// assert_eq!(tail, arr![i32; 2, 3, 4]);
+    /// # }
     /// ```
     fn pop_front(self) -> (T, Self::Shorter);
 }
@@ -187,9 +199,14 @@ where
     fn append(self, last: T) -> Self::Longer {
         let mut longer: MaybeUninit<Self::Longer> = MaybeUninit::uninit();
 
+        // Note this is *mut Self, so add(1) increments by the whole array
+        let out_ptr = longer.as_mut_ptr() as *mut Self;
+
         unsafe {
-            ptr::write(longer.as_mut_ptr() as *mut _, self);
-            ptr::write((longer.as_mut_ptr() as *mut T).add(N::USIZE), last);
+            // write self first
+            ptr::write(out_ptr, self);
+            // increment past self, then write the last
+            ptr::write(out_ptr.add(1) as *mut T, last);
 
             longer.assume_init()
         }
@@ -198,11 +215,14 @@ where
     fn prepend(self, first: T) -> Self::Longer {
         let mut longer: MaybeUninit<Self::Longer> = MaybeUninit::uninit();
 
-        let longer_ptr = longer.as_mut_ptr() as *mut T;
+        // Note this is *mut T, so add(1) increments by a single T
+        let out_ptr = longer.as_mut_ptr() as *mut T;
 
         unsafe {
-            ptr::write(longer_ptr, first);
-            ptr::write(longer_ptr.add(1) as *mut Self, self);
+            // write the first at the start
+            ptr::write(out_ptr, first);
+            // increment past the first, then write self
+            ptr::write(out_ptr.add(1) as *mut Self, self);
 
             longer.assume_init()
         }
@@ -346,9 +366,13 @@ where
     fn concat(self, rest: Self::Rest) -> Self::Output {
         let mut output: MaybeUninit<Self::Output> = MaybeUninit::uninit();
 
+        let out_ptr = output.as_mut_ptr() as *mut Self;
+
         unsafe {
-            ptr::write(output.as_mut_ptr() as *mut Self, self);
-            ptr::write((output.as_mut_ptr() as *mut Self).add(1) as *mut _, rest);
+            // write all of self to the pointer
+            ptr::write(out_ptr, self);
+            // increment past self, then write the rest
+            ptr::write(out_ptr.add(1) as *mut _, rest);
 
             output.assume_init()
         }
