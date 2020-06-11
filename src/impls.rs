@@ -140,6 +140,20 @@ macro_rules! impl_from {
                 }
             }
 
+            impl<'a, T> From<&'a [T; $n]> for &'a GenericArray<T, $ty> {
+                #[inline]
+                fn from(slice: &[T; $n]) -> &GenericArray<T, $ty> {
+                    unsafe { &*(slice.as_ptr() as *const GenericArray<T, $ty>) }
+                }
+            }
+
+            impl<'a, T> From<&'a mut [T; $n]> for &'a mut GenericArray<T, $ty> {
+                #[inline]
+                fn from(slice: &mut [T; $n]) -> &mut GenericArray<T, $ty> {
+                    unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, $ty>) }
+                }
+            }
+
             impl<T> AsRef<[T; $n]> for GenericArray<T, $ty> {
                 #[inline]
                 fn as_ref(&self) -> &[T; $n] {

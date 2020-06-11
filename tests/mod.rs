@@ -351,3 +351,20 @@ fn test_as_mut() {
     assert_eq!(a_mut, &mut [1, 2, 0, 4]);
     assert_eq!(a, arr![i32; 1, 2, 0, 4]);
 }
+
+#[test]
+fn test_from_array_ref() {
+    let mut a = arr![i32; 1, 2, 3, 4];
+    let a_ref: &[i32; 4] = a.as_ref();
+    let a_from: &GenericArray<i32, U4> = a_ref.into();
+    assert_eq!(&a, a_from);
+}
+
+#[test]
+fn test_from_array_mut() {
+    let mut a = arr![i32; 1, 2, 3, 4];
+    let mut a_copy = a;
+    let a_mut: &mut [i32; 4] = a.as_mut();
+    let a_from: &mut GenericArray<i32, U4> = a_mut.into();
+    assert_eq!(&mut a_copy, a_from);
+}
