@@ -596,7 +596,7 @@ where
         I: IntoIterator<Item = T>,
         <I as IntoIterator>::IntoIter: ExactSizeIterator,
     {
-        let iter = iter.into_iter();
+        let mut iter = iter.into_iter();
 
         if iter.len() == N::USIZE {
             unsafe {
@@ -605,11 +605,13 @@ where
                 {
                     let (destination_iter, position) = destination.iter_position();
 
-                    destination_iter.zip(iter).for_each(|(dst, src)| {
+                    destination_iter.zip(&mut iter).for_each(|(dst, src)| {
                         ptr::write(dst, src);
 
                         *position += 1;
                     });
+                    assert_eq!(*position, N::USIZE, "ExactSizeIterator lied about its length");
+                    assert!(iter.next().is_none(), "ExactSizeIterator lied about its length");
                 }
 
                 Some(destination.into_inner())
