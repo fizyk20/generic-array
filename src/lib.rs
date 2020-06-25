@@ -588,36 +588,37 @@ impl<T, N> GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
-    /// Creates a new `GenericArray` instance from an iterator with a known exact size.
+    /// Creates a new `GenericArray` instance from an iterator with a specific size.
     ///
     /// Returns `None` if the size is not equal to the number of elements in the `GenericArray`.
     pub fn from_exact_iter<I>(iter: I) -> Option<Self>
     where
         I: IntoIterator<Item = T>,
-        <I as IntoIterator>::IntoIter: ExactSizeIterator,
     {
         let mut iter = iter.into_iter();
 
-        if iter.len() == N::USIZE {
-            unsafe {
-                let mut destination = ArrayBuilder::new();
+        unsafe {
+            let mut destination = ArrayBuilder::new();
 
-                {
-                    let (destination_iter, position) = destination.iter_position();
+            {
+                let (destination_iter, position) = destination.iter_position();
 
-                    destination_iter.zip(&mut iter).for_each(|(dst, src)| {
-                        ptr::write(dst, src);
+                destination_iter.zip(&mut iter).for_each(|(dst, src)| {
+                    ptr::write(dst, src);
 
-                        *position += 1;
-                    });
-                    assert_eq!(*position, N::USIZE, "ExactSizeIterator lied about its length");
-                    assert!(iter.next().is_none(), "ExactSizeIterator lied about its length");
+                    *position += 1;
+                });
+                // The iterator produced fewer than `N` elements.
+                if *position != N::USIZE {
+                    return None;
                 }
-
-                Some(destination.into_inner())
+                // The iterator produced more than `N` elements.
+                if iter.next().is_some() {
+                    return None;
+                }
             }
-        } else {
-            None
+
+            Some(destination.into_inner())
         }
     }
 }

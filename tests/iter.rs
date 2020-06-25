@@ -8,7 +8,6 @@ use generic_array::typenum::consts::U5;
 use generic_array::GenericArray;
 
 #[test]
-#[should_panic(expected = "ExactSizeIterator lied about its length")]
 fn test_from_iterator() {
     struct BadExact(usize);
 
@@ -25,7 +24,7 @@ fn test_from_iterator() {
     impl ExactSizeIterator for BadExact {
         fn len(&self) -> usize { self.0 }
     }
-    let _array = GenericArray::<usize, U5>::from_exact_iter(BadExact(5)).unwrap();
+    assert!(GenericArray::<usize, U5>::from_exact_iter(BadExact(5)).is_none());
 }
 
 #[test]
