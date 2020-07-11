@@ -1,6 +1,7 @@
 * **`0.14.3`**
     * Improve behavior of `GenericArray::from_exact_iter` to assume `ExactIterator`s can lie.
     * Fix alignment of zero-length `GenericArray`s
+    * Implement `From<&[T; N]> for &GenericArray<T, N>` and its mutable variant
 
 * **`0.14.2`**
     * Lower MSRV to `1.36.0` without `From<[T; N]>` implementations.
