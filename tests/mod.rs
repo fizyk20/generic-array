@@ -6,7 +6,7 @@ use core::cell::Cell;
 use core::ops::{Add, Drop};
 use generic_array::functional::*;
 use generic_array::sequence::*;
-use generic_array::typenum::{U3, U4, U97};
+use generic_array::typenum::{U0, U3, U4, U97};
 use generic_array::GenericArray;
 
 #[test]
@@ -112,7 +112,7 @@ fn test_empty_macro() {
 
 #[test]
 fn test_cmp() {
-    arr![u8; 0x00].cmp(&arr![u8; 0x00]);
+    let _ = arr![u8; 0x00].cmp(&arr![u8; 0x00]);
 }
 
 /// This test should cause a helpful compile error if uncommented.
@@ -175,36 +175,36 @@ fn test_from_iter() {
     assert_eq!(a, arr![i32; 11, 11, 11, 0]);
 }
 
+#[allow(unused)]
+#[derive(Debug, Copy, Clone)]
+enum E {
+    V,
+    V2(i32),
+    V3 { h: bool, i: i32 },
+}
+
+#[allow(unused)]
+#[derive(Debug, Copy, Clone)]
+#[repr(C)]
+#[repr(packed)]
+struct Test {
+    t: u16,
+    s: u32,
+    mm: bool,
+    r: u16,
+    f: u16,
+    p: (),
+    o: u32,
+    ff: *const extern "C" fn(*const char) -> *const core::ffi::c_void,
+    l: *const core::ffi::c_void,
+    w: bool,
+    q: bool,
+    v: E,
+}
+
 #[test]
 fn test_sizes() {
-    #![allow(dead_code)]
-    use core::ffi::c_void;
     use core::mem::{size_of, size_of_val};
-
-    #[derive(Debug, Copy, Clone)]
-    enum E {
-        V,
-        V2(i32),
-        V3 { h: bool, i: i32 },
-    }
-
-    #[derive(Debug, Copy, Clone)]
-    #[repr(C)]
-    #[repr(packed)]
-    struct Test {
-        t: u16,
-        s: u32,
-        mm: bool,
-        r: u16,
-        f: u16,
-        p: (),
-        o: u32,
-        ff: *const extern "C" fn(*const char) -> *const c_void,
-        l: *const c_void,
-        w: bool,
-        q: bool,
-        v: E,
-    }
 
     assert_eq!(size_of::<E>(), 8);
 
@@ -215,6 +215,15 @@ fn test_sizes() {
     assert_eq!(size_of_val(&arr![u64; 1, 2, 3, 4]), size_of::<u64>() * 4);
 
     assert_eq!(size_of::<GenericArray<Test, U97>>(), size_of::<Test>() * 97);
+}
+
+#[test]
+fn test_alignment() {
+    use core::mem::align_of;
+
+    assert_eq!(align_of::<GenericArray::<u32, U0>>(), align_of::<[u32; 0]>());
+    assert_eq!(align_of::<GenericArray::<u32, U3>>(), align_of::<[u32; 3]>());
+    assert_eq!(align_of::<GenericArray::<Test, U3>>(), align_of::<[Test; 3]>());
 }
 
 #[test]
@@ -354,7 +363,7 @@ fn test_as_mut() {
 
 #[test]
 fn test_from_array_ref() {
-    let mut a = arr![i32; 1, 2, 3, 4];
+    let a = arr![i32; 1, 2, 3, 4];
     let a_ref: &[i32; 4] = a.as_ref();
     let a_from: &GenericArray<i32, U4> = a_ref.into();
     assert_eq!(&a, a_from);
