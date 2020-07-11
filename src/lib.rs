@@ -109,7 +109,7 @@ pub unsafe trait ArrayLength<T>: Unsigned {
 
 unsafe impl<T> ArrayLength<T> for UTerm {
     #[doc(hidden)]
-    type ArrayType = ();
+    type ArrayType = [T; 0];
 }
 
 /// Internal type used to generate a struct of appropriate size
@@ -608,10 +608,12 @@ where
 
                     *position += 1;
                 });
+
                 // The iterator produced fewer than `N` elements.
                 if *position != N::USIZE {
                     return None;
                 }
+
                 // The iterator produced more than `N` elements.
                 if iter.next().is_some() {
                     return None;
