@@ -8,6 +8,26 @@ use generic_array::typenum::consts::U5;
 use generic_array::GenericArray;
 
 #[test]
+fn test_from_iterator() {
+    struct BadExact(usize);
+
+    impl Iterator for BadExact {
+        type Item = usize;
+        fn next(&mut self) -> Option<usize> {
+            if self.0 == 1 {
+                return None;
+            }
+            self.0 -= 1;
+            Some(self.0)
+        }
+    }
+    impl ExactSizeIterator for BadExact {
+        fn len(&self) -> usize { self.0 }
+    }
+    assert!(GenericArray::<usize, U5>::from_exact_iter(BadExact(5)).is_none());
+}
+
+#[test]
 fn test_into_iter_as_slice() {
     let array = arr![char; 'a', 'b', 'c'];
     let mut into_iter = array.into_iter();
