@@ -25,7 +25,7 @@ name = "generic_array"
 more_lengths = []
 
 [dependencies]
-typenum = "1.10"
+typenum = "1.12"
 serde = { version = "1.0", optional = true, default-features = false }
 
 [dev_dependencies]
