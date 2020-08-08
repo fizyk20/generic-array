@@ -1,3 +1,7 @@
+* **`0.14.4`**
+    * Update `typenum` to `1.12.0`
+    * Make `Drop` a no-op when the inner type does not require `Drop` (using `core::mem::needs_drop`)
+
 * **`0.14.3`**
     * Improve behavior of `GenericArray::from_exact_iter` to assume `ExactIterator`s can lie.
     * Fix alignment of zero-length `GenericArray`s
