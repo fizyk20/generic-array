@@ -12,7 +12,7 @@ impl<T: Default, N> Default for GenericArray<T, N>
 where
     N: ArrayLength<T>,
 {
-    #[inline]
+    #[inline(always)]
     fn default() -> Self {
         Self::generate(|_| T::default())
     }
