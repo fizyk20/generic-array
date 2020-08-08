@@ -244,9 +244,11 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
 
 impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
     fn drop(&mut self) {
-        unsafe {
-            for value in &mut (&mut *self.array.as_mut_ptr())[..self.position] {
-                ptr::drop_in_place(value);
+        if mem::needs_drop::<T>() {
+            unsafe {
+                for value in &mut (&mut *self.array.as_mut_ptr())[..self.position] {
+                    ptr::drop_in_place(value);
+                }
             }
         }
     }
@@ -285,9 +287,11 @@ impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
 
 impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
     fn drop(&mut self) {
-        for value in &mut self.array[self.position..N::USIZE] {
-            unsafe {
-                ptr::drop_in_place(value);
+        if mem::needs_drop::<T>() {
+            for value in &mut self.array[self.position..N::USIZE] {
+                unsafe {
+                    ptr::drop_in_place(value);
+                }
             }
         }
     }

@@ -3,7 +3,7 @@
 use super::{ArrayLength, GenericArray};
 use core::iter::FusedIterator;
 use core::mem::{MaybeUninit, ManuallyDrop};
-use core::{cmp, fmt, ptr};
+use core::{cmp, fmt, ptr, mem};
 
 /// An iterator that moves out of a `GenericArray`
 pub struct GenericArrayIter<T, N: ArrayLength<T>> {
@@ -78,10 +78,12 @@ where
 {
     #[inline]
     fn drop(&mut self) {
-        // Drop values that are still alive.
-        for p in self.as_mut_slice() {
-            unsafe {
-                ptr::drop_in_place(p);
+        if mem::needs_drop::<T>() {
+            // Drop values that are still alive.
+            for p in self.as_mut_slice() {
+                unsafe {
+                    ptr::drop_in_place(p);
+                }
             }
         }
     }
