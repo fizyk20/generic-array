@@ -72,6 +72,9 @@
 #[cfg(feature = "serde")]
 extern crate serde;
 
+#[cfg(feature = "zeroize")]
+extern crate zeroize;
+
 #[cfg(test)]
 extern crate bincode;
 
@@ -82,6 +85,9 @@ mod impls;
 
 #[cfg(feature = "serde")]
 mod impl_serde;
+
+#[cfg(feature = "zeroize")]
+mod impl_zeroize;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
