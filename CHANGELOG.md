@@ -1,3 +1,6 @@
+* **0.11.2**
+    * Backport the unsoundness fix for the `arr!` macro.
+
 * **0.11.0**
     * Redesign `GenericSequence` with an emphasis on use in generic type parameters.
     * Add `MappedGenericSequence` and `FunctionalSequence`
