@@ -49,7 +49,6 @@ pub mod impl_serde;
 
 use core::marker::PhantomData;
 use core::mem;
-pub use core::mem::transmute;
 use core::ops::{Deref, DerefMut};
 use core::slice;
 use nodrop::NoDrop;
@@ -217,4 +216,14 @@ where
         assert_eq!(list.len(), N::to_usize());
         map_inner(list, |x: &T| x.clone())
     }
+}
+
+/// A reimplementation of the `transmute` function, avoiding problems
+/// when the compiler can't prove equal sizes.
+#[inline]
+#[doc(hidden)]
+pub unsafe fn transmute<A, B>(a: A) -> B {
+    let b = ::core::ptr::read(&a as *const A as *const B);
+    ::core::mem::forget(a);
+    b
 }
