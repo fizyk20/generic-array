@@ -1,3 +1,6 @@
+* **`0.13.3`**
+    * Backport the unsoundness fix for the `arr!` macro.
+
 * **`0.13.2`**
     * Add feature `more_lengths`, which adds more `From`/`Into` implementations for arrays of various lengths.
 
