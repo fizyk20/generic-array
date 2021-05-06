@@ -54,6 +54,18 @@ fn main() {
 }
 ```
 
+When serializing with `serde` you need to specify a bound:
+
+```rust
+#[derive(Serialize, Deserialize)]
+#[serde(bound = "N: ArrayLength<u8>")]
+struct Block<N>
+    where N: ArrayLength<u8>
+{
+    content: GenericArray<u8, N>,
+}
+```
+
 In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays as shown below:
 
 ```rust
