@@ -517,6 +517,11 @@ where
     }
 }
 
+/// Error returned from [`GenericArray::try_from_slice()`] and
+/// [`GenericArray::try_from_mut_slice()`] when that the length of the slice differs from
+/// that of the array type.
+pub struct IncorrectLength;
+
 impl<T, N> GenericArray<T, N>
 where
     N: ArrayLength<T>,
@@ -541,12 +546,38 @@ where
         slice.into()
     }
 
+    /// Converts slice to a generic array reference with inferred length;
+    ///
+    /// If the length of the slice is not equal to the length of the array, returns
+    /// [`IncorrectLength`].
+    pub fn try_from_slice(slice: &[T]) -> Result<&GenericArray<T, N>, IncorrectLength> {
+        if slice.len() == N::USIZE {
+            Ok(Self::from_slice(slice))
+        }
+        else {
+            Err(IncorrectLength)
+        }
+    }
+
     /// Converts mutable slice to a mutable generic array reference
     ///
     /// Length of the slice must be equal to the length of the array.
     #[inline]
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
         slice.into()
+    }
+
+    /// Converts mutable slice to a mutable generic array reference
+    ///
+    /// If the length of the slice is not equal to the length of the array, returns
+    /// [`IncorrectLength`].
+    pub fn try_from_mut_slice(slice: &mut [T]) -> Result<&mut GenericArray<T, N>, IncorrectLength> {
+        if slice.len() == N::USIZE {
+            Ok(Self::from_mut_slice(slice))
+        }
+        else {
+            Err(IncorrectLength)
+        }
     }
 }
 
