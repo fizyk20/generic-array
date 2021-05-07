@@ -518,7 +518,7 @@ where
 }
 
 /// Error returned from [`GenericArray::try_from_slice()`] and
-/// [`GenericArray::try_from_mut_slice()`] when that the length of the slice differs from
+/// [`GenericArray::try_from_mut_slice()`] when the length of the slice differs from
 /// that of the array type.
 pub struct IncorrectLength;
 
