@@ -1,7 +1,5 @@
-#[macro_use]
-extern crate generic_array;
-extern crate typenum;
-
+use generic_array::arr;
+use generic_array::typenum;
 use generic_array::GenericArray;
 use std::str::from_utf8;
 use typenum::U2048;

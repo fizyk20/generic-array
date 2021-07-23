@@ -69,12 +69,6 @@
 #![deny(meta_variable_misuse)]
 #![no_std]
 
-#[cfg(feature = "serde")]
-extern crate serde;
-
-#[cfg(test)]
-extern crate bincode;
-
 pub extern crate typenum;
 
 mod hex;
@@ -85,7 +79,7 @@ mod impl_serde;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
-use core::mem::{MaybeUninit, ManuallyDrop};
+use core::mem::{ManuallyDrop, MaybeUninit};
 use core::ops::{Deref, DerefMut};
 use core::{mem, ptr, slice};
 use typenum::bit::{B0, B1};
@@ -226,7 +220,10 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn iter_position(&mut self) -> (slice::IterMut<T>, &mut usize) {
-        ((&mut *self.array.as_mut_ptr()).iter_mut(), &mut self.position)
+        (
+            (&mut *self.array.as_mut_ptr()).iter_mut(),
+            &mut self.position,
+        )
     }
 
     /// When done writing (assuming all elements have been written to),

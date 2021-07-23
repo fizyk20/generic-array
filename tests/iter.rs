@@ -1,5 +1,4 @@
-#[macro_use]
-extern crate generic_array;
+use generic_array::arr;
 
 use std::cell::Cell;
 use std::ops::Drop;
@@ -22,7 +21,9 @@ fn test_from_iterator() {
         }
     }
     impl ExactSizeIterator for BadExact {
-        fn len(&self) -> usize { self.0 }
+        fn len(&self) -> usize {
+            self.0
+        }
     }
     assert!(GenericArray::<usize, U5>::from_exact_iter(BadExact(5)).is_none());
 }
@@ -80,9 +81,9 @@ fn test_into_iter_clone() {
 fn test_into_iter_nth() {
     let v = arr![i32; 0, 1, 2, 3, 4];
     for i in 0..v.len() {
-        assert_eq!(v.clone().into_iter().nth(i).unwrap(), v[i]);
+        assert_eq!(v.into_iter().nth(i).unwrap(), v[i]);
     }
-    assert_eq!(v.clone().into_iter().nth(v.len()), None);
+    assert_eq!(v.into_iter().nth(v.len()), None);
 
     let mut iter = v.into_iter();
     assert_eq!(iter.nth(2).unwrap(), v[2]);
@@ -99,7 +100,7 @@ fn test_into_iter_last() {
 #[test]
 fn test_into_iter_count() {
     let v = arr![i32; 0, 1, 2, 3, 4];
-    assert_eq!(v.clone().into_iter().count(), 5);
+    assert_eq!(v.into_iter().count(), 5);
 
     let mut iter2 = v.into_iter();
     iter2.next();
@@ -142,7 +143,7 @@ fn test_into_iter_drops() {
     }
 
     fn r(i: &Cell<usize>) -> R {
-        R { i: i }
+        R { i }
     }
 
     fn v(i: &Cell<usize>) -> GenericArray<R, U5> {
