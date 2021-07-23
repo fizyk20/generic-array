@@ -15,14 +15,14 @@
 //! ```
 //!
 
-use core::{fmt, str, ops::Add, cmp::min};
+use core::{cmp::min, fmt, ops::Add, str};
 
 use typenum::*;
 
 use crate::{ArrayLength, GenericArray};
 
-static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
-static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";
+static LOWER_CHARS: &[u8] = b"0123456789abcdef";
+static UPPER_CHARS: &[u8] = b"0123456789ABCDEF";
 
 impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
 where
