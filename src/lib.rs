@@ -56,9 +56,8 @@
 //! For ease of use, an `arr!` macro is provided - example below:
 //!
 //! ```
-//! # #[macro_use]
-//! # extern crate generic_array;
-//! # extern crate typenum;
+//! use generic_array::arr;
+//! use generic_array::typenum;
 //! # fn main() {
 //! let array = arr![u32; 1, 2, 3];
 //! assert_eq!(array[2], 3);

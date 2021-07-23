@@ -5,13 +5,13 @@
 //! Example:
 //!
 //! ```rust
-//! # #[macro_use]
-//! # extern crate generic_array;
-//! # extern crate typenum;
-//! # fn main() {
-//! let array = arr![u8; 10, 20, 30];
-//! assert_eq!(format!("{:x}", array), "0a141e");
-//! # }
+//! use generic_array::arr;
+//! use generic_array::typenum;
+//!
+//! fn main() {
+//!     let array = arr![u8; 10, 20, 30];
+//!     assert_eq!(format!("{:x}", array), "0a141e");
+//! }
 //! ```
 //!
 
