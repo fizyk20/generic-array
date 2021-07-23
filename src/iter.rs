@@ -2,8 +2,8 @@
 
 use super::{ArrayLength, GenericArray};
 use core::iter::FusedIterator;
-use core::mem::{MaybeUninit, ManuallyDrop};
-use core::{cmp, fmt, ptr, mem};
+use core::mem::{ManuallyDrop, MaybeUninit};
+use core::{cmp, fmt, mem, ptr};
 
 /// An iterator that moves out of a `GenericArray`
 pub struct GenericArrayIter<T, N: ArrayLength<T>> {
@@ -110,7 +110,7 @@ where
             GenericArrayIter {
                 array: ManuallyDrop::new(array.assume_init()),
                 index: 0,
-                index_back
+                index_back,
             }
         }
     }
@@ -248,10 +248,6 @@ where
     }
 }
 
-impl<T, N> FusedIterator for GenericArrayIter<T, N>
-where
-    N: ArrayLength<T>,
-{
-}
+impl<T, N> FusedIterator for GenericArrayIter<T, N> where N: ArrayLength<T> {}
 
 // TODO: Implement `TrustedLen` when stabilized

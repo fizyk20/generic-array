@@ -1,8 +1,8 @@
 //! Useful traits for manipulating sequences of data stored in `GenericArray`s
 
 use super::*;
-use core::ops::{Add, Sub};
 use core::mem::MaybeUninit;
+use core::ops::{Add, Sub};
 use core::ptr;
 use typenum::operator_aliases::*;
 
@@ -31,8 +31,8 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         mut f: F,
     ) -> MappedSequence<GenericArray<B, Self::Length>, B, U>
     where
-        GenericArray<B, Self::Length>: GenericSequence<B, Length = Self::Length>
-            + MappedGenericSequence<B, U>,
+        GenericArray<B, Self::Length>:
+            GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
         Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
@@ -44,11 +44,11 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
 
             FromIterator::from_iter(left_array_iter.zip(self.into_iter()).map(
                 |(l, right_value)| {
-                        let left_value = ptr::read(l);
+                    let left_value = ptr::read(l);
 
-                        *left_position += 1;
+                    *left_position += 1;
 
-                        f(left_value, right_value)
+                    f(left_value, right_value)
                 },
             ))
         }
