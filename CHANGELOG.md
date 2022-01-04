@@ -1,3 +1,6 @@
+* **`0.14.5`**
+    * Fix unsoundness behavior in `GenericArrayIter::clone` ([#120](https://github.com/fizyk20/generic-array/pull/120))
+
 * **`0.14.4`**
     * Update `typenum` to `1.12.0`
     * Make `Drop` a no-op when the inner type does not require `Drop` (using `core::mem::needs_drop`)
