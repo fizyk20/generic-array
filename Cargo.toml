@@ -15,6 +15,8 @@ repository = "https://github.com/fizyk20/generic-array.git"
 keywords = ["generic", "array"]
 categories = ["data-structures", "no-std"]
 
+include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md", "build.rs"]
+
 [badges]
 travis-ci = { repository = "fizyk20/generic-array" }
 
@@ -36,3 +38,6 @@ bincode = "1.0"
 
 [build_dependencies]
 version_check = "0.9"
+
+[package.metadata.docs.rs]
+features = ["serde", "zeroize"]
