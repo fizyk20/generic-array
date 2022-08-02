@@ -97,12 +97,12 @@ where
     fn clone(&self) -> Self {
         // This places all cloned elements at the start of the new array iterator,
         // not at their original indices.
-        unsafe {
-            let mut array = ptr::read(&self.array);
+        
+            let mut array = unsafe {ptr::read(&self.array)};
             let mut index_back = 0;
 
             for (dst, src) in array.as_mut_slice().into_iter().zip(self.as_slice()) {
-                ptr::write(dst, src.clone());
+                unsafe {ptr::write(dst, src.clone())};
                 index_back += 1;
             }
 
@@ -111,7 +111,7 @@ where
                 index: 0,
                 index_back
             }
-        }
+        
     }
 }
 
