@@ -21,6 +21,9 @@ struct Foo<N> {
 **generic-array** defines a new trait `ArrayLength<T>` and a struct `GenericArray<T, N: ArrayLength<T>>`, which let the above be implemented as:
 
 ```rust
+use generic_array::ArrayLength;
+use generic_array::GenericArray;
+
 struct Foo<N: ArrayLength<i32>> {
 	data: GenericArray<i32, N>
 }
@@ -29,6 +32,8 @@ struct Foo<N: ArrayLength<i32>> {
 The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
 
 ```rust
+use generic_array::ArrayLength;
+use generic_array::GenericArray;
 use generic_array::typenum::U5;
 
 struct Foo<N: ArrayLength<i32>> {
@@ -43,6 +48,8 @@ fn main() {
 For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
 
 ```rust
+use generic_array::ArrayLength;
+use generic_array::GenericArray;
 use generic_array::typenum::U5;
 
 struct Foo<T, N: ArrayLength<T>> {
@@ -57,6 +64,13 @@ fn main() {
 In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays as shown below:
 
 ```rust
-let array = arr![u32; 1, 2, 3];
-assert_eq!(array[2], 3);
+use generic_array::arr;
+
+fn main() {
+    let array = arr![u32; 1, 2, 3];
+    assert_eq!(array[2], 3);
+}
 ```
+
+## Dependencies
+In addition to having `generic-array` in your `Cargo.toml`, you also need `typenum`. See [https://crates.io/crates/typenum](https://crates.io/crates/typenum).
