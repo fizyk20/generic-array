@@ -72,6 +72,9 @@
 #[cfg(feature = "serde")]
 extern crate serde;
 
+#[cfg(feature = "zeroize")]
+extern crate zeroize;
+
 #[cfg(test)]
 extern crate bincode;
 
@@ -571,6 +574,14 @@ impl<'a, T, N: ArrayLength<T>> From<&'a mut [T]> for &'a mut GenericArray<T, N> 
         assert_eq!(slice.len(), N::USIZE);
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
+    }
+}
+
+#[cfg(feature = "zeroize")]
+#[cfg_attr(docsrs, doc(cfg(feature = "zeroize")))]
+impl<T: zeroize::Zeroize, N: ArrayLength<T>> zeroize::Zeroize for GenericArray<T, N> {
+    fn zeroize(&mut self) {
+        self.as_mut_slice().iter_mut().zeroize()
     }
 }
 
