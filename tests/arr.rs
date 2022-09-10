@@ -31,3 +31,9 @@ fn const_context() {
     const AR: generic_array::GenericArray<u8, typenum::U3> = arr![u8; 10, 20, 30];
     assert_eq!(format!("{:x}", AR), "0a141e");
 }
+
+#[test]
+fn repeat_expression() {
+    let ar = arr![u8; 0xc0; typenum::U4];
+    assert_eq!(format!("{:x}", ar), "c0c0c0c0");
+}
