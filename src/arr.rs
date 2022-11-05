@@ -41,6 +41,16 @@ macro_rules! arr_impl {
 
         __do_transmute::<$T, __OutputLength>([$($x as $T),*])
     });
+    ($T:ty; $x:expr; $N: ty) => ({
+        const __INPUT_LENGTH: usize = <$N as $crate::typenum::Unsigned>::USIZE;
+
+        #[inline(always)]
+        const fn __do_transmute<T, N: $crate::ArrayLength<T>>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
+            unsafe { $crate::transmute(arr) }
+        }
+
+        __do_transmute::<$T, $N>([$x; __INPUT_LENGTH])
+    });
 }
 
 /// Macro allowing for easy generation of Generic Arrays.
@@ -52,6 +62,9 @@ macro_rules! arr {
     });
     ($T:ty; $($x:expr),* $(,)*) => (
         $crate::arr_impl!($T; $($x),*)
+    );
+    ($T:ty; $x:expr; $N:ty) => (
+        $crate::arr_impl!($T; $x; $N)
     );
     ($($x:expr,)+) => (arr![$($x),+]);
     () => ("""Macro requires a type, e.g. `let array = arr![u32; 1, 2, 3];`")
