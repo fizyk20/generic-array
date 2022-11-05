@@ -641,9 +641,15 @@ where
 /// when the compiler can't prove equal sizes.
 #[inline]
 #[doc(hidden)]
-pub unsafe fn transmute<A, B>(a: A) -> B {
+pub const unsafe fn transmute<A, B>(a: A) -> B {
+    #[repr(C)]
+    union Union<A, B> {
+        a: ManuallyDrop<A>,
+        b: ManuallyDrop<B>,
+    }
+
     let a = ManuallyDrop::new(a);
-    ::core::ptr::read(&*a as *const A as *const B)
+    ManuallyDrop::into_inner(Union { a }.b)
 }
 
 #[cfg(test)]
