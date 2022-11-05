@@ -1,6 +1,4 @@
-#[macro_use]
-extern crate generic_array;
-extern crate typenum;
+use generic_array::arr;
 
 #[test]
 fn empty_without_trailing_comma() {

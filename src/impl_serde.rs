@@ -1,10 +1,10 @@
 //! Serde serialization/deserialization implementation
 
+use crate::{ArrayLength, GenericArray};
 use core::fmt;
 use core::marker::PhantomData;
 use serde::de::{self, SeqAccess, Visitor};
 use serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
-use {ArrayLength, GenericArray};
 
 impl<T, N> Serialize for GenericArray<T, N>
 where
@@ -75,8 +75,6 @@ where
 #[cfg(test)]
 mod tests {
     use super::*;
-    use bincode;
-    use typenum;
 
     #[test]
     fn test_serialize() {
@@ -104,5 +102,4 @@ mod tests {
         let size = bincode::serialized_size(&array).unwrap();
         assert_eq!(size, 1);
     }
-
 }

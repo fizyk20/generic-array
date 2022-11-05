@@ -5,24 +5,24 @@
 //! Example:
 //!
 //! ```rust
-//! # #[macro_use]
-//! # extern crate generic_array;
-//! # extern crate typenum;
-//! # fn main() {
-//! let array = arr![u8; 10, 20, 30];
-//! assert_eq!(format!("{:x}", array), "0a141e");
-//! # }
+//! use generic_array::arr;
+//! use generic_array::typenum;
+//!
+//! fn main() {
+//!     let array = arr![u8; 10, 20, 30];
+//!     assert_eq!(format!("{:x}", array), "0a141e");
+//! }
 //! ```
 //!
 
-use core::{fmt, str, ops::Add, cmp::min};
+use core::{cmp::min, fmt, ops::Add, str};
 
 use typenum::*;
 
 use crate::{ArrayLength, GenericArray};
 
-static LOWER_CHARS: &'static [u8] = b"0123456789abcdef";
-static UPPER_CHARS: &'static [u8] = b"0123456789ABCDEF";
+static LOWER_CHARS: &[u8] = b"0123456789abcdef";
+static UPPER_CHARS: &[u8] = b"0123456789ABCDEF";
 
 impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
 where

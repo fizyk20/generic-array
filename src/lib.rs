@@ -56,9 +56,8 @@
 //! For ease of use, an `arr!` macro is provided - example below:
 //!
 //! ```
-//! # #[macro_use]
-//! # extern crate generic_array;
-//! # extern crate typenum;
+//! use generic_array::arr;
+//! use generic_array::typenum;
 //! # fn main() {
 //! let array = arr![u32; 1, 2, 3];
 //! assert_eq!(array[2], 3);
@@ -91,7 +90,7 @@ mod impl_zeroize;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
-use core::mem::{MaybeUninit, ManuallyDrop};
+use core::mem::{ManuallyDrop, MaybeUninit};
 use core::ops::{Deref, DerefMut};
 use core::{mem, ptr, slice};
 use typenum::bit::{B0, B1};
@@ -232,7 +231,10 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn iter_position(&mut self) -> (slice::IterMut<T>, &mut usize) {
-        ((&mut *self.array.as_mut_ptr()).iter_mut(), &mut self.position)
+        (
+            (&mut *self.array.as_mut_ptr()).iter_mut(),
+            &mut self.position,
+        )
     }
 
     /// When done writing (assuming all elements have been written to),

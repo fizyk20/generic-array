@@ -3,6 +3,7 @@
 name = "generic-array"
 version = "0.14.6"
 authors = [ "Bartłomiej Kamiński <fizyk20@gmail.com>", "Aaron Trent <novacrazy@gmail.com>" ]
+edition = "2018"
 
 description = "Generic types implementing functionality of arrays"
 readme = "README.md"
@@ -14,6 +15,7 @@ repository = "https://github.com/fizyk20/generic-array.git"
 
 keywords = ["generic", "array"]
 categories = ["data-structures", "no-std"]
+include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md", "build.rs"]
 
 include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md", "build.rs"]
 

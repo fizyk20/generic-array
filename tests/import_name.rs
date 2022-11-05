@@ -1,6 +1,6 @@
-#[macro_use]
-extern crate generic_array as gen_arr;
+use generic_array as gen_arr;
 
+use gen_arr::arr;
 use gen_arr::typenum;
 
 #[test]

@@ -1,9 +1,8 @@
 #![recursion_limit = "128"]
 #![no_std]
-#[macro_use]
-extern crate generic_array;
 use core::cell::Cell;
 use core::ops::{Add, Drop};
+use generic_array::arr;
 use generic_array::functional::*;
 use generic_array::sequence::*;
 use generic_array::typenum::{U0, U3, U4, U97};
@@ -12,8 +11,8 @@ use generic_array::GenericArray;
 #[test]
 fn test() {
     let mut list97 = [0; 97];
-    for i in 0..97 {
-        list97[i] = i as i32;
+    for (i, elem) in list97.iter_mut().enumerate() {
+        *elem = i as i32;
     }
     let l: GenericArray<i32, U97> = GenericArray::clone_from_slice(&list97);
     assert_eq!(l[0], 0);
@@ -124,6 +123,7 @@ fn test_cmp() {
 mod impl_serde {
     extern crate serde_json;
 
+    use generic_array::arr;
     use generic_array::typenum::U6;
     use generic_array::GenericArray;
 
@@ -221,9 +221,18 @@ fn test_sizes() {
 fn test_alignment() {
     use core::mem::align_of;
 
-    assert_eq!(align_of::<GenericArray::<u32, U0>>(), align_of::<[u32; 0]>());
-    assert_eq!(align_of::<GenericArray::<u32, U3>>(), align_of::<[u32; 3]>());
-    assert_eq!(align_of::<GenericArray::<Test, U3>>(), align_of::<[Test; 3]>());
+    assert_eq!(
+        align_of::<GenericArray::<u32, U0>>(),
+        align_of::<[u32; 0]>()
+    );
+    assert_eq!(
+        align_of::<GenericArray::<u32, U3>>(),
+        align_of::<[u32; 3]>()
+    );
+    assert_eq!(
+        align_of::<GenericArray::<Test, U3>>(),
+        align_of::<[Test; 3]>()
+    );
 }
 
 #[test]
