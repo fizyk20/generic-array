@@ -97,21 +97,19 @@ where
     fn clone(&self) -> Self {
         // This places all cloned elements at the start of the new array iterator,
         // not at their original indices.
-        unsafe {
-            let mut array: MaybeUninit<GenericArray<T, N>> = MaybeUninit::uninit();
-            let mut index_back = 0;
 
-            for (dst, src) in (&mut *array.as_mut_ptr()).iter_mut().zip(self.as_slice()) {
-                ptr::write(dst, src.clone());
+        let mut array = unsafe { ptr::read(&self.array) };
+        let mut index_back = 0;
 
-                index_back += 1;
-            }
+        for (dst, src) in array.as_mut_slice().into_iter().zip(self.as_slice()) {
+            unsafe { ptr::write(dst, src.clone()) };
+            index_back += 1;
+        }
 
-            GenericArrayIter {
-                array: ManuallyDrop::new(array.assume_init()),
-                index: 0,
-                index_back,
-            }
+        GenericArrayIter {
+            array,
+            index: 0,
+            index_back,
         }
     }
 }
