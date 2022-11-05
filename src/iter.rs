@@ -2,7 +2,7 @@
 
 use super::{ArrayLength, GenericArray};
 use core::iter::FusedIterator;
-use core::mem::{ManuallyDrop, MaybeUninit};
+use core::mem::ManuallyDrop;
 use core::{cmp, fmt, mem, ptr};
 
 /// An iterator that moves out of a `GenericArray`
