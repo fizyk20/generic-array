@@ -68,6 +68,9 @@
 #![deny(meta_variable_misuse)]
 #![no_std]
 
+#[cfg(feature = "const-default")]
+extern crate const_default;
+
 #[cfg(feature = "serde")]
 extern crate serde;
 
@@ -81,6 +84,9 @@ pub extern crate typenum;
 
 mod hex;
 mod impls;
+
+#[cfg(feature = "const-default")]
+mod impl_const_default;
 
 #[cfg(feature = "serde")]
 mod impl_serde;

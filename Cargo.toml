@@ -28,6 +28,7 @@ more_lengths = []
 
 [dependencies]
 typenum = "1.12"
+const-default = { version = "1", optional = true, default-features = false }
 serde = { version = "1.0", optional = true, default-features = false }
 zeroize = { version = "1", optional = true, default-features = false }
 
