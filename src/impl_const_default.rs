@@ -21,7 +21,10 @@ impl<T: ConstDefault, U: ConstDefault> ConstDefault for GenericArrayImplOdd<T, U
 }
 
 impl<T, U: ArrayLength<T>> ConstDefault for GenericArray<T, U>
-where U::ArrayType: ConstDefault,
+where
+    U::ArrayType: ConstDefault,
 {
-    const DEFAULT: Self = Self { data: ConstDefault::DEFAULT };
+    const DEFAULT: Self = Self {
+        data: ConstDefault::DEFAULT,
+    };
 }
