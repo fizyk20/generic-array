@@ -113,7 +113,7 @@ use self::sequence::*;
 pub use self::iter::GenericArrayIter;
 
 /// Trait making `GenericArray` work, marking types to be used as length of an array
-pub unsafe trait ArrayLength: Unsigned {
+pub unsafe trait ArrayLength: Unsigned + 'static {
     /// Associated type representing the array type for the number
     type ArrayType<T>;
 }

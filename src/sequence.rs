@@ -297,7 +297,7 @@ where
 unsafe impl<'a, T, N, K> Split<T, K> for &'a GenericArray<T, N>
 where
     N: ArrayLength,
-    K: ArrayLength + 'static,
+    K: ArrayLength,
     N: Sub<K>,
     Diff<N, K>: ArrayLength,
 {
@@ -317,7 +317,7 @@ where
 unsafe impl<'a, T, N, K> Split<T, K> for &'a mut GenericArray<T, N>
 where
     N: ArrayLength,
-    K: ArrayLength + 'static,
+    K: ArrayLength,
     N: Sub<K>,
     Diff<N, K>: ArrayLength,
 {
