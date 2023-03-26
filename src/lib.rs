@@ -525,7 +525,9 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Converts slice to a generic array reference with inferred length;
     ///
-    /// Length of the slice must be equal to the length of the array.
+    /// # Panics
+    ///
+    /// Panics if the slice is not equal to the length of the array.
     #[inline]
     pub const fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
         if slice.len() != N::USIZE {
@@ -537,7 +539,9 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Converts mutable slice to a mutable generic array reference
     ///
-    /// Length of the slice must be equal to the length of the array.
+    /// # Panics
+    ///
+    /// Panics if the slice is not equal to the length of the array.
     #[inline]
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
         slice.into()
@@ -547,7 +551,9 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 impl<'a, T, N: ArrayLength> From<&'a [T]> for &'a GenericArray<T, N> {
     /// Converts slice to a generic array reference with inferred length;
     ///
-    /// Length of the slice must be equal to the length of the array.
+    /// # Panics
+    ///
+    /// Panics if the slice is not equal to the length of the array.
     #[inline]
     fn from(slice: &[T]) -> &GenericArray<T, N> {
         assert_eq!(slice.len(), N::USIZE);
@@ -559,7 +565,9 @@ impl<'a, T, N: ArrayLength> From<&'a [T]> for &'a GenericArray<T, N> {
 impl<'a, T, N: ArrayLength> From<&'a mut [T]> for &'a mut GenericArray<T, N> {
     /// Converts mutable slice to a mutable generic array reference
     ///
-    /// Length of the slice must be equal to the length of the array.
+    /// # Panics
+    ///
+    /// Panics if the slice is not equal to the length of the array.
     #[inline]
     fn from(slice: &mut [T]) -> &mut GenericArray<T, N> {
         assert_eq!(slice.len(), N::USIZE);
@@ -571,7 +579,9 @@ impl<'a, T, N: ArrayLength> From<&'a mut [T]> for &'a mut GenericArray<T, N> {
 impl<T: Clone, N: ArrayLength> GenericArray<T, N> {
     /// Construct a `GenericArray` from a slice by cloning its content
     ///
-    /// Length of the slice must be equal to the length of the array
+    /// # Panics
+    ///
+    /// Panics if the slice is not equal to the length of the array.
     #[inline]
     pub fn clone_from_slice(list: &[T]) -> GenericArray<T, N> {
         Self::from_exact_iter(list.iter().cloned())
