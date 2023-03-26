@@ -5,7 +5,7 @@
     * Allow `arr!` macro in `const` [#129](https://github.com/fizyk20/generic-array/pull/129)
     * Add `arr!` repeat-expressions [#130](https://github.com/fizyk20/generic-array/pull/130)
     * Implement `const-default` trait support [#131](https://github.com/fizyk20/generic-array/pull/131)
-    * Make `as_slice()` const
+    * Make `as_slice()/from_slice()` const.
     * Make `ArrayLength: 'static`
 
 * **`0.14.6`**
