@@ -1,3 +1,12 @@
+* **`1.0.0`**
+    * **Use GATs for `ArrayLength`** !
+    * Bump MSRV to 1.65.0
+    * Use Rust 2021 edition [#118](https://github.com/fizyk20/generic-array/pull/118)
+    * Allow `arr!` macro in `const` [#129](https://github.com/fizyk20/generic-array/pull/129)
+    * Add `arr!` repeat-expressions [#130](https://github.com/fizyk20/generic-array/pull/130)
+    * Implement `const-default` trait support [#131](https://github.com/fizyk20/generic-array/pull/131)
+    * Make `as_slice()` const
+
 * **`0.14.6`**
     * Add an optional `Zeroize` impl for `GenericArray` ([#126](https://github.com/fizyk20/generic-array/pull/126) and [#112](https://github.com/fizyk20/generic-array/pull/112))
     * Cleanup some unsafe ([#125](https://github.com/fizyk20/generic-array/pull/125)) and typos ([#114](https://github.com/fizyk20/generic-array/pull/114))

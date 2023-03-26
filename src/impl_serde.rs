@@ -6,10 +6,9 @@ use core::marker::PhantomData;
 use serde::de::{self, SeqAccess, Visitor};
 use serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
 
-impl<T, N> Serialize for GenericArray<T, N>
+impl<T, N: ArrayLength> Serialize for GenericArray<T, N>
 where
     T: Serialize,
-    N: ArrayLength<T>,
 {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -30,10 +29,9 @@ struct GAVisitor<T, N> {
     _n: PhantomData<N>,
 }
 
-impl<'de, T, N> Visitor<'de> for GAVisitor<T, N>
+impl<'de, T, N: ArrayLength> Visitor<'de> for GAVisitor<T, N>
 where
     T: Deserialize<'de> + Default,
-    N: ArrayLength<T>,
 {
     type Value = GenericArray<T, N>;
 
@@ -55,10 +53,9 @@ where
     }
 }
 
-impl<'de, T, N> Deserialize<'de> for GenericArray<T, N>
+impl<'de, T, N: ArrayLength> Deserialize<'de> for GenericArray<T, N>
 where
     T: Deserialize<'de> + Default,
-    N: ArrayLength<T>,
 {
     fn deserialize<D>(deserializer: D) -> Result<GenericArray<T, N>, D::Error>
     where

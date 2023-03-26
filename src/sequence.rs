@@ -11,7 +11,7 @@ use typenum::operator_aliases::*;
 /// This is useful for passing N-length generic arrays as generics.
 pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// `GenericArray` associated length
-    type Length: ArrayLength<T>;
+    type Length: ArrayLength;
 
     /// Concrete sequence type used in conjuction with reference implementations of `GenericSequence`
     type Sequence: GenericSequence<T, Length = Self::Length> + FromIterator<T>;
@@ -34,7 +34,6 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         GenericArray<B, Self::Length>:
             GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
@@ -59,7 +58,6 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     where
         Lhs: GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
         FromIterator::from_iter(lhs.into_iter().zip(self.into_iter()).map(|(l, r)| f(l, r)))
@@ -187,12 +185,12 @@ pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     fn pop_front(self) -> (T, Self::Shorter);
 }
 
-unsafe impl<T, N: ArrayLength<T>> Lengthen<T> for GenericArray<T, N>
+unsafe impl<T, N: ArrayLength> Lengthen<T> for GenericArray<T, N>
 where
     N: Add<B1>,
-    Add1<N>: ArrayLength<T>,
+    Add1<N>: ArrayLength,
     Add1<N>: Sub<B1, Output = N>,
-    Sub1<Add1<N>>: ArrayLength<T>,
+    Sub1<Add1<N>>: ArrayLength,
 {
     type Longer = GenericArray<T, Add1<N>>;
 
@@ -229,12 +227,12 @@ where
     }
 }
 
-unsafe impl<T, N: ArrayLength<T>> Shorten<T> for GenericArray<T, N>
+unsafe impl<T, N: ArrayLength> Shorten<T> for GenericArray<T, N>
 where
     N: Sub<B1>,
-    Sub1<N>: ArrayLength<T>,
+    Sub1<N>: ArrayLength,
     Sub1<N>: Add<B1, Output = N>,
-    Add1<Sub1<N>>: ArrayLength<T>,
+    Add1<Sub1<N>>: ArrayLength,
 {
     type Shorter = GenericArray<T, Sub1<N>>;
 
@@ -263,10 +261,7 @@ where
 }
 
 /// Defines a `GenericSequence` that can be split into two parts at a given pivot index.
-pub unsafe trait Split<T, K>: GenericSequence<T>
-where
-    K: ArrayLength<T>,
-{
+pub unsafe trait Split<T, K: ArrayLength>: GenericSequence<T> {
     /// First part of the resulting split array
     type First: GenericSequence<T>;
     /// Second part of the resulting split array
@@ -278,10 +273,10 @@ where
 
 unsafe impl<T, N, K> Split<T, K> for GenericArray<T, N>
 where
-    N: ArrayLength<T>,
-    K: ArrayLength<T>,
+    N: ArrayLength,
+    K: ArrayLength,
     N: Sub<K>,
-    Diff<N, K>: ArrayLength<T>,
+    Diff<N, K>: ArrayLength,
 {
     type First = GenericArray<T, K>;
     type Second = GenericArray<T, Diff<N, K>>;
@@ -301,10 +296,10 @@ where
 
 unsafe impl<'a, T, N, K> Split<T, K> for &'a GenericArray<T, N>
 where
-    N: ArrayLength<T>,
-    K: ArrayLength<T> + 'static,
+    N: ArrayLength,
+    K: ArrayLength + 'static,
     N: Sub<K>,
-    Diff<N, K>: ArrayLength<T>,
+    Diff<N, K>: ArrayLength,
 {
     type First = &'a GenericArray<T, K>;
     type Second = &'a GenericArray<T, Diff<N, K>>;
@@ -321,10 +316,10 @@ where
 
 unsafe impl<'a, T, N, K> Split<T, K> for &'a mut GenericArray<T, N>
 where
-    N: ArrayLength<T>,
-    K: ArrayLength<T> + 'static,
+    N: ArrayLength,
+    K: ArrayLength + 'static,
     N: Sub<K>,
-    Diff<N, K>: ArrayLength<T>,
+    Diff<N, K>: ArrayLength,
 {
     type First = &'a mut GenericArray<T, K>;
     type Second = &'a mut GenericArray<T, Diff<N, K>>;
@@ -340,10 +335,7 @@ where
 }
 
 /// Defines `GenericSequence`s which can be joined together, forming a larger array.
-pub unsafe trait Concat<T, M>: GenericSequence<T>
-where
-    M: ArrayLength<T>,
-{
+pub unsafe trait Concat<T, M: ArrayLength>: GenericSequence<T> {
     /// Sequence to be concatenated with `self`
     type Rest: GenericSequence<T, Length = M>;
 
@@ -356,9 +348,9 @@ where
 
 unsafe impl<T, N, M> Concat<T, M> for GenericArray<T, N>
 where
-    N: ArrayLength<T> + Add<M>,
-    M: ArrayLength<T>,
-    Sum<N, M>: ArrayLength<T>,
+    N: ArrayLength + Add<M>,
+    M: ArrayLength,
+    Sum<N, M>: ArrayLength,
 {
     type Rest = GenericArray<T, M>;
     type Output = GenericArray<T, Sum<N, M>>;

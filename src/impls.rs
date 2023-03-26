@@ -8,113 +8,75 @@ use super::{ArrayLength, GenericArray};
 use crate::functional::*;
 use crate::sequence::*;
 
-impl<T: Default, N> Default for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: Default, N: ArrayLength> Default for GenericArray<T, N> {
     #[inline(always)]
     fn default() -> Self {
         Self::generate(|_| T::default())
     }
 }
 
-impl<T: Clone, N> Clone for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: Clone, N: ArrayLength> Clone for GenericArray<T, N> {
     fn clone(&self) -> GenericArray<T, N> {
         self.map(Clone::clone)
     }
 }
 
-impl<T: Copy, N> Copy for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-    N::ArrayType: Copy,
-{
-}
+impl<T: Copy, N: ArrayLength> Copy for GenericArray<T, N> where N::ArrayType<T>: Copy {}
 
-impl<T: PartialEq, N> PartialEq for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: PartialEq, N: ArrayLength> PartialEq for GenericArray<T, N> {
     fn eq(&self, other: &Self) -> bool {
         **self == **other
     }
 }
-impl<T: Eq, N> Eq for GenericArray<T, N> where N: ArrayLength<T> {}
+impl<T: Eq, N: ArrayLength> Eq for GenericArray<T, N> {}
 
-impl<T: PartialOrd, N> PartialOrd for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: PartialOrd, N: ArrayLength> PartialOrd for GenericArray<T, N> {
     fn partial_cmp(&self, other: &GenericArray<T, N>) -> Option<Ordering> {
         PartialOrd::partial_cmp(self.as_slice(), other.as_slice())
     }
 }
 
-impl<T: Ord, N> Ord for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: Ord, N: ArrayLength> Ord for GenericArray<T, N> {
     fn cmp(&self, other: &GenericArray<T, N>) -> Ordering {
         Ord::cmp(self.as_slice(), other.as_slice())
     }
 }
 
-impl<T: Debug, N> Debug for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: Debug, N: ArrayLength> Debug for GenericArray<T, N> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
         self[..].fmt(fmt)
     }
 }
 
-impl<T, N> Borrow<[T]> for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> Borrow<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn borrow(&self) -> &[T] {
         &self[..]
     }
 }
 
-impl<T, N> BorrowMut<[T]> for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> BorrowMut<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn borrow_mut(&mut self) -> &mut [T] {
         &mut self[..]
     }
 }
 
-impl<T, N> AsRef<[T]> for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> AsRef<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn as_ref(&self) -> &[T] {
         &self[..]
     }
 }
 
-impl<T, N> AsMut<[T]> for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> AsMut<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn as_mut(&mut self) -> &mut [T] {
         &mut self[..]
     }
 }
 
-impl<T: Hash, N> Hash for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
     fn hash<H>(&self, state: &mut H)
     where
         H: Hasher,

@@ -2,17 +2,13 @@
 //!
 //! Please see `tests/generics.rs` for examples of how to best use these in your generic functions.
 
-use super::ArrayLength;
 use core::iter::FromIterator;
 
 use crate::sequence::*;
 
 /// Defines the relationship between one generic sequence and another,
 /// for operations such as `map` and `zip`.
-pub unsafe trait MappedGenericSequence<T, U>: GenericSequence<T>
-where
-    Self::Length: ArrayLength<U>,
-{
+pub unsafe trait MappedGenericSequence<T, U>: GenericSequence<T> {
     /// Mapped sequence type
     type Mapped: GenericSequence<U, Length = Self::Length>;
 }
@@ -21,7 +17,6 @@ unsafe impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U
 where
     &'a S: GenericSequence<T>,
     S: GenericSequence<T, Length = <&'a S as GenericSequence<T>>::Length>,
-    <S as GenericSequence<T>>::Length: ArrayLength<U>,
 {
     type Mapped = <S as MappedGenericSequence<T, U>>::Mapped;
 }
@@ -30,7 +25,6 @@ unsafe impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U
 where
     &'a mut S: GenericSequence<T>,
     S: GenericSequence<T, Length = <&'a mut S as GenericSequence<T>>::Length>,
-    <S as GenericSequence<T>>::Length: ArrayLength<U>,
 {
     type Mapped = <S as MappedGenericSequence<T, U>>::Mapped;
 }
@@ -48,7 +42,7 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     fn map<U, F>(self, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<U>,
+
         F: FnMut(Self::Item) -> U,
     {
         FromIterator::from_iter(self.into_iter().map(f))
@@ -64,7 +58,6 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     where
         Self: MappedGenericSequence<T, U>,
         Rhs: MappedGenericSequence<B, U, Mapped = MappedSequence<Self, T, U>>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
         Rhs: GenericSequence<B, Length = Self::Length>,
         F: FnMut(Self::Item, Rhs::Item) -> U,
     {

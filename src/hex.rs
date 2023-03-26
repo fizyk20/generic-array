@@ -24,16 +24,16 @@ use crate::{ArrayLength, GenericArray};
 static LOWER_CHARS: &[u8] = b"0123456789abcdef";
 static UPPER_CHARS: &[u8] = b"0123456789ABCDEF";
 
-impl<T: ArrayLength<u8>> fmt::LowerHex for GenericArray<u8, T>
+impl<T: ArrayLength> fmt::LowerHex for GenericArray<u8, T>
 where
     T: Add<T>,
-    <T as Add<T>>::Output: ArrayLength<u8>,
+    Sum<T, T>: ArrayLength,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
+        let max_digits = f.precision().unwrap_or(self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
-        if T::USIZE < 1024 {
+        if T::USIZE <= 1024 {
             // For small arrays use a stack allocated
             // buffer of 2x number of bytes
             let mut res = GenericArray::<u8, Sum<T, T>>::default();
@@ -64,16 +64,16 @@ where
     }
 }
 
-impl<T: ArrayLength<u8>> fmt::UpperHex for GenericArray<u8, T>
+impl<T: ArrayLength> fmt::UpperHex for GenericArray<u8, T>
 where
     T: Add<T>,
-    <T as Add<T>>::Output: ArrayLength<u8>,
+    Sum<T, T>: ArrayLength,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let max_digits = f.precision().unwrap_or_else(|| self.len() * 2);
+        let max_digits = f.precision().unwrap_or(self.len() * 2);
         let max_hex = (max_digits >> 1) + (max_digits & 1);
 
-        if T::USIZE < 1024 {
+        if T::USIZE <= 1024 {
             // For small arrays use a stack allocated
             // buffer of 2x number of bytes
             let mut res = GenericArray::<u8, Sum<T, T>>::default();

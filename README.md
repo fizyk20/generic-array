@@ -4,7 +4,7 @@
 
 This crate implements generic array types for Rust.
 
-**Requires minumum Rust version of 1.36.0, or 1.41.0 for `From<[T; N]>` implementations**
+**Requires minumum Rust version of 1.65.0
 
 [Documentation](http://fizyk20.github.io/generic-array/generic_array/)
 
@@ -59,4 +59,16 @@ In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays
 ```rust
 let array = arr![u32; 1, 2, 3];
 assert_eq!(array[2], 3);
+```
+
+## Feature flags
+
+```toml
+[dependencies.generic-array]
+features = [
+    "more_lengths", # Expands From/Into implementation for more array lengths
+    "serde",        # Serialize/Deserialize implementation
+    "zeroize",      # Zeroize implementation for setting array elements to zero
+    "const-default" # Compile-time const default value support via trait
+]
 ```

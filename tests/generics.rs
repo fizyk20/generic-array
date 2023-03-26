@@ -56,7 +56,7 @@ pub fn generic_array_variable_length_zip_sum<N>(
     b: GenericArray<i32, N>,
 ) -> i32
 where
-    N: ArrayLength<i32>,
+    N: ArrayLength,
 {
     a.zip(b, |l, r| l + r).map(|x| x + 1).fold(0, |a, x| x + a)
 }
@@ -66,7 +66,7 @@ pub fn generic_array_same_type_variable_length_zip_sum<T, N>(
     b: GenericArray<T, N>,
 ) -> i32
 where
-    N: ArrayLength<T> + ArrayLength<<T as Add<T>>::Output>,
+    N: ArrayLength,
     T: Add<T, Output = i32>,
 {
     a.zip(b, |l, r| l + r).map(|x| x + 1).fold(0, |a, x| x + a)
@@ -75,14 +75,12 @@ where
 /// Complex example using fully generic `GenericArray`s with the same length.
 ///
 /// It's mostly just the repeated `Add` traits, which would be present in other systems anyway.
-pub fn generic_array_zip_sum<A, B, N: ArrayLength<A> + ArrayLength<B>>(
+pub fn generic_array_zip_sum<A, B, N: ArrayLength>(
     a: GenericArray<A, N>,
     b: GenericArray<B, N>,
 ) -> i32
 where
     A: Add<B>,
-    N: ArrayLength<<A as Add<B>>::Output>
-        + ArrayLength<<<A as Add<B>>::Output as Add<i32>>::Output>,
     <A as Add<B>>::Output: Add<i32>,
     <<A as Add<B>>::Output as Add<i32>>::Output: Add<i32, Output = i32>,
 {

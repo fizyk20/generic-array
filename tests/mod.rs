@@ -100,8 +100,8 @@ fn test_from() {
 
 #[test]
 fn test_unit_macro() {
-    let arr = arr![f32; 3.14];
-    assert_eq!(arr[0], 3.14);
+    let arr = arr![f32; 5.81];
+    assert_eq!(arr[0], 5.81);
 }
 
 #[test]

@@ -16,7 +16,7 @@
 //! ```rust
 //! use generic_array::{ArrayLength, GenericArray};
 //!
-//! struct Foo<T, N: ArrayLength<T>> {
+//! struct Foo<T, N: ArrayLength> {
 //!     data: GenericArray<T,N>
 //! }
 //! ```
@@ -29,7 +29,7 @@
 //! # use generic_array::{ArrayLength, GenericArray};
 //! use generic_array::typenum::U5;
 //!
-//! struct Foo<N: ArrayLength<i32>> {
+//! struct Foo<N: ArrayLength> {
 //!     data: GenericArray<i32, N>
 //! }
 //!
@@ -44,7 +44,7 @@
 //! # use generic_array::{ArrayLength, GenericArray};
 //! use generic_array::typenum::U5;
 //!
-//! struct Foo<T, N: ArrayLength<T>> {
+//! struct Foo<T, N: ArrayLength> {
 //!     data: GenericArray<T, N>
 //! }
 //!
@@ -63,22 +63,21 @@
 //! assert_eq!(array[2], 3);
 //! # }
 //! ```
+//! ## Feature flags
+//!
+//! ```toml
+//! [dependencies.generic-array]
+//! features = [
+//!     "more_lengths", # Expands From/Into implementation for more array lengths
+//!     "serde",        # Serialize/Deserialize implementation
+//!     "zeroize",      # Zeroize implementation for setting array elements to zero
+//!     "const-default" # Compile-time const default value support via trait
+//! ]
+//! ```
 
 #![deny(missing_docs)]
 #![deny(meta_variable_misuse)]
 #![no_std]
-
-#[cfg(feature = "const-default")]
-extern crate const_default;
-
-#[cfg(feature = "serde")]
-extern crate serde;
-
-#[cfg(feature = "zeroize")]
-extern crate zeroize;
-
-#[cfg(test)]
-extern crate bincode;
 
 pub extern crate typenum;
 
@@ -109,18 +108,19 @@ pub mod iter;
 pub mod sequence;
 
 use self::functional::*;
-pub use self::iter::GenericArrayIter;
 use self::sequence::*;
 
+pub use self::iter::GenericArrayIter;
+
 /// Trait making `GenericArray` work, marking types to be used as length of an array
-pub unsafe trait ArrayLength<T>: Unsigned {
+pub unsafe trait ArrayLength: Unsigned {
     /// Associated type representing the array type for the number
-    type ArrayType;
+    type ArrayType<T>;
 }
 
-unsafe impl<T> ArrayLength<T> for UTerm {
+unsafe impl ArrayLength for UTerm {
     #[doc(hidden)]
-    type ArrayType = [T; 0];
+    type ArrayType<T> = [T; 0];
 }
 
 /// Internal type used to generate a struct of appropriate size
@@ -167,45 +167,39 @@ impl<T: Clone, U: Clone> Clone for GenericArrayImplOdd<T, U> {
 
 impl<T: Copy, U: Copy> Copy for GenericArrayImplOdd<T, U> {}
 
-unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B0> {
+unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B0> {
     #[doc(hidden)]
-    type ArrayType = GenericArrayImplEven<T, N::ArrayType>;
+    type ArrayType<T> = GenericArrayImplEven<T, N::ArrayType<T>>;
 }
 
-unsafe impl<T, N: ArrayLength<T>> ArrayLength<T> for UInt<N, B1> {
+unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1> {
     #[doc(hidden)]
-    type ArrayType = GenericArrayImplOdd<T, N::ArrayType>;
+    type ArrayType<T> = GenericArrayImplOdd<T, N::ArrayType<T>>;
 }
 
 /// Struct representing a generic array - `GenericArray<T, N>` works like [T; N]
 #[allow(dead_code)]
 #[repr(transparent)]
-pub struct GenericArray<T, U: ArrayLength<T>> {
-    data: U::ArrayType,
+pub struct GenericArray<T, U: ArrayLength> {
+    data: U::ArrayType<T>,
 }
 
-unsafe impl<T: Send, N: ArrayLength<T>> Send for GenericArray<T, N> {}
-unsafe impl<T: Sync, N: ArrayLength<T>> Sync for GenericArray<T, N> {}
+unsafe impl<T: Send, N: ArrayLength> Send for GenericArray<T, N> {}
+unsafe impl<T: Sync, N: ArrayLength> Sync for GenericArray<T, N> {}
 
-impl<T, N> Deref for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> Deref for GenericArray<T, N> {
     type Target = [T];
 
     #[inline(always)]
     fn deref(&self) -> &[T] {
-        unsafe { slice::from_raw_parts(self as *const Self as *const T, N::USIZE) }
+        GenericArray::as_slice(self)
     }
 }
 
-impl<T, N> DerefMut for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> DerefMut for GenericArray<T, N> {
     #[inline(always)]
     fn deref_mut(&mut self) -> &mut [T] {
-        unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::USIZE) }
+        GenericArray::as_mut_slice(self)
     }
 }
 
@@ -215,12 +209,12 @@ where
 /// Increment the position while iterating to mark off created elements,
 /// which will be dropped if `into_inner` is not called.
 #[doc(hidden)]
-pub struct ArrayBuilder<T, N: ArrayLength<T>> {
+pub struct ArrayBuilder<T, N: ArrayLength> {
     array: MaybeUninit<GenericArray<T, N>>,
     position: usize,
 }
 
-impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
+impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn new() -> ArrayBuilder<T, N> {
@@ -237,10 +231,7 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn iter_position(&mut self) -> (slice::IterMut<T>, &mut usize) {
-        (
-            (&mut *self.array.as_mut_ptr()).iter_mut(),
-            &mut self.position,
-        )
+        ((*self.array.as_mut_ptr()).iter_mut(), &mut self.position)
     }
 
     /// When done writing (assuming all elements have been written to),
@@ -256,7 +247,7 @@ impl<T, N: ArrayLength<T>> ArrayBuilder<T, N> {
     }
 }
 
-impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
+impl<T, N: ArrayLength> Drop for ArrayBuilder<T, N> {
     fn drop(&mut self) {
         if mem::needs_drop::<T>() {
             unsafe {
@@ -273,12 +264,12 @@ impl<T, N: ArrayLength<T>> Drop for ArrayBuilder<T, N> {
 /// Increment the position while iterating and any leftover elements
 /// will be dropped if position does not go to N
 #[doc(hidden)]
-pub struct ArrayConsumer<T, N: ArrayLength<T>> {
+pub struct ArrayConsumer<T, N: ArrayLength> {
     array: ManuallyDrop<GenericArray<T, N>>,
     position: usize,
 }
 
-impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
+impl<T, N: ArrayLength> ArrayConsumer<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
@@ -299,7 +290,7 @@ impl<T, N: ArrayLength<T>> ArrayConsumer<T, N> {
     }
 }
 
-impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
+impl<T, N: ArrayLength> Drop for ArrayConsumer<T, N> {
     fn drop(&mut self) {
         if mem::needs_drop::<T>() {
             for value in &mut self.array[self.position..N::USIZE] {
@@ -311,10 +302,7 @@ impl<T, N: ArrayLength<T>> Drop for ArrayConsumer<T, N> {
     }
 }
 
-impl<'a, T: 'a, N> IntoIterator for &'a GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<'a, T: 'a, N: ArrayLength> IntoIterator for &'a GenericArray<T, N> {
     type IntoIter = slice::Iter<'a, T>;
     type Item = &'a T;
 
@@ -323,10 +311,7 @@ where
     }
 }
 
-impl<'a, T: 'a, N> IntoIterator for &'a mut GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<'a, T: 'a, N: ArrayLength> IntoIterator for &'a mut GenericArray<T, N> {
     type IntoIter = slice::IterMut<'a, T>;
     type Item = &'a mut T;
 
@@ -335,10 +320,7 @@ where
     }
 }
 
-impl<T, N> FromIterator<T> for GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
     fn from_iter<I>(iter: I) -> GenericArray<T, N>
     where
         I: IntoIterator<Item = T>,
@@ -376,9 +358,8 @@ fn from_iter_length_fail(length: usize, expected: usize) -> ! {
     );
 }
 
-unsafe impl<T, N> GenericSequence<T> for GenericArray<T, N>
+unsafe impl<T, N: ArrayLength> GenericSequence<T> for GenericArray<T, N>
 where
-    N: ArrayLength<T>,
     Self: IntoIterator<Item = T>,
 {
     type Length = N;
@@ -415,7 +396,7 @@ where
         GenericArray<B, Self::Length>:
             GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        Self::Length: ArrayLength,
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
@@ -442,7 +423,7 @@ where
     where
         Lhs: GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        Self::Length: ArrayLength,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
         unsafe {
@@ -465,22 +446,20 @@ where
     }
 }
 
-unsafe impl<T, U, N> MappedGenericSequence<T, U> for GenericArray<T, N>
+unsafe impl<T, U, N: ArrayLength> MappedGenericSequence<T, U> for GenericArray<T, N>
 where
-    N: ArrayLength<T> + ArrayLength<U>,
     GenericArray<U, N>: GenericSequence<U, Length = N>,
 {
     type Mapped = GenericArray<U, N>;
 }
 
-unsafe impl<T, N> FunctionalSequence<T> for GenericArray<T, N>
+unsafe impl<T, N: ArrayLength> FunctionalSequence<T> for GenericArray<T, N>
 where
-    N: ArrayLength<T>,
     Self: GenericSequence<T, Item = T, Length = N>,
 {
     fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
     where
-        Self::Length: ArrayLength<U>,
+        Self::Length: ArrayLength,
         Self: MappedGenericSequence<T, U>,
         F: FnMut(T) -> U,
     {
@@ -504,7 +483,7 @@ where
     where
         Self: MappedGenericSequence<T, U>,
         Rhs: MappedGenericSequence<B, U, Mapped = MappedSequence<Self, T, U>>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
+        Self::Length: ArrayLength,
         Rhs: GenericSequence<B, Length = Self::Length>,
         F: FnMut(T, Rhs::Item) -> U,
     {
@@ -531,28 +510,29 @@ where
     }
 }
 
-impl<T, N> GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Extracts a slice containing the entire array.
     #[inline]
-    pub fn as_slice(&self) -> &[T] {
-        self.deref()
+    pub const fn as_slice(&self) -> &[T] {
+        unsafe { slice::from_raw_parts(self as *const Self as *const T, N::USIZE) }
     }
 
     /// Extracts a mutable slice containing the entire array.
     #[inline]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
-        self.deref_mut()
+        unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::USIZE) }
     }
 
     /// Converts slice to a generic array reference with inferred length;
     ///
     /// Length of the slice must be equal to the length of the array.
     #[inline]
-    pub fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
-        slice.into()
+    pub const fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
+        if slice.len() != N::USIZE {
+            panic!("slice.len() != N::USIZE in GenericArray::from_slice");
+        }
+
+        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
     }
 
     /// Converts mutable slice to a mutable generic array reference
@@ -564,7 +544,7 @@ where
     }
 }
 
-impl<'a, T, N: ArrayLength<T>> From<&'a [T]> for &'a GenericArray<T, N> {
+impl<'a, T, N: ArrayLength> From<&'a [T]> for &'a GenericArray<T, N> {
     /// Converts slice to a generic array reference with inferred length;
     ///
     /// Length of the slice must be equal to the length of the array.
@@ -576,7 +556,7 @@ impl<'a, T, N: ArrayLength<T>> From<&'a [T]> for &'a GenericArray<T, N> {
     }
 }
 
-impl<'a, T, N: ArrayLength<T>> From<&'a mut [T]> for &'a mut GenericArray<T, N> {
+impl<'a, T, N: ArrayLength> From<&'a mut [T]> for &'a mut GenericArray<T, N> {
     /// Converts mutable slice to a mutable generic array reference
     ///
     /// Length of the slice must be equal to the length of the array.
@@ -588,10 +568,7 @@ impl<'a, T, N: ArrayLength<T>> From<&'a mut [T]> for &'a mut GenericArray<T, N> 
     }
 }
 
-impl<T: Clone, N> GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T: Clone, N: ArrayLength> GenericArray<T, N> {
     /// Construct a `GenericArray` from a slice by cloning its content
     ///
     /// Length of the slice must be equal to the length of the array
@@ -602,10 +579,7 @@ where
     }
 }
 
-impl<T, N> GenericArray<T, N>
-where
-    N: ArrayLength<T>,
-{
+impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Creates a new `GenericArray` instance from an iterator with a specific size.
     ///
     /// Returns `None` if the size is not equal to the number of elements in the `GenericArray`.
@@ -645,7 +619,7 @@ where
 
 /// A reimplementation of the `transmute` function, avoiding problems
 /// when the compiler can't prove equal sizes.
-#[inline]
+#[inline(always)]
 #[doc(hidden)]
 pub const unsafe fn transmute<A, B>(a: A) -> B {
     #[repr(C)]

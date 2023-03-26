@@ -5,16 +5,16 @@ use core::ops::Add;
 use typenum::U1;
 
 /// Helper trait for `arr!` macro
-pub trait AddLength<T, N: ArrayLength<T>>: ArrayLength<T> {
+pub trait AddLength<T, N: ArrayLength>: ArrayLength {
     /// Resulting length
-    type Output: ArrayLength<T>;
+    type Output: ArrayLength;
 }
 
 impl<T, N1, N2> AddLength<T, N2> for N1
 where
-    N1: ArrayLength<T> + Add<N2>,
-    N2: ArrayLength<T>,
-    <N1 as Add<N2>>::Output: ArrayLength<T>,
+    N1: ArrayLength + Add<N2>,
+    N2: ArrayLength,
+    <N1 as Add<N2>>::Output: ArrayLength,
 {
     type Output = <N1 as Add<N2>>::Output;
 }
@@ -33,7 +33,7 @@ macro_rules! arr_impl {
         type __OutputLength = $crate::arr_impl!(@count_ty $($x),*);
 
         #[inline(always)]
-        const fn __do_transmute<T, N: $crate::ArrayLength<T>>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
+        const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
             unsafe { $crate::transmute(arr) }
         }
 
@@ -45,7 +45,7 @@ macro_rules! arr_impl {
         const __INPUT_LENGTH: usize = <$N as $crate::typenum::Unsigned>::USIZE;
 
         #[inline(always)]
-        const fn __do_transmute<T, N: $crate::ArrayLength<T>>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
+        const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
             unsafe { $crate::transmute(arr) }
         }
 
