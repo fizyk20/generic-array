@@ -512,23 +512,23 @@ where
 
 impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Extracts a slice containing the entire array.
-    #[inline]
+    #[inline(always)]
     pub const fn as_slice(&self) -> &[T] {
         unsafe { slice::from_raw_parts(self as *const Self as *const T, N::USIZE) }
     }
 
     /// Extracts a mutable slice containing the entire array.
-    #[inline]
+    #[inline(always)]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::USIZE) }
     }
 
-    /// Converts slice to a generic array reference with inferred length;
+    /// Converts slice to a generic array reference with inferred length.
     ///
     /// # Panics
     ///
     /// Panics if the slice is not equal to the length of the array.
-    #[inline]
+    #[inline(always)]
     pub const fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
         if slice.len() != N::USIZE {
             panic!("slice.len() != N::USIZE in GenericArray::from_slice");
@@ -537,42 +537,57 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
     }
 
-    /// Converts mutable slice to a mutable generic array reference
+    /// Converts mutable slice to a mutable generic array reference with inferred length.
     ///
     /// # Panics
     ///
     /// Panics if the slice is not equal to the length of the array.
-    #[inline]
+    #[inline(always)]
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
-        slice.into()
-    }
-}
-
-impl<'a, T, N: ArrayLength> From<&'a [T]> for &'a GenericArray<T, N> {
-    /// Converts slice to a generic array reference with inferred length;
-    ///
-    /// # Panics
-    ///
-    /// Panics if the slice is not equal to the length of the array.
-    #[inline]
-    fn from(slice: &[T]) -> &GenericArray<T, N> {
-        assert_eq!(slice.len(), N::USIZE);
-
-        unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
-    }
-}
-
-impl<'a, T, N: ArrayLength> From<&'a mut [T]> for &'a mut GenericArray<T, N> {
-    /// Converts mutable slice to a mutable generic array reference
-    ///
-    /// # Panics
-    ///
-    /// Panics if the slice is not equal to the length of the array.
-    #[inline]
-    fn from(slice: &mut [T]) -> &mut GenericArray<T, N> {
-        assert_eq!(slice.len(), N::USIZE);
+        assert_eq!(
+            slice.len(),
+            N::USIZE,
+            "slice.len() != N::USIZE in GenericArray::from_mut_slice"
+        );
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
+    }
+}
+
+/// Error for [`TryFrom`]
+#[derive(Debug, Clone, Copy)]
+pub struct LengthError;
+
+// TODO: Impl core::error::Error when when https://github.com/rust-lang/rust/issues/103765 is finished
+// impl core::fmt::Display for LengthError {
+//     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+//         f.write_str("LengthError: Length of given slice does not match GenericArray length")
+//     }
+// }
+
+impl<'a, T, N: ArrayLength> TryFrom<&'a [T]> for &'a GenericArray<T, N> {
+    type Error = LengthError;
+
+    #[inline(always)]
+    fn try_from(slice: &'a [T]) -> Result<Self, Self::Error> {
+        if slice.len() == N::USIZE {
+            Ok(GenericArray::from_slice(slice))
+        } else {
+            Err(LengthError)
+        }
+    }
+}
+
+impl<'a, T, N: ArrayLength> TryFrom<&'a mut [T]> for &'a mut GenericArray<T, N> {
+    type Error = LengthError;
+
+    #[inline(always)]
+    fn try_from(slice: &'a mut [T]) -> Result<Self, Self::Error> {
+        if slice.len() == N::USIZE {
+            Ok(GenericArray::from_mut_slice(slice))
+        } else {
+            Err(LengthError)
+        }
     }
 }
 

@@ -44,35 +44,35 @@ impl<T: Ord, N: ArrayLength> Ord for GenericArray<T, N> {
 
 impl<T: Debug, N: ArrayLength> Debug for GenericArray<T, N> {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result {
-        self[..].fmt(fmt)
+        self.as_slice().fmt(fmt)
     }
 }
 
 impl<T, N: ArrayLength> Borrow<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn borrow(&self) -> &[T] {
-        &self[..]
+        self.as_slice()
     }
 }
 
 impl<T, N: ArrayLength> BorrowMut<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn borrow_mut(&mut self) -> &mut [T] {
-        &mut self[..]
+        self.as_mut_slice()
     }
 }
 
 impl<T, N: ArrayLength> AsRef<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn as_ref(&self) -> &[T] {
-        &self[..]
+        self.as_slice()
     }
 }
 
 impl<T, N: ArrayLength> AsMut<[T]> for GenericArray<T, N> {
     #[inline(always)]
     fn as_mut(&mut self) -> &mut [T] {
-        &mut self[..]
+        self.as_mut_slice()
     }
 }
 
@@ -81,7 +81,7 @@ impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
     where
         H: Hasher,
     {
-        Hash::hash(&self[..], state)
+        Hash::hash(self.as_slice(), state)
     }
 }
 

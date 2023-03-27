@@ -7,6 +7,7 @@
     * Implement `const-default` trait support [#131](https://github.com/fizyk20/generic-array/pull/131)
     * Make `as_slice()/from_slice()` const.
     * Make `ArrayLength: 'static`
+    * Replace `From<&[T]>` with `TryFrom<&[T]>`
 
 * **`0.14.6`**
     * Add an optional `Zeroize` impl for `GenericArray` ([#126](https://github.com/fizyk20/generic-array/pull/126) and [#112](https://github.com/fizyk20/generic-array/pull/112))
