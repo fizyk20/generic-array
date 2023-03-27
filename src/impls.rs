@@ -24,6 +24,7 @@ impl<T: Clone, N: ArrayLength> Clone for GenericArray<T, N> {
 impl<T: Copy, N: ArrayLength> Copy for GenericArray<T, N> where N::ArrayType<T>: Copy {}
 
 impl<T: PartialEq, N: ArrayLength> PartialEq for GenericArray<T, N> {
+    #[inline(always)]
     fn eq(&self, other: &Self) -> bool {
         **self == **other
     }
@@ -31,12 +32,14 @@ impl<T: PartialEq, N: ArrayLength> PartialEq for GenericArray<T, N> {
 impl<T: Eq, N: ArrayLength> Eq for GenericArray<T, N> {}
 
 impl<T: PartialOrd, N: ArrayLength> PartialOrd for GenericArray<T, N> {
+    #[inline(always)]
     fn partial_cmp(&self, other: &GenericArray<T, N>) -> Option<Ordering> {
         PartialOrd::partial_cmp(self.as_slice(), other.as_slice())
     }
 }
 
 impl<T: Ord, N: ArrayLength> Ord for GenericArray<T, N> {
+    #[inline(always)]
     fn cmp(&self, other: &GenericArray<T, N>) -> Ordering {
         Ord::cmp(self.as_slice(), other.as_slice())
     }
@@ -104,14 +107,14 @@ macro_rules! impl_from {
             }
 
             impl<'a, T> From<&'a [T; $n]> for &'a GenericArray<T, $ty> {
-                #[inline]
+                #[inline(always)]
                 fn from(slice: &[T; $n]) -> &GenericArray<T, $ty> {
                     unsafe { &*(slice.as_ptr() as *const GenericArray<T, $ty>) }
                 }
             }
 
             impl<'a, T> From<&'a mut [T; $n]> for &'a mut GenericArray<T, $ty> {
-                #[inline]
+                #[inline(always)]
                 fn from(slice: &mut [T; $n]) -> &mut GenericArray<T, $ty> {
                     unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, $ty>) }
                 }
@@ -126,14 +129,14 @@ macro_rules! impl_from {
             }
 
             impl<T> AsRef<[T; $n]> for GenericArray<T, $ty> {
-                #[inline]
+                #[inline(always)]
                 fn as_ref(&self) -> &[T; $n] {
                     unsafe { $crate::transmute(self) }
                 }
             }
 
             impl<T> AsMut<[T; $n]> for GenericArray<T, $ty> {
-                #[inline]
+                #[inline(always)]
                 fn as_mut(&mut self) -> &mut [T; $n] {
                     unsafe { $crate::transmute(self) }
                 }

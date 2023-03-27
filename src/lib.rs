@@ -233,8 +233,8 @@ pub struct ArrayBuilder<T, N: ArrayLength> {
 
 impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     #[doc(hidden)]
-    #[inline]
-    pub unsafe fn new() -> ArrayBuilder<T, N> {
+    #[inline(always)]
+    pub const unsafe fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
             array: MaybeUninit::uninit(),
             position: 0,
@@ -288,8 +288,8 @@ pub struct ArrayConsumer<T, N: ArrayLength> {
 
 impl<T, N: ArrayLength> ArrayConsumer<T, N> {
     #[doc(hidden)]
-    #[inline]
-    pub unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
+    #[inline(always)]
+    pub const unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
         ArrayConsumer {
             array: ManuallyDrop::new(array),
             position: 0,
