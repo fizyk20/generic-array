@@ -227,16 +227,18 @@ impl<T, N: ArrayLength> DerefMut for GenericArray<T, N> {
 /// which will be dropped if `into_inner` is not called.
 #[doc(hidden)]
 pub struct ArrayBuilder<T, N: ArrayLength> {
-    array: MaybeUninit<GenericArray<T, N>>,
+    array: GenericArray<MaybeUninit<T>, N>,
     position: usize,
 }
 
 impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline(always)]
+    #[allow(clippy::uninit_assumed_init)]
     pub const unsafe fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
-            array: MaybeUninit::uninit(),
+            // SAFETY: An uninitialized `[MaybeUninit<_>; N]` is valid, same as regular array
+            array: MaybeUninit::uninit().assume_init(),
             position: 0,
         }
     }
@@ -247,8 +249,8 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// to mark how many elements have been created.
     #[doc(hidden)]
     #[inline]
-    pub unsafe fn iter_position(&mut self) -> (slice::IterMut<T>, &mut usize) {
-        ((*self.array.as_mut_ptr()).iter_mut(), &mut self.position)
+    pub unsafe fn iter_position(&mut self) -> (slice::IterMut<MaybeUninit<T>>, &mut usize) {
+        (self.array.iter_mut(), &mut self.position)
     }
 
     /// When done writing (assuming all elements have been written to),
@@ -256,10 +258,8 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     #[doc(hidden)]
     #[inline]
     pub unsafe fn into_inner(self) -> GenericArray<T, N> {
-        let array = ptr::read(&self.array);
-
+        let array = ptr::read(&self.array as *const _ as *const MaybeUninit<GenericArray<T, N>>);
         mem::forget(self);
-
         array.assume_init()
     }
 }
@@ -268,8 +268,8 @@ impl<T, N: ArrayLength> Drop for ArrayBuilder<T, N> {
     fn drop(&mut self) {
         if mem::needs_drop::<T>() {
             unsafe {
-                for value in &mut (&mut *self.array.as_mut_ptr())[..self.position] {
-                    ptr::drop_in_place(value);
+                for value in &mut self.array[..self.position] {
+                    value.assume_init_drop();
                 }
             }
         }
@@ -351,8 +351,7 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
                 iter.into_iter()
                     .zip(destination_iter)
                     .for_each(|(src, dst)| {
-                        ptr::write(dst, src);
-
+                        dst.write(src);
                         *position += 1;
                     });
             }
@@ -393,8 +392,7 @@ where
                 let (destination_iter, position) = destination.iter_position();
 
                 destination_iter.enumerate().for_each(|(i, dst)| {
-                    ptr::write(dst, f(i));
-
+                    dst.write(f(i));
                     *position += 1;
                 });
             }
@@ -518,9 +516,7 @@ where
 
             array_iter.fold(init, |acc, src| {
                 let value = ptr::read(src);
-
                 *position += 1;
-
                 f(acc, value)
             })
         }
@@ -548,7 +544,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     #[inline(always)]
     pub const fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
         if slice.len() != N::USIZE {
-            panic!("slice.len() != N::USIZE in GenericArray::from_slice");
+            panic!("slice.len() != N in GenericArray::from_slice");
         }
 
         unsafe { &*(slice.as_ptr() as *const GenericArray<T, N>) }
@@ -564,7 +560,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         assert_eq!(
             slice.len(),
             N::USIZE,
-            "slice.len() != N::USIZE in GenericArray::from_mut_slice"
+            "slice.len() != N in GenericArray::from_mut_slice"
         );
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
@@ -638,8 +634,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
                 let (destination_iter, position) = destination.iter_position();
 
                 destination_iter.zip(&mut iter).for_each(|(dst, src)| {
-                    ptr::write(dst, src);
-
+                    dst.write(src);
                     *position += 1;
                 });
 

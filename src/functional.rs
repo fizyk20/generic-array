@@ -42,7 +42,6 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     fn map<U, F>(self, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
-
         F: FnMut(Self::Item) -> U,
     {
         FromIterator::from_iter(self.into_iter().map(f))
