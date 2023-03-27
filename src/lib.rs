@@ -1,27 +1,44 @@
 //! This crate implements a structure that can be used as a generic array type.
-//! Core Rust array types `[T; N]` can't be used generically with
-//! respect to `N`, so for example this:
+//!
+//! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be generic with respect to the length `N`, so this wouldn't work:
 //!
 //! ```rust{compile_fail}
-//! struct Foo<T, N> {
-//!     data: [T; N]
+//! struct Foo<N> {
+//!     data: [i32; N],
 //! }
 //! ```
 //!
-//! won't work.
+//! Since 1.51, the below syntax is valid:
 //!
-//! **generic-array** exports a `GenericArray<T,N>` type, which lets
+//! ```rust
+//! struct Foo<const N: usize> {
+//!     data: [i32; N],
+//! }
+//! ```
+//!
+//! However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in erors, such as this example:
+//!
+//! ```rust{compile_fail}
+//! trait Bar {
+//!     const LEN: usize;
+//!
+//!     // Error: cannot perform const operation using `Self`
+//!     fn bar(&self) -> [i32; Self::LEN];
+//! }
+//! ```
+//!
+//! **generic-array** exports a [`GenericArray<T, N>`] type, which lets
 //! the above be implemented as:
 //!
 //! ```rust
 //! use generic_array::{ArrayLength, GenericArray};
 //!
 //! struct Foo<T, N: ArrayLength> {
-//!     data: GenericArray<T,N>
+//!     data: GenericArray<T, N>
 //! }
 //! ```
 //!
-//! The `ArrayLength<T>` trait is implemented by default for
+//! The [`ArrayLength`] trait is implemented by default for
 //! [unsigned integer types](../typenum/uint/index.html) from
 //! [typenum](../typenum/index.html):
 //!
@@ -38,7 +55,7 @@
 //! # }
 //! ```
 //!
-//! For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
+//! For example, [`GenericArray<T, U5>`] would work almost like `[T; 5]`:
 //!
 //! ```rust
 //! # use generic_array::{ArrayLength, GenericArray};
@@ -53,7 +70,7 @@
 //! # }
 //! ```
 //!
-//! For ease of use, an `arr!` macro is provided - example below:
+//! For ease of use, an [`arr!`] macro is provided - example below:
 //!
 //! ```
 //! use generic_array::arr;

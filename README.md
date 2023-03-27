@@ -10,28 +10,52 @@ This crate implements generic array types for Rust.
 
 ## Usage
 
-The Rust arrays `[T; N]` are problematic in that they can't be used generically with respect to `N`, so for example this won't work:
+Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be generic with respect to the length `N`, so this wouldn't work:
 
 ```rust
 struct Foo<N> {
-	data: [i32; N]
+    data: [i32; N],
 }
 ```
 
-**generic-array** defines a new trait `ArrayLength<T>` and a struct `GenericArray<T, N: ArrayLength<T>>`, which let the above be implemented as:
+Since 1.51, the below syntax is valid:
 
 ```rust
-struct Foo<N: ArrayLength<i32>> {
-	data: GenericArray<i32, N>
+struct Foo<const N: usize> {
+    data: [i32; N],
 }
 ```
 
-The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
+However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in erors, such as this example:
+
+```rust
+trait Bar {
+    const LEN: usize;
+
+    // Error: cannot perform const operation using `Self`
+    fn bar(&self) -> [i32; Self::LEN];
+}
+```
+
+**generic-array** defines a new trait `ArrayLength` and a struct `GenericArray<T, N: ArrayLength>`, which let the above be implemented as:
+
+```rust
+struct Foo<N: ArrayLength> {
+	data: GenericArray<i32, N>
+}
+
+trait Bar {
+    type LEN: ArrayLength;
+    fn bar(&self) -> GenericArray<i32, Self::LEN>;
+}
+```
+
+The `ArrayLength` trait is implemented by default for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
 
 ```rust
 use generic_array::typenum::U5;
 
-struct Foo<N: ArrayLength<i32>> {
+struct Foo<N: ArrayLength> {
     data: GenericArray<i32, N>
 }
 
@@ -45,7 +69,7 @@ For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
 ```rust
 use generic_array::typenum::U5;
 
-struct Foo<T, N: ArrayLength<T>> {
+struct Foo<T, N: ArrayLength> {
     data: GenericArray<T, N>
 }
 
