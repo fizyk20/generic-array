@@ -16,7 +16,7 @@
 //! }
 //! ```
 //!
-//! However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in erors, such as this example:
+//! However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in errors, such as this example:
 //!
 //! ```compile_fail
 //! trait Bar {
