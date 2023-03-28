@@ -8,7 +8,11 @@
     * Make `as_slice()/from_slice()` const.
     * Make `ArrayLength: 'static`
     * Replace `From<&[T]>` with `TryFrom<&[T]>`
-    * Implement `TryFrom<Vec<T>>` for `GenericArray<T, N>` when `alloc` crate feature is enabled.
+    * `alloc` crate feature
+        * `impl TryFrom<Vec<T>> for GenericArray<T, N>`
+        * `impl TryFrom<Box<[T]>> for GenericArray<T, N>`
+        * `impl From<GenericArray<T, N>> for Vec<T>`
+        * `impl From<GenericArray<T, N>> for Box<[T]>`
     * `Deserialize` no longer requires `T: Default`
 
 * **`0.14.6`**

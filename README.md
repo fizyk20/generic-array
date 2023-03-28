@@ -94,6 +94,6 @@ features = [
     "serde",         # Serialize/Deserialize implementation
     "zeroize",       # Zeroize implementation for setting array elements to zero
     "const-default", # Compile-time const default value support via trait
-    "alloc"          # Enables TryFrom<Vec<T>> implementation
+    "alloc"          # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
 ]
 ```

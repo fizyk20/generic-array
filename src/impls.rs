@@ -112,6 +112,38 @@ impl<T, N: ArrayLength> TryFrom<alloc::vec::Vec<T>> for GenericArray<T, N> {
     }
 }
 
+#[cfg(feature = "alloc")]
+impl<T, N: ArrayLength> TryFrom<alloc::boxed::Box<[T]>> for GenericArray<T, N> {
+    type Error = crate::LengthError;
+
+    #[inline]
+    fn try_from(value: alloc::boxed::Box<[T]>) -> Result<Self, Self::Error> {
+        alloc::vec::Vec::from(value).try_into()
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<T, N: ArrayLength> From<GenericArray<T, N>> for alloc::boxed::Box<[T]> {
+    fn from(value: GenericArray<T, N>) -> Self {
+        use alloc::boxed::Box;
+
+        unsafe {
+            Box::from_raw(core::slice::from_raw_parts_mut(
+                Box::into_raw(Box::new(value)) as *mut T,
+                N::USIZE,
+            ))
+        }
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<T, N: ArrayLength> From<GenericArray<T, N>> for alloc::vec::Vec<T> {
+    #[inline]
+    fn from(value: GenericArray<T, N>) -> Self {
+        alloc::boxed::Box::<[T]>::from(value).into()
+    }
+}
+
 macro_rules! impl_from {
     ($($n: expr => $ty: ty),*) => {
         $(
