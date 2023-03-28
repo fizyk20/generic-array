@@ -8,6 +8,9 @@ use generic_array::sequence::*;
 use generic_array::typenum::{U0, U3, U4, U97};
 use generic_array::GenericArray;
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 #[test]
 fn test() {
     let mut list97 = [0; 97];
@@ -385,4 +388,11 @@ fn test_from_array_mut() {
     let a_mut: &mut [i32; 4] = a.as_mut();
     let a_from: &mut GenericArray<i32, U4> = a_mut.into();
     assert_eq!(&mut a_copy, a_from);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_try_from_vec() {
+    let a = alloc::vec![1, 2, 3, 4];
+    let _ = GenericArray::<_, U4>::try_from(a).unwrap();
 }

@@ -98,6 +98,9 @@
 
 pub extern crate typenum;
 
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 mod hex;
 mod impls;
 

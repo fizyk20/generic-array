@@ -88,6 +88,30 @@ impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
     }
 }
 
+#[cfg(feature = "alloc")]
+impl<T, N: ArrayLength> TryFrom<alloc::vec::Vec<T>> for GenericArray<T, N> {
+    type Error = crate::LengthError;
+
+    fn try_from(v: alloc::vec::Vec<T>) -> Result<Self, Self::Error> {
+        if v.len() != N::USIZE {
+            return Err(crate::LengthError);
+        }
+
+        unsafe {
+            let mut destination = crate::ArrayBuilder::new();
+
+            let (dst_iter, position) = destination.iter_position();
+
+            dst_iter.zip(v).for_each(|(dst, src)| {
+                dst.write(src);
+                *position += 1;
+            });
+
+            Ok(destination.into_inner())
+        }
+    }
+}
+
 macro_rules! impl_from {
     ($($n: expr => $ty: ty),*) => {
         $(
