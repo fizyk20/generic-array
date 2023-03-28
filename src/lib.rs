@@ -100,11 +100,11 @@
 
 pub extern crate typenum;
 
-#[cfg(feature = "alloc")]
-extern crate alloc;
-
 mod hex;
 mod impls;
+
+#[cfg(feature = "alloc")]
+mod impl_alloc;
 
 #[cfg(feature = "const-default")]
 mod impl_const_default;

@@ -13,6 +13,7 @@
         * `impl TryFrom<Box<[T]>> for GenericArray<T, N>`
         * `impl From<GenericArray<T, N>> for Vec<T>`
         * `impl From<GenericArray<T, N>> for Box<[T]>`
+        * Methods for converting between `Box<GenericArray<T, N>>` and `Vec<T>`/`Box<[T]>`
     * `Deserialize` no longer requires `T: Default`
 
 * **`0.14.6`**

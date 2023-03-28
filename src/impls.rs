@@ -88,63 +88,6 @@ impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
     }
 }
 
-#[cfg(feature = "alloc")]
-impl<T, N: ArrayLength> TryFrom<alloc::vec::Vec<T>> for GenericArray<T, N> {
-    type Error = crate::LengthError;
-
-    fn try_from(v: alloc::vec::Vec<T>) -> Result<Self, Self::Error> {
-        if v.len() != N::USIZE {
-            return Err(crate::LengthError);
-        }
-
-        unsafe {
-            let mut destination = crate::ArrayBuilder::new();
-
-            let (dst_iter, position) = destination.iter_position();
-
-            dst_iter.zip(v).for_each(|(dst, src)| {
-                dst.write(src);
-                *position += 1;
-            });
-
-            Ok(destination.into_inner())
-        }
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T, N: ArrayLength> TryFrom<alloc::boxed::Box<[T]>> for GenericArray<T, N> {
-    type Error = crate::LengthError;
-
-    #[inline]
-    fn try_from(value: alloc::boxed::Box<[T]>) -> Result<Self, Self::Error> {
-        alloc::vec::Vec::from(value).try_into()
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T, N: ArrayLength> From<GenericArray<T, N>> for alloc::boxed::Box<[T]> {
-    fn from(value: GenericArray<T, N>) -> Self {
-        use alloc::boxed::Box;
-
-        unsafe {
-            // SAFETY: Box::new ensures the array is properly aligned
-            Box::from_raw(core::ptr::slice_from_raw_parts_mut(
-                Box::into_raw(Box::new(value)) as *mut T,
-                N::USIZE,
-            ))
-        }
-    }
-}
-
-#[cfg(feature = "alloc")]
-impl<T, N: ArrayLength> From<GenericArray<T, N>> for alloc::vec::Vec<T> {
-    #[inline]
-    fn from(value: GenericArray<T, N>) -> Self {
-        alloc::boxed::Box::<[T]>::from(value).into()
-    }
-}
-
 macro_rules! impl_from {
     ($($n: expr => $ty: ty),*) => {
         $(
