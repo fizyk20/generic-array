@@ -128,7 +128,8 @@ impl<T, N: ArrayLength> From<GenericArray<T, N>> for alloc::boxed::Box<[T]> {
         use alloc::boxed::Box;
 
         unsafe {
-            Box::from_raw(core::slice::from_raw_parts_mut(
+            // SAFETY: Box::new ensures the array is properly aligned
+            Box::from_raw(core::ptr::slice_from_raw_parts_mut(
                 Box::into_raw(Box::new(value)) as *mut T,
                 N::USIZE,
             ))
