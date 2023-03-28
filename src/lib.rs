@@ -85,10 +85,11 @@
 //! ```toml
 //! [dependencies.generic-array]
 //! features = [
-//!     "more_lengths", # Expands From/Into implementation for more array lengths
-//!     "serde",        # Serialize/Deserialize implementation
-//!     "zeroize",      # Zeroize implementation for setting array elements to zero
-//!     "const-default" # Compile-time const default value support via trait
+//!     "more_lengths",  # Expands From/Into implementation for more array lengths
+//!     "serde",         # Serialize/Deserialize implementation
+//!     "zeroize",       # Zeroize implementation for setting array elements to zero
+//!     "const-default", # Compile-time const default value support via trait
+//!     "alloc"          # Enables TryFrom<Vec<T>> implementation
 //! ]
 //! ```
 
