@@ -8,12 +8,9 @@
 //! use generic_array::arr;
 //! use generic_array::typenum;
 //!
-//! fn main() {
-//!     let array = arr![u8; 10, 20, 30];
-//!     assert_eq!(format!("{:x}", array), "0a141e");
-//! }
+//! let array = arr![10u8, 20, 30];
+//! assert_eq!(format!("{:x}", array), "0a141e");
 //! ```
-//!
 
 use core::{cmp::min, fmt, ops::Add, str};
 

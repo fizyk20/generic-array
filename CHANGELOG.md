@@ -15,6 +15,10 @@
         * `impl From<GenericArray<T, N>> for Box<[T]>`
         * Methods for converting between `Box<GenericArray<T, N>>` and `Vec<T>`/`Box<[T]>`
     * `Deserialize` no longer requires `T: Default`
+    * Simplify `arr!` macro syntax.
+        * `arr![1, 2, 3, 4]` or `arr![T; N]` forms, no explicit length for first variant.
+        * No longer casts given expressions internally.
+        * Type-deduction works similarly to `vec![]`, in that an empty array has an unknown type
 
 * **`0.14.6`**
     * Add an optional `Zeroize` impl for `GenericArray` ([#126](https://github.com/fizyk20/generic-array/pull/126) and [#112](https://github.com/fizyk20/generic-array/pull/112))

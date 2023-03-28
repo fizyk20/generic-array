@@ -18,7 +18,7 @@
 //!
 //! However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in erors, such as this example:
 //!
-//! ```rust{compile_fail}
+//! ```compile_fail
 //! trait Bar {
 //!     const LEN: usize;
 //!
@@ -50,9 +50,7 @@
 //!     data: GenericArray<i32, N>
 //! }
 //!
-//! # fn main() {
 //! let foo = Foo::<U5>{data: GenericArray::default()};
-//! # }
 //! ```
 //!
 //! For example, [`GenericArray<T, U5>`] would work almost like `[T; 5]`:
@@ -65,20 +63,16 @@
 //!     data: GenericArray<T, N>
 //! }
 //!
-//! # fn main() {
 //! let foo = Foo::<i32, U5>{data: GenericArray::default()};
-//! # }
 //! ```
 //!
 //! For ease of use, an [`arr!`] macro is provided - example below:
 //!
 //! ```
 //! use generic_array::arr;
-//! use generic_array::typenum;
-//! # fn main() {
-//! let array = arr![u32; 1, 2, 3];
+//!
+//! let array = arr![1, 2, 3];
 //! assert_eq!(array[2], 3);
-//! # }
 //! ```
 //! ## Feature flags
 //!
@@ -123,8 +117,10 @@ use core::{mem, ptr, slice};
 use typenum::bit::{B0, B1};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
+#[doc(hidden)]
 #[cfg_attr(test, macro_use)]
 pub mod arr;
+
 pub mod functional;
 pub mod iter;
 pub mod sequence;
@@ -695,14 +691,14 @@ mod test {
     fn test_assembly() {
         use crate::functional::*;
 
-        let a = black_box(arr![i32; 1, 3, 5, 7]);
-        let b = black_box(arr![i32; 2, 4, 6, 8]);
+        let a = black_box(arr![1, 3, 5, 7]);
+        let b = black_box(arr![2, 4, 6, 8]);
 
         let c = (&a).zip(b, |l, r| l + r);
 
         let d = a.fold(0, |a, x| a + x);
 
-        assert_eq!(c, arr![i32; 3, 7, 11, 15]);
+        assert_eq!(c, arr![3, 7, 11, 15]);
 
         assert_eq!(d, 16);
     }

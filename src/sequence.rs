@@ -116,13 +116,12 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Lengthen};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let a = arr![1, 2, 3];
     ///
     /// let b = a.append(4);
     ///
-    /// assert_eq!(b, arr![i32; 1, 2, 3, 4]);
-    /// # }
+    /// assert_eq!(b, arr![1, 2, 3, 4]);
     /// ```
     fn append(self, last: T) -> Self::Longer;
 
@@ -132,13 +131,12 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Lengthen};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let a = arr![1, 2, 3];
     ///
     /// let b = a.prepend(4);
     ///
-    /// assert_eq!(b, arr![i32; 4, 1, 2, 3]);
-    /// # }
+    /// assert_eq!(b, arr![4, 1, 2, 3]);
     /// ```
     fn prepend(self, first: T) -> Self::Longer;
 }
@@ -157,14 +155,13 @@ pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Shorten};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let a = arr![1, 2, 3, 4];
     ///
     /// let (init, last) = a.pop_back();
     ///
-    /// assert_eq!(init, arr![i32; 1, 2, 3]);
+    /// assert_eq!(init, arr![1, 2, 3]);
     /// assert_eq!(last, 4);
-    /// # }
     /// ```
     fn pop_back(self) -> (Self::Shorter, T);
 
@@ -173,14 +170,13 @@ pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Shorten};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let a = arr![1, 2, 3, 4];
     ///
     /// let (head, tail) = a.pop_front();
     ///
     /// assert_eq!(head, 1);
-    /// assert_eq!(tail, arr![i32; 2, 3, 4]);
-    /// # }
+    /// assert_eq!(tail, arr![2, 3, 4]);
     /// ```
     fn pop_front(self) -> (T, Self::Shorter);
 }

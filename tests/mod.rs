@@ -37,22 +37,24 @@ fn test_drop() {
 
     let drop_counter = Cell::new(0);
     {
-        let _: GenericArray<TestDrop, U3> = arr![TestDrop; TestDrop(&drop_counter),
-                           TestDrop(&drop_counter),
-                           TestDrop(&drop_counter)];
+        let _: GenericArray<TestDrop, U3> = arr![
+            TestDrop(&drop_counter),
+            TestDrop(&drop_counter),
+            TestDrop(&drop_counter)
+        ];
     }
     assert_eq!(drop_counter.get(), 3);
 }
 
 #[test]
 fn test_arr() {
-    let test: GenericArray<u32, U3> = arr![u32; 1, 2, 3];
+    let test: GenericArray<u32, U3> = arr![1, 2, 3];
     assert_eq!(test[1], 2);
 }
 
 #[test]
 fn test_copy() {
-    let test = arr![u32; 1, 2, 3];
+    let test = arr![1, 2, 3];
     let test2 = test;
     // if GenericArray is not copy, this should fail as a use of a moved value
     assert_eq!(test[1], 2);
@@ -103,18 +105,18 @@ fn test_from() {
 
 #[test]
 fn test_unit_macro() {
-    let arr = arr![f32; 5.81];
+    let arr = arr![5.81];
     assert_eq!(arr[0], 5.81);
 }
 
 #[test]
 fn test_empty_macro() {
-    let _arr = arr![f32;];
+    let _arr: GenericArray<(), _> = arr![];
 }
 
 #[test]
 fn test_cmp() {
-    let _ = arr![u8; 0x00].cmp(&arr![u8; 0x00]);
+    let _ = arr![0x00u8].cmp(&arr![0x00]);
 }
 
 /// This test should cause a helpful compile error if uncommented.
@@ -132,7 +134,7 @@ mod impl_serde {
 
     #[test]
     fn test_serde_implementation() {
-        let array: GenericArray<f64, U6> = arr![f64; 0.0, 5.0, 3.0, 7.07192, 76.0, -9.0];
+        let array: GenericArray<f64, U6> = arr![0.0, 5.0, 3.0, 7.07192, 76.0, -9.0];
         let string = serde_json::to_string(&array).unwrap();
         assert_eq!(string, "[0.0,5.0,3.0,7.07192,76.0,-9.0]");
 
@@ -145,7 +147,7 @@ mod impl_serde {
 fn test_map() {
     let b: GenericArray<i32, U4> = GenericArray::generate(|i| i as i32 * 4).map(|x| x - 3);
 
-    assert_eq!(b, arr![i32; -3, 1, 5, 9]);
+    assert_eq!(b, arr![-3, 1, 5, 9]);
 }
 
 #[test]
@@ -156,7 +158,7 @@ fn test_zip() {
     // Uses reference and non-reference arguments
     let c = (&a).zip(b, |r, l| *r as i32 + l);
 
-    assert_eq!(c, arr![i32; 1, 6, 11, 16]);
+    assert_eq!(c, arr![1, 6, 11, 16]);
 }
 
 #[test]
@@ -166,7 +168,7 @@ fn test_from_iter_short() {
 
     let a: GenericArray<_, U4> = repeat(11).take(3).collect();
 
-    assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+    assert_eq!(a, arr![11, 11, 11, 0]);
 }
 
 #[test]
@@ -175,7 +177,7 @@ fn test_from_iter() {
 
     let a: GenericArray<_, U4> = repeat(11).take(3).chain(once(0)).collect();
 
-    assert_eq!(a, arr![i32; 11, 11, 11, 0]);
+    assert_eq!(a, arr![11, 11, 11, 0]);
 }
 
 #[allow(unused)]
@@ -213,9 +215,9 @@ fn test_sizes() {
 
     assert_eq!(size_of::<Test>(), 25 + size_of::<usize>() * 2);
 
-    assert_eq!(size_of_val(&arr![u8; 1, 2, 3]), size_of::<u8>() * 3);
-    assert_eq!(size_of_val(&arr![u32; 1]), size_of::<u32>() * 1);
-    assert_eq!(size_of_val(&arr![u64; 1, 2, 3, 4]), size_of::<u64>() * 4);
+    assert_eq!(size_of_val(&arr![1u8, 2, 3]), size_of::<u8>() * 3);
+    assert_eq!(size_of_val(&arr![1u32]), size_of::<u32>() * 1);
+    assert_eq!(size_of_val(&arr![1u64, 2, 3, 4]), size_of::<u64>() * 4);
 
     assert_eq!(size_of::<GenericArray<Test, U97>>(), size_of::<Test>() * 97);
 }
@@ -240,102 +242,102 @@ fn test_alignment() {
 
 #[test]
 fn test_append() {
-    let a = arr![i32; 1, 2, 3];
+    let a = arr![1, 2, 3];
 
     let b = a.append(4);
 
-    assert_eq!(b, arr![i32; 1, 2, 3, 4]);
+    assert_eq!(b, arr![1, 2, 3, 4]);
 }
 
 #[test]
 fn test_prepend() {
-    let a = arr![i32; 1, 2, 3];
+    let a = arr![1, 2, 3];
 
     let b = a.prepend(4);
 
-    assert_eq!(b, arr![i32; 4, 1, 2, 3]);
+    assert_eq!(b, arr![4, 1, 2, 3]);
 }
 
 #[test]
 fn test_pop() {
-    let a = arr![i32; 1, 2, 3, 4];
+    let a = arr![1, 2, 3, 4];
 
     let (init, last) = a.pop_back();
 
-    assert_eq!(init, arr![i32; 1, 2, 3]);
+    assert_eq!(init, arr![1, 2, 3]);
     assert_eq!(last, 4);
 
     let (head, tail) = a.pop_front();
 
     assert_eq!(head, 1);
-    assert_eq!(tail, arr![i32; 2, 3, 4]);
+    assert_eq!(tail, arr![2, 3, 4]);
 }
 
 #[test]
 fn test_split() {
-    let a = arr![i32; 1, 2, 3, 4];
+    let a = arr![1, 2, 3, 4];
 
     let (b, c) = a.split();
 
-    assert_eq!(b, arr![i32; 1]);
-    assert_eq!(c, arr![i32; 2, 3, 4]);
+    assert_eq!(b, arr![1]);
+    assert_eq!(c, arr![2, 3, 4]);
 
     let (e, f) = a.split();
 
-    assert_eq!(e, arr![i32; 1, 2]);
-    assert_eq!(f, arr![i32; 3, 4]);
+    assert_eq!(e, arr![1, 2]);
+    assert_eq!(f, arr![3, 4]);
 }
 
 #[test]
 fn test_split_ref() {
-    let a = arr![i32; 1, 2, 3, 4];
+    let a = arr![1, 2, 3, 4];
     let a_ref = &a;
 
     let (b_ref, c_ref) = a_ref.split();
 
-    assert_eq!(b_ref, &arr![i32; 1]);
-    assert_eq!(c_ref, &arr![i32; 2, 3, 4]);
+    assert_eq!(b_ref, &arr![1]);
+    assert_eq!(c_ref, &arr![2, 3, 4]);
 
     let (e_ref, f_ref) = a_ref.split();
 
-    assert_eq!(e_ref, &arr![i32; 1, 2]);
-    assert_eq!(f_ref, &arr![i32; 3, 4]);
+    assert_eq!(e_ref, &arr![1, 2]);
+    assert_eq!(f_ref, &arr![3, 4]);
 }
 
 #[test]
 fn test_split_mut() {
-    let mut a = arr![i32; 1, 2, 3, 4];
+    let mut a = arr![1, 2, 3, 4];
     let a_ref = &mut a;
 
     let (b_ref, c_ref) = a_ref.split();
 
-    assert_eq!(b_ref, &mut arr![i32; 1]);
-    assert_eq!(c_ref, &mut arr![i32; 2, 3, 4]);
+    assert_eq!(b_ref, &mut arr![1]);
+    assert_eq!(c_ref, &mut arr![2, 3, 4]);
 
     let (e_ref, f_ref) = a_ref.split();
 
-    assert_eq!(e_ref, &mut arr![i32; 1, 2]);
-    assert_eq!(f_ref, &mut arr![i32; 3, 4]);
+    assert_eq!(e_ref, &mut arr![1, 2]);
+    assert_eq!(f_ref, &mut arr![3, 4]);
 }
 
 #[test]
 fn test_concat() {
-    let a = arr![i32; 1, 2];
-    let b = arr![i32; 3, 4, 5];
+    let a = arr![1, 2];
+    let b = arr![3, 4, 5];
 
     let c = a.concat(b);
 
-    assert_eq!(c, arr![i32; 1, 2, 3, 4, 5]);
+    assert_eq!(c, arr![1, 2, 3, 4, 5]);
 
     let (d, e) = c.split();
 
-    assert_eq!(d, arr![i32; 1, 2]);
-    assert_eq!(e, arr![i32; 3, 4, 5]);
+    assert_eq!(d, arr![1, 2]);
+    assert_eq!(e, arr![3, 4, 5]);
 }
 
 #[test]
 fn test_fold() {
-    let a = arr![i32; 1, 2, 3, 4];
+    let a = arr![1, 2, 3, 4];
 
     assert_eq!(10, a.fold(0, |a, x| a + x));
 }
@@ -351,31 +353,31 @@ where
 
 #[test]
 fn test_sum() {
-    let a = sum_generic(arr![i32; 1, 2, 3, 4]);
+    let a = sum_generic(arr![1, 2, 3, 4]);
 
     assert_eq!(a, 10);
 }
 
 #[test]
 fn test_as_ref() {
-    let a = arr![i32; 1, 2, 3, 4];
+    let a = arr![1, 2, 3, 4];
     let a_ref: &[i32; 4] = a.as_ref();
     assert_eq!(a_ref, &[1, 2, 3, 4]);
 }
 
 #[test]
 fn test_as_mut() {
-    let mut a = arr![i32; 1, 2, 3, 4];
+    let mut a = arr![1, 2, 3, 4];
     let a_mut: &mut [i32; 4] = a.as_mut();
     assert_eq!(a_mut, &mut [1, 2, 3, 4]);
     a_mut[2] = 0;
     assert_eq!(a_mut, &mut [1, 2, 0, 4]);
-    assert_eq!(a, arr![i32; 1, 2, 0, 4]);
+    assert_eq!(a, arr![1, 2, 0, 4]);
 }
 
 #[test]
 fn test_from_array_ref() {
-    let a = arr![i32; 1, 2, 3, 4];
+    let a = arr![1, 2, 3, 4];
     let a_ref: &[i32; 4] = a.as_ref();
     let a_from: &GenericArray<i32, U4> = a_ref.into();
     assert_eq!(&a, a_from);
@@ -383,7 +385,7 @@ fn test_from_array_ref() {
 
 #[test]
 fn test_from_array_mut() {
-    let mut a = arr![i32; 1, 2, 3, 4];
+    let mut a = arr![1, 2, 3, 4];
     let mut a_copy = a;
     let a_mut: &mut [i32; 4] = a.as_mut();
     let a_from: &mut GenericArray<i32, U4> = a_mut.into();
@@ -395,4 +397,25 @@ fn test_from_array_mut() {
 fn test_try_from_vec() {
     let a = alloc::vec![1, 2, 3, 4];
     let _ = GenericArray::<_, U4>::try_from(a).unwrap();
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_into_boxed_slice() {
+    use alloc::{boxed::Box, vec::Vec};
+
+    let x: Box<[i32]> = arr![1, 2, 3, 4, 5].into();
+    assert_eq!(x.len(), 5);
+    let y: GenericArray<i32, typenum::U5> = x.clone().try_into().unwrap();
+    assert_eq!(&x[..], &y[..]);
+
+    let x: Vec<i32> = arr![1, 2, 3, 4, 5].into();
+    assert_eq!(x.len(), 5);
+    let y: GenericArray<i32, typenum::U5> = x.clone().try_into().unwrap();
+    assert_eq!(&x[..], &y[..]);
+
+    let x: Vec<i32> = Box::new(arr![1, 2, 3, 4, 5]).into_vec();
+    assert_eq!(x.len(), 5);
+    let y: Box<GenericArray<i32, typenum::U5>> = GenericArray::try_from_vec(x.clone()).unwrap();
+    assert_eq!(&x[..], &y[..]);
 }

@@ -89,33 +89,30 @@ where
 
 #[test]
 fn test_generics() {
-    generic_map(arr![i32; 1, 2, 3, 4]);
+    generic_map(arr![1, 2, 3, 4]);
 
     assert_eq!(
-        generic_sequence_zip_sum(arr![i32; 1, 2, 3, 4], arr![i32; 2, 3, 4, 5]),
+        generic_sequence_zip_sum(arr![1, 2, 3, 4], arr![2, 3, 4, 5]),
         28
     );
 
     assert_eq!(
-        generic_array_plain_zip_sum(arr![i32; 1, 2, 3, 4], arr![i32; 2, 3, 4, 5]),
+        generic_array_plain_zip_sum(arr![1, 2, 3, 4], arr![2, 3, 4, 5]),
         28
     );
 
     assert_eq!(
-        generic_array_variable_length_zip_sum(arr![i32; 1, 2, 3, 4], arr![i32; 2, 3, 4, 5]),
+        generic_array_variable_length_zip_sum(arr![1, 2, 3, 4], arr![2, 3, 4, 5]),
         28
     );
 
     assert_eq!(
-        generic_array_same_type_variable_length_zip_sum(
-            arr![i32; 1, 2, 3, 4],
-            arr![i32; 2, 3, 4, 5]
-        ),
+        generic_array_same_type_variable_length_zip_sum(arr![1, 2, 3, 4], arr![2, 3, 4, 5]),
         28
     );
 
     assert_eq!(
-        generic_array_zip_sum(arr![i32; 1, 2, 3, 4], arr![i32; 2, 3, 4, 5]),
+        generic_array_zip_sum(arr![1, 2, 3, 4], arr![2, 3, 4, 5]),
         28
     );
 }
