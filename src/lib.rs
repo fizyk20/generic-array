@@ -95,6 +95,7 @@
 #![deny(missing_docs)]
 #![deny(meta_variable_misuse)]
 #![no_std]
+#![cfg_attr(docsrs, feature(doc_auto_cfg))]
 
 pub extern crate typenum;
 
