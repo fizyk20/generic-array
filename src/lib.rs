@@ -39,8 +39,8 @@
 //! ```
 //!
 //! The [`ArrayLength`] trait is implemented by default for
-//! [unsigned integer types](../typenum/uint/index.html) from
-//! [typenum](../typenum/index.html):
+//! [unsigned integer types](typenum::Unsigned) from
+//! [typenum](typenum):
 //!
 //! ```rust
 //! # use generic_array::{ArrayLength, GenericArray};
