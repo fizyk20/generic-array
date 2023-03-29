@@ -66,12 +66,12 @@
 //! let foo = Foo::<i32, U5>{data: GenericArray::default()};
 //! ```
 //!
-//! For ease of use, an [`arr!`] macro is provided - example below:
+//! The `arr!` macro is provided to allow easier creation of literal arrays, as shown below:
 //!
-//! ```
-//! use generic_array::arr;
-//!
+//! ```rust
+//! # use generic_array::arr;
 //! let array = arr![1, 2, 3];
+//! //  array: GenericArray<i32, typenum::U3>
 //! assert_eq!(array[2], 3);
 //! ```
 //! ## Feature flags

@@ -78,10 +78,11 @@ fn main() {
 }
 ```
 
-In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays as shown below:
+The `arr!` macro is provided to allow easier creation of literal arrays, as shown below:
 
 ```rust
-let array = arr![u32; 1, 2, 3];
+let array = arr![1, 2, 3];
+//  array: GenericArray<i32, typenum::U3>
 assert_eq!(array[2], 3);
 ```
 
