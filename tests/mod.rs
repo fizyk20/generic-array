@@ -401,7 +401,7 @@ fn test_try_from_vec() {
 
 #[cfg(feature = "alloc")]
 #[test]
-fn test_into_boxed_slice() {
+fn test_alloc() {
     use alloc::{boxed::Box, vec::Vec};
     use generic_array::box_arr;
 
@@ -431,7 +431,11 @@ fn test_into_boxed_slice() {
 
     let _ = box_arr!(1, 2, 3, 4, 5);
 
-    // 128-bit * 10^6 = 16MB, large enough to overflow the stack, but not this
     #[cfg(not(miri))]
-    let _ = box_arr![1u128; typenum::Exp<typenum::U10, typenum::U6>];
+    {
+        // 128-bit * 10^6 = 16MB, large enough to overflow the stack, but not this
+        let _ = box_arr![1u128; typenum::Exp<typenum::U10, typenum::U6>];
+
+        let _ = GenericArray::<i128, typenum::Exp<typenum::U10, typenum::U6>>::default_boxed();
+    }
 }
