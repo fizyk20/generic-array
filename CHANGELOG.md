@@ -9,6 +9,7 @@
     * Make `ArrayLength: 'static`
     * Replace `From<&[T]>` with `TryFrom<&[T]>`
     * `alloc` crate feature
+        * Added `box_arr!` macro with the same syntax as `arr!`, but returns a `Box<GenericArray<T, N>>`
         * Moving between heap and stack
             * `impl TryFrom<Vec<T>> for GenericArray<T, N>`
             * `impl TryFrom<Box<[T]>> for GenericArray<T, N>`
