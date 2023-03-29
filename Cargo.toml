@@ -42,4 +42,4 @@ bincode = "1.0"
 version_check = "0.9"
 
 [package.metadata.docs.rs]
-features = ["serde", "zeroize", "const-default"]
+features = ["serde", "zeroize", "const-default", "alloc"]

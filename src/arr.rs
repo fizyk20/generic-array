@@ -41,7 +41,7 @@ macro_rules! arr_impl {
 
         __do_transmute::<_, __OutputLength>([$($x),*])
     });
-    ($x:expr; $N: ty) => ({
+    ($x:expr; $N:ty) => ({
         const __INPUT_LENGTH: usize = <$N as $crate::typenum::Unsigned>::USIZE;
 
         #[inline(always)]
@@ -63,6 +63,28 @@ macro_rules! arr_impl {
 macro_rules! arr {
     ($($x:expr),* $(,)*) => ( $crate::arr_impl!($($x),*) );
     ($x:expr; $N:ty)     => ( $crate::arr_impl!($x; $N) );
+}
+
+/// Like [`arr!`], but returns a `Box<GenericArray<T, N>>`
+///
+/// Unlike [`arr!`], this is not limited by stack size, only the heap.
+///
+/// Example:
+/// ```
+/// # use generic_array::{box_arr, typenum::{self, *}};
+/// // allocate a 16MB Buffer of u128 elements (16 bytes * 10 ^ 6)
+/// # #[cfg(not(miri))]
+/// let test = box_arr![1u128; typenum::Exp<U10, U6>];
+/// //  test: Box<GenericArray<u128, _>>
+/// ```
+#[cfg(feature = "alloc")]
+#[macro_export]
+macro_rules! box_arr {
+    ($($x:expr),* $(,)*) => ({
+        type __OutputLength = $crate::arr_impl!(@count_ty $($x),*);
+        $crate::GenericArray::<_, __OutputLength>::try_from_vec($crate::alloc::vec![$($x),*]).unwrap()
+    });
+    ($x:expr; $N:ty) => ( $crate::GenericArray::<_, $N>::try_from_vec($crate::alloc::vec![$x; <$N as $crate::typenum::Unsigned>::USIZE]).unwrap() );
 }
 
 mod doctests_only {

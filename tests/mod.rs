@@ -403,6 +403,7 @@ fn test_try_from_vec() {
 #[test]
 fn test_into_boxed_slice() {
     use alloc::{boxed::Box, vec::Vec};
+    use generic_array::box_arr;
 
     let x: Box<[i32]> = arr![1, 2, 3, 4, 5].into();
     assert_eq!(x.len(), 5);
@@ -418,4 +419,19 @@ fn test_into_boxed_slice() {
     assert_eq!(x.len(), 5);
     let y: Box<GenericArray<i32, typenum::U5>> = GenericArray::try_from_vec(x.clone()).unwrap();
     assert_eq!(&x[..], &y[..]);
+
+    let z =
+        Box::<GenericArray<_, typenum::U5>>::from_iter(y.into_iter() as alloc::vec::IntoIter<_>);
+
+    let _: Box<_> = z.clone().zip(Box::new(arr![1, 2, 3, 4, 5]), |a, b| a + b);
+
+    let _ = z.map(|x| x + 1);
+
+    let _ = arr![1, 2, 3, 4].zip(*box_arr![1, 2, 3, 4], |a, b| a + b);
+
+    let _ = box_arr!(1, 2, 3, 4, 5);
+
+    // 128-bit * 10^6 = 16MB, large enough to overflow the stack, but not this
+    #[cfg(not(miri))]
+    let _ = box_arr![1u128; typenum::Exp<typenum::U10, typenum::U6>];
 }

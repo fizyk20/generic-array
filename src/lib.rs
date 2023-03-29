@@ -94,6 +94,10 @@
 
 pub extern crate typenum;
 
+#[doc(hidden)]
+#[cfg(feature = "alloc")]
+pub extern crate alloc;
+
 mod hex;
 mod impls;
 
@@ -195,7 +199,7 @@ unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1> {
     type ArrayType<T> = GenericArrayImplOdd<T, N::ArrayType<T>>;
 }
 
-/// Struct representing a generic array - `GenericArray<T, N>` works like [T; N]
+/// Struct representing a generic array - `GenericArray<T, N>` works like `[T; N]`
 #[allow(dead_code)]
 #[repr(transparent)]
 pub struct GenericArray<T, U: ArrayLength> {
@@ -249,7 +253,7 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// Increment the position value given as a mutable reference as you iterate
     /// to mark how many elements have been created.
     #[doc(hidden)]
-    #[inline]
+    #[inline(always)]
     pub unsafe fn iter_position(&mut self) -> (slice::IterMut<MaybeUninit<T>>, &mut usize) {
         (self.array.iter_mut(), &mut self.position)
     }
@@ -257,7 +261,7 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// When done writing (assuming all elements have been written to),
     /// get the inner array.
     #[doc(hidden)]
-    #[inline]
+    #[inline(always)]
     pub unsafe fn into_inner(self) -> GenericArray<T, N> {
         let array = ptr::read(&self.array as *const _ as *const MaybeUninit<GenericArray<T, N>>);
         mem::forget(self);
@@ -343,22 +347,27 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
     where
         I: IntoIterator<Item = T>,
     {
+        let mut iter = iter.into_iter();
+
         unsafe {
             let mut destination = ArrayBuilder::new();
 
             {
                 let (destination_iter, position) = destination.iter_position();
 
-                iter.into_iter()
-                    .zip(destination_iter)
-                    .for_each(|(src, dst)| {
-                        dst.write(src);
-                        *position += 1;
-                    });
+                // .zip acts as an automatic .take(N::USIZE)
+                destination_iter.zip(&mut iter).for_each(|(dst, src)| {
+                    dst.write(src);
+                    *position += 1;
+                });
             }
 
             if destination.position < N::USIZE {
                 from_iter_length_fail(destination.position, N::USIZE);
+            }
+
+            if iter.next().is_some() {
+                from_iter_length_fail(N::USIZE + 1, N::USIZE);
             }
 
             destination.into_inner()
@@ -368,7 +377,7 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
 
 #[inline(never)]
 #[cold]
-fn from_iter_length_fail(length: usize, expected: usize) -> ! {
+pub(crate) fn from_iter_length_fail(length: usize, expected: usize) -> ! {
     panic!(
         "GenericArray::from_iter received {} elements but expected {}",
         length, expected
@@ -403,6 +412,7 @@ where
     }
 
     #[doc(hidden)]
+    #[inline(always)]
     fn inverted_zip<B, U, F>(
         self,
         lhs: GenericArray<B, Self::Length>,
@@ -435,6 +445,7 @@ where
     }
 
     #[doc(hidden)]
+    #[inline(always)]
     fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
     where
         Lhs: GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
