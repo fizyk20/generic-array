@@ -33,20 +33,20 @@ trait Bar {
     const LEN: usize;
 
     // Error: cannot perform const operation using `Self`
-    fn bar(&self) -> [i32; Self::LEN];
+    fn bar(&self) -> Foo<{ Self::LEN }>;
 }
 ```
 
-**generic-array** defines a new trait `ArrayLength` and a struct `GenericArray<T, N: ArrayLength>`, which let the above be implemented as:
+**generic-array** defines a new trait `ArrayLength` and a struct `GenericArray<T, N: ArrayLength>`, which lets the above be implemented as:
 
 ```rust
 struct Foo<N: ArrayLength> {
-	data: GenericArray<i32, N>
+    data: GenericArray<i32, N>
 }
 
 trait Bar {
     type LEN: ArrayLength;
-    fn bar(&self) -> GenericArray<i32, Self::LEN>;
+    fn bar(&self) -> Foo<Self::LEN>;
 }
 ```
 
@@ -59,9 +59,7 @@ struct Foo<N: ArrayLength> {
     data: GenericArray<i32, N>
 }
 
-fn main() {
-    let foo = Foo::<U5>{data: GenericArray::default()};
-}
+let foo = Foo::<U5>{data: GenericArray::default()};
 ```
 
 For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
@@ -73,9 +71,7 @@ struct Foo<T, N: ArrayLength> {
     data: GenericArray<T, N>
 }
 
-fn main() {
-    let foo = Foo::<i32, U5>{data: GenericArray::default()};
-}
+let foo = Foo::<i32, U5>{data: GenericArray::default()};
 ```
 
 The `arr!` macro is provided to allow easier creation of literal arrays, as shown below:

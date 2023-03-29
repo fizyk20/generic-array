@@ -19,22 +19,30 @@
 //! However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in errors, such as this example:
 //!
 //! ```compile_fail
+//! # struct Foo<const N: usize> {
+//! #   data: [i32; N],
+//! # }
 //! trait Bar {
 //!     const LEN: usize;
 //!
 //!     // Error: cannot perform const operation using `Self`
-//!     fn bar(&self) -> [i32; Self::LEN];
+//!     fn bar(&self) -> Foo<{ Self::LEN }>;
 //! }
 //! ```
 //!
-//! **generic-array** exports a [`GenericArray<T, N>`] type, which lets
-//! the above be implemented as:
+//! **generic-array** defines a new trait [`ArrayLength`] and a struct [`GenericArray<T, N: ArrayLength>`](GenericArray),
+//! which lets the above be implemented as:
 //!
 //! ```rust
-//! use generic_array::{ArrayLength, GenericArray};
+//! use generic_array::{GenericArray, ArrayLength};
 //!
-//! struct Foo<T, N: ArrayLength> {
-//!     data: GenericArray<T, N>
+//! struct Foo<N: ArrayLength> {
+//!     data: GenericArray<i32, N>
+//! }
+//!
+//! trait Bar {
+//!     type LEN: ArrayLength;
+//!     fn bar(&self) -> Foo<Self::LEN>;
 //! }
 //! ```
 //!
