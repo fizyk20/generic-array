@@ -553,6 +553,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # Panics
     ///
     /// Panics if the slice is not equal to the length of the array.
+    ///
+    /// Consider [`TryFrom`]/[`TryInto`] for a fallible conversion.
     #[inline(always)]
     pub const fn from_slice(slice: &[T]) -> &GenericArray<T, N> {
         if slice.len() != N::USIZE {
@@ -567,6 +569,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # Panics
     ///
     /// Panics if the slice is not equal to the length of the array.
+    ///
+    /// Consider [`TryFrom`]/[`TryInto`] for a fallible conversion.
     #[inline(always)]
     pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
         assert_eq!(
