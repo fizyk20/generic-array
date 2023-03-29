@@ -9,11 +9,13 @@
     * Make `ArrayLength: 'static`
     * Replace `From<&[T]>` with `TryFrom<&[T]>`
     * `alloc` crate feature
-        * `impl TryFrom<Vec<T>> for GenericArray<T, N>`
-        * `impl TryFrom<Box<[T]>> for GenericArray<T, N>`
-        * `impl From<GenericArray<T, N>> for Vec<T>`
-        * `impl From<GenericArray<T, N>> for Box<[T]>`
+        * Moving between heap and stack
+            * `impl TryFrom<Vec<T>> for GenericArray<T, N>`
+            * `impl TryFrom<Box<[T]>> for GenericArray<T, N>`
+            * `impl From<GenericArray<T, N>> for Vec<T>`
+            * `impl From<GenericArray<T, N>> for Box<[T]>`
         * Methods for converting between `Box<GenericArray<T, N>>` and `Vec<T>`/`Box<[T]>`
+        * `GenericSequence` and `FunctionalSequence` implemented for `Box<GenericArray<T, N>>`, allowing for heap-based manipulation of fixed-size arrays.
     * `Deserialize` no longer requires `T: Default`
     * Simplify `arr!` macro syntax.
         * `arr![1, 2, 3, 4]` or `arr![T; N]` forms, no explicit length for first variant.
