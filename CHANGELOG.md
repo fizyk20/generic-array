@@ -9,6 +9,7 @@
     * Make `ArrayLength: 'static`
     * Replace `From<&[T]>` with `TryFrom<&[T]>`
     * Use `typenum`'s `const-generics` feature for `const N: usize`-based `From` implementations between `[T; N]` and `GenericArray<T, N>`
+        * Also added the `IntoArrayLength` trait and `ConstArrayLength` type-alias for working with typenum's `Const<N>` easier.
     * `alloc` crate feature
         * Added `box_arr!` macro with the same syntax as `arr!`, but returns a `Box<GenericArray<T, N>>`
         * Moving between heap and stack

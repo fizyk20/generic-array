@@ -127,6 +127,7 @@ use core::mem::{ManuallyDrop, MaybeUninit};
 use core::ops::{Deref, DerefMut};
 use core::{mem, ptr, slice};
 use typenum::bit::{B0, B1};
+use typenum::generic_const_mappings::{Const, ToUInt, U};
 use typenum::uint::{UInt, UTerm, Unsigned};
 
 #[doc(hidden)]
@@ -152,6 +153,55 @@ unsafe impl ArrayLength for UTerm {
     #[doc(hidden)]
     type ArrayType<T> = [T; 0];
 }
+
+/// Implemented for types which can have an associated [`ArrayLength`],
+/// such as [`Const<N>`] for use with const-generics.
+///
+/// ```
+/// use generic_array::{GenericArray, IntoArrayLength, ConstArrayLength, typenum::Const};
+///
+/// fn some_array_interopt<const N: usize>(value: [u32; N]) -> GenericArray<u32, ConstArrayLength<N>>
+/// where
+///     Const<N>: IntoArrayLength,
+/// {
+///     let ga = GenericArray::from(value);
+///     // do stuff
+///     ga
+/// }
+/// ```
+///
+/// This is mostly to simplify the `where` bounds, equivalent to:
+///
+/// ```
+/// use generic_array::{GenericArray, ArrayLength, typenum::{Const, U, ToUInt}};
+///
+/// fn some_array_interopt<const N: usize>(value: [u32; N]) -> GenericArray<u32, U<N>>
+/// where
+///     Const<N>: ToUInt,
+///     U<N>: ArrayLength,
+/// {
+///     let ga = GenericArray::from(value);
+///     // do stuff
+///     ga
+/// }
+/// ```
+pub unsafe trait IntoArrayLength {
+    /// The associated `ArrayLength`
+    type ArrayLength: ArrayLength;
+}
+
+unsafe impl<const N: usize> IntoArrayLength for Const<N>
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    type ArrayLength = U<N>;
+}
+
+/// Associated [`ArrayLength`] for one [`Const<N>`]
+///
+/// See [`IntoArrayLength`] for more information.
+pub type ConstArrayLength<const N: usize> = <Const<N> as IntoArrayLength>::ArrayLength;
 
 /// Internal type used to generate a struct of appropriate size
 #[allow(dead_code)]

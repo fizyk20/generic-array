@@ -3,7 +3,9 @@ use core::cmp::Ordering;
 use core::fmt::{self, Debug};
 use core::hash::{Hash, Hasher};
 
-use super::{ArrayLength, GenericArray};
+use typenum::Const;
+
+use super::{ArrayLength, ConstArrayLength, GenericArray, IntoArrayLength};
 
 use crate::functional::*;
 use crate::sequence::*;
@@ -89,12 +91,9 @@ impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
     }
 }
 
-use typenum::{Const, ToUInt, U};
-
-impl<T, const N: usize> From<[T; N]> for GenericArray<T, U<N>>
+impl<T, const N: usize> From<[T; N]> for GenericArray<T, ConstArrayLength<N>>
 where
-    Const<N>: ToUInt,
-    U<N>: ArrayLength,
+    Const<N>: IntoArrayLength,
 {
     #[inline(always)]
     fn from(value: [T; N]) -> Self {
@@ -102,53 +101,48 @@ where
     }
 }
 
-impl<T, const N: usize> From<GenericArray<T, U<N>>> for [T; N]
+impl<T, const N: usize> From<GenericArray<T, ConstArrayLength<N>>> for [T; N]
 where
-    Const<N>: ToUInt,
-    U<N>: ArrayLength,
+    Const<N>: IntoArrayLength,
 {
     #[inline(always)]
-    fn from(value: GenericArray<T, U<N>>) -> Self {
+    fn from(value: GenericArray<T, ConstArrayLength<N>>) -> Self {
         unsafe { crate::transmute(value) }
     }
 }
 
-impl<'a, T, const N: usize> From<&'a [T; N]> for &'a GenericArray<T, U<N>>
+impl<'a, T, const N: usize> From<&'a [T; N]> for &'a GenericArray<T, ConstArrayLength<N>>
 where
-    Const<N>: ToUInt,
-    U<N>: ArrayLength,
+    Const<N>: IntoArrayLength,
 {
     #[inline(always)]
     fn from(slice: &'a [T; N]) -> Self {
-        unsafe { &*(slice.as_ptr() as *const GenericArray<T, U<N>>) }
+        unsafe { &*(slice.as_ptr() as *const GenericArray<T, ConstArrayLength<N>>) }
     }
 }
 
-impl<'a, T, const N: usize> From<&'a mut [T; N]> for &'a mut GenericArray<T, U<N>>
+impl<'a, T, const N: usize> From<&'a mut [T; N]> for &'a mut GenericArray<T, ConstArrayLength<N>>
 where
-    Const<N>: ToUInt,
-    U<N>: ArrayLength,
+    Const<N>: IntoArrayLength,
 {
     #[inline(always)]
     fn from(slice: &'a mut [T; N]) -> Self {
-        unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, U<N>>) }
+        unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, ConstArrayLength<N>>) }
     }
 }
 
-impl<T, const N: usize> AsRef<[T; N]> for GenericArray<T, U<N>>
+impl<T, const N: usize> AsRef<[T; N]> for GenericArray<T, ConstArrayLength<N>>
 where
-    Const<N>: ToUInt,
-    U<N>: ArrayLength,
+    Const<N>: IntoArrayLength,
 {
     #[inline(always)]
     fn as_ref(&self) -> &[T; N] {
         unsafe { crate::transmute(self) }
     }
 }
-impl<T, const N: usize> AsMut<[T; N]> for GenericArray<T, U<N>>
+impl<T, const N: usize> AsMut<[T; N]> for GenericArray<T, ConstArrayLength<N>>
 where
-    Const<N>: ToUInt,
-    U<N>: ArrayLength,
+    Const<N>: IntoArrayLength,
 {
     #[inline(always)]
     fn as_mut(&mut self) -> &mut [T; N] {
