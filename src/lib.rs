@@ -198,6 +198,13 @@ where
     type ArrayLength = U<N>;
 }
 
+unsafe impl<T> IntoArrayLength for T
+where
+    T: ArrayLength,
+{
+    type ArrayLength = Self;
+}
+
 /// Associated [`ArrayLength`] for one [`Const<N>`]
 ///
 /// See [`IntoArrayLength`] for more information.
