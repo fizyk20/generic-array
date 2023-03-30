@@ -683,6 +683,10 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 #[inline(always)]
 #[doc(hidden)]
 pub const unsafe fn transmute<A, B>(a: A) -> B {
+    if mem::size_of::<A>() != mem::size_of::<B>() {
+        panic!("Size mismatch for generic_array::transmute");
+    }
+
     #[repr(C)]
     union Union<A, B> {
         a: ManuallyDrop<A>,
