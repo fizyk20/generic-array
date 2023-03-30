@@ -89,147 +89,80 @@ impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
     }
 }
 
-macro_rules! impl_from {
-    ($($n: expr => $ty: ty),*) => {
-        $(
-            impl<T> From<[T; $n]> for GenericArray<T, $ty> {
-                #[inline(always)]
-                fn from(arr: [T; $n]) -> Self {
-                    unsafe { $crate::transmute(arr) }
-                }
-            }
+use typenum::{Const, ToUInt, U};
 
-            #[cfg(relaxed_coherence)]
-            impl<T> From<GenericArray<T, $ty>> for [T; $n] {
-                #[inline(always)]
-                fn from(sel: GenericArray<T, $ty>) -> [T; $n] {
-                    unsafe { $crate::transmute(sel) }
-                }
-            }
-
-            impl<'a, T> From<&'a [T; $n]> for &'a GenericArray<T, $ty> {
-                #[inline(always)]
-                fn from(slice: &[T; $n]) -> &GenericArray<T, $ty> {
-                    unsafe { &*(slice.as_ptr() as *const GenericArray<T, $ty>) }
-                }
-            }
-
-            impl<'a, T> From<&'a mut [T; $n]> for &'a mut GenericArray<T, $ty> {
-                #[inline(always)]
-                fn from(slice: &mut [T; $n]) -> &mut GenericArray<T, $ty> {
-                    unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, $ty>) }
-                }
-            }
-
-            #[cfg(not(relaxed_coherence))]
-            impl<T> Into<[T; $n]> for GenericArray<T, $ty> {
-                #[inline(always)]
-                fn into(self) -> [T; $n] {
-                    unsafe { $crate::transmute(self) }
-                }
-            }
-
-            impl<T> AsRef<[T; $n]> for GenericArray<T, $ty> {
-                #[inline(always)]
-                fn as_ref(&self) -> &[T; $n] {
-                    unsafe { $crate::transmute(self) }
-                }
-            }
-
-            impl<T> AsMut<[T; $n]> for GenericArray<T, $ty> {
-                #[inline(always)]
-                fn as_mut(&mut self) -> &mut [T; $n] {
-                    unsafe { $crate::transmute(self) }
-                }
-            }
-        )*
+impl<T, const N: usize> From<[T; N]> for GenericArray<T, U<N>>
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    #[inline(always)]
+    fn from(value: [T; N]) -> Self {
+        unsafe { crate::transmute(value) }
     }
 }
 
-impl_from! {
-    1  => ::typenum::U1,
-    2  => ::typenum::U2,
-    3  => ::typenum::U3,
-    4  => ::typenum::U4,
-    5  => ::typenum::U5,
-    6  => ::typenum::U6,
-    7  => ::typenum::U7,
-    8  => ::typenum::U8,
-    9  => ::typenum::U9,
-    10 => ::typenum::U10,
-    11 => ::typenum::U11,
-    12 => ::typenum::U12,
-    13 => ::typenum::U13,
-    14 => ::typenum::U14,
-    15 => ::typenum::U15,
-    16 => ::typenum::U16,
-    17 => ::typenum::U17,
-    18 => ::typenum::U18,
-    19 => ::typenum::U19,
-    20 => ::typenum::U20,
-    21 => ::typenum::U21,
-    22 => ::typenum::U22,
-    23 => ::typenum::U23,
-    24 => ::typenum::U24,
-    25 => ::typenum::U25,
-    26 => ::typenum::U26,
-    27 => ::typenum::U27,
-    28 => ::typenum::U28,
-    29 => ::typenum::U29,
-    30 => ::typenum::U30,
-    31 => ::typenum::U31,
-    32 => ::typenum::U32
+impl<T, const N: usize> From<GenericArray<T, U<N>>> for [T; N]
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    #[inline(always)]
+    fn from(value: GenericArray<T, U<N>>) -> Self {
+        unsafe { crate::transmute(value) }
+    }
 }
 
-#[cfg(feature = "more_lengths")]
-impl_from! {
-    33 => ::typenum::U33,
-    34 => ::typenum::U34,
-    35 => ::typenum::U35,
-    36 => ::typenum::U36,
-    37 => ::typenum::U37,
-    38 => ::typenum::U38,
-    39 => ::typenum::U39,
-    40 => ::typenum::U40,
-    41 => ::typenum::U41,
-    42 => ::typenum::U42,
-    43 => ::typenum::U43,
-    44 => ::typenum::U44,
-    45 => ::typenum::U45,
-    46 => ::typenum::U46,
-    47 => ::typenum::U47,
-    48 => ::typenum::U48,
-    49 => ::typenum::U49,
-    50 => ::typenum::U50,
-    51 => ::typenum::U51,
-    52 => ::typenum::U52,
-    53 => ::typenum::U53,
-    54 => ::typenum::U54,
-    55 => ::typenum::U55,
-    56 => ::typenum::U56,
-    57 => ::typenum::U57,
-    58 => ::typenum::U58,
-    59 => ::typenum::U59,
-    60 => ::typenum::U60,
-    61 => ::typenum::U61,
-    62 => ::typenum::U62,
-    63 => ::typenum::U63,
-    64 => ::typenum::U64,
+impl<'a, T, const N: usize> From<&'a [T; N]> for &'a GenericArray<T, U<N>>
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    #[inline(always)]
+    fn from(slice: &'a [T; N]) -> Self {
+        unsafe { &*(slice.as_ptr() as *const GenericArray<T, U<N>>) }
+    }
+}
 
-    70 => ::typenum::U70,
-    80 => ::typenum::U80,
-    90 => ::typenum::U90,
+impl<'a, T, const N: usize> From<&'a mut [T; N]> for &'a mut GenericArray<T, U<N>>
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    #[inline(always)]
+    fn from(slice: &'a mut [T; N]) -> Self {
+        unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, U<N>>) }
+    }
+}
 
-    100 => ::typenum::U100,
-    200 => ::typenum::U200,
-    300 => ::typenum::U300,
-    400 => ::typenum::U400,
-    500 => ::typenum::U500,
+impl<T, const N: usize> AsRef<[T; N]> for GenericArray<T, U<N>>
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    #[inline(always)]
+    fn as_ref(&self) -> &[T; N] {
+        unsafe { crate::transmute(self) }
+    }
+}
+impl<T, const N: usize> AsMut<[T; N]> for GenericArray<T, U<N>>
+where
+    Const<N>: ToUInt,
+    U<N>: ArrayLength,
+{
+    #[inline(always)]
+    fn as_mut(&mut self) -> &mut [T; N] {
+        unsafe { crate::transmute(self) }
+    }
+}
 
-    128 => ::typenum::U128,
-    256 => ::typenum::U256,
-    512 => ::typenum::U512,
+#[cfg(test)]
+mod tests {
+    use crate::*;
 
-    1000 => ::typenum::U1000,
-    1024 => ::typenum::U1024
+    #[test]
+    fn test_from_inference() {
+        let a = arr![1, 2, 3, 4];
+        let _: [i8; 4] = a.into();
+    }
 }
