@@ -143,9 +143,29 @@ use self::sequence::*;
 
 pub use self::iter::GenericArrayIter;
 
-/// Trait making `GenericArray` work, marking types to be used as length of an array
+/// Trait used to define the number of elements in a [`GenericArray`].
+///
+/// `ArrayLength` is a superset of [`typenum::Unsigned`].
+///
+/// Consider `N: ArrayLength` to be equivalent to `const N: usize`
+///
+/// ```
+/// # use generic_array::{GenericArray, ArrayLength};
+/// fn foo<N: ArrayLength>(arr: GenericArray<i32, N>) -> i32 {
+///     arr.iter().sum()
+/// }
+/// ```
+/// is equivalent to:
+/// ```
+/// fn foo<const N: usize>(arr: [i32; N]) -> i32 {
+///     arr.iter().sum()
+/// }
+/// ```
 pub unsafe trait ArrayLength: Unsigned + 'static {
-    /// Associated type representing the array type for the number
+    /// Associated type representing the array type with the given number of elements.
+    ///
+    /// This is an implementation detail, but is required to be public in cases where certain attributes
+    /// of the inner type of `GenericArray` cannot be proven, such as `Copy` bounds.
     type ArrayType<T>;
 }
 
@@ -265,9 +285,9 @@ unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1> {
 }
 
 /// Struct representing a generic array - `GenericArray<T, N>` works like `[T; N]`
-#[allow(dead_code)]
 #[repr(transparent)]
 pub struct GenericArray<T, U: ArrayLength> {
+    #[allow(dead_code)] // data is never accessed directly
     data: U::ArrayType<T>,
 }
 
@@ -290,99 +310,128 @@ impl<T, N: ArrayLength> DerefMut for GenericArray<T, N> {
     }
 }
 
-/// Creates an array one element at a time using a mutable iterator
-/// you can write to with `ptr::write`.
-///
-/// Increment the position while iterating to mark off created elements,
-/// which will be dropped if `into_inner` is not called.
-#[doc(hidden)]
-pub struct ArrayBuilder<T, N: ArrayLength> {
-    array: GenericArray<MaybeUninit<T>, N>,
-    position: usize,
+// re-export to allow doc_auto_cfg to handle it
+#[cfg(feature = "internals")]
+pub mod internals {
+    //! Very unsafe internal functionality.
+
+    pub use crate::internal::{ArrayBuilder, ArrayConsumer};
 }
 
-impl<T, N: ArrayLength> ArrayBuilder<T, N> {
-    #[doc(hidden)]
-    #[inline(always)]
-    #[allow(clippy::uninit_assumed_init)]
-    pub const unsafe fn new() -> ArrayBuilder<T, N> {
-        ArrayBuilder {
-            // SAFETY: An uninitialized `[MaybeUninit<_>; N]` is valid, same as regular array
-            array: MaybeUninit::uninit().assume_init(),
-            position: 0,
+pub(crate) use internal::{ArrayBuilder, ArrayConsumer};
+mod internal {
+    use crate::*;
+
+    /// **UNSAFE**: Creates an array one element at a time using a mutable iterator of pointers.
+    ///
+    /// You MUST increment the position while iterating to mark off created elements,
+    /// which will be dropped if `into_inner` is not called.
+    pub struct ArrayBuilder<T, N: ArrayLength> {
+        array: GenericArray<MaybeUninit<T>, N>,
+        position: usize,
+    }
+
+    impl<T, N: ArrayLength> ArrayBuilder<T, N> {
+        /// Begin building an array
+        #[inline(always)]
+        #[allow(clippy::uninit_assumed_init)]
+        pub const unsafe fn new() -> ArrayBuilder<T, N> {
+            ArrayBuilder {
+                // SAFETY: An uninitialized `[MaybeUninit<_>; N]` is valid, same as regular array
+                array: MaybeUninit::uninit().assume_init(),
+                position: 0,
+            }
+        }
+
+        /// Creates a mutable iterator for writing to the array elements.
+        ///
+        /// You MUST increment the position value (given as a mutable reference) as you iterate
+        /// to mark how many elements have been created.
+        ///
+        /// ```
+        /// #[cfg(feature = "internals")]
+        /// # {
+        /// # use generic_array::{GenericArray, internals::ArrayBuilder, typenum::U5};
+        /// # struct SomeType;
+        /// fn make_some_struct() -> SomeType { SomeType }
+        /// unsafe {
+        ///     let mut builder = ArrayBuilder::<SomeType, U5>::new();
+        ///     let (dst_iter, position) = builder.iter_position();
+        ///     for dst in dst_iter {
+        ///         dst.write(make_some_struct());
+        ///         // MUST be done AFTER ownership of the value has been given to `dst.write`
+        ///         *position += 1;
+        ///     }
+        ///     let your_array = builder.into_inner();
+        /// }
+        /// # }
+        /// ```
+        #[inline(always)]
+        pub unsafe fn iter_position(&mut self) -> (slice::IterMut<MaybeUninit<T>>, &mut usize) {
+            (self.array.iter_mut(), &mut self.position)
+        }
+
+        /// When done writing (assuming all elements have been written to),
+        /// get the inner array.
+        #[inline(always)]
+        pub unsafe fn into_inner(self) -> GenericArray<T, N> {
+            debug_assert_eq!(self.position, N::USIZE);
+
+            let array =
+                ptr::read(&self.array as *const _ as *const MaybeUninit<GenericArray<T, N>>);
+            mem::forget(self);
+            array.assume_init()
         }
     }
 
-    /// Creates a mutable iterator for writing to the array using `ptr::write`.
-    ///
-    /// Increment the position value given as a mutable reference as you iterate
-    /// to mark how many elements have been created.
-    #[doc(hidden)]
-    #[inline(always)]
-    pub unsafe fn iter_position(&mut self) -> (slice::IterMut<MaybeUninit<T>>, &mut usize) {
-        (self.array.iter_mut(), &mut self.position)
-    }
-
-    /// When done writing (assuming all elements have been written to),
-    /// get the inner array.
-    #[doc(hidden)]
-    #[inline(always)]
-    pub unsafe fn into_inner(self) -> GenericArray<T, N> {
-        let array = ptr::read(&self.array as *const _ as *const MaybeUninit<GenericArray<T, N>>);
-        mem::forget(self);
-        array.assume_init()
-    }
-}
-
-impl<T, N: ArrayLength> Drop for ArrayBuilder<T, N> {
-    fn drop(&mut self) {
-        if mem::needs_drop::<T>() {
-            unsafe {
-                for value in &mut self.array[..self.position] {
-                    value.assume_init_drop();
+    impl<T, N: ArrayLength> Drop for ArrayBuilder<T, N> {
+        fn drop(&mut self) {
+            if mem::needs_drop::<T>() {
+                unsafe {
+                    for value in &mut self.array[..self.position] {
+                        value.assume_init_drop();
+                    }
                 }
             }
         }
     }
-}
 
-/// Consumes an array.
-///
-/// Increment the position while iterating and any leftover elements
-/// will be dropped if position does not go to N
-#[doc(hidden)]
-pub struct ArrayConsumer<T, N: ArrayLength> {
-    array: ManuallyDrop<GenericArray<T, N>>,
-    position: usize,
-}
+    /// **UNSAFE**: Consumes an array one element at a time.
+    ///
+    /// You MUST increment the position while iterating and any leftover elements
+    /// will be dropped if position does not go to N
+    pub struct ArrayConsumer<T, N: ArrayLength> {
+        array: ManuallyDrop<GenericArray<T, N>>,
+        position: usize,
+    }
 
-impl<T, N: ArrayLength> ArrayConsumer<T, N> {
-    #[doc(hidden)]
-    #[inline(always)]
-    pub const unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
-        ArrayConsumer {
-            array: ManuallyDrop::new(array),
-            position: 0,
+    impl<T, N: ArrayLength> ArrayConsumer<T, N> {
+        /// Give ownership of the array to the consumer
+        #[inline(always)]
+        pub const unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
+            ArrayConsumer {
+                array: ManuallyDrop::new(array),
+                position: 0,
+            }
+        }
+
+        /// Creates an iterator and mutable reference to the internal position
+        /// to keep track of consumed elements.
+        ///
+        /// You MUST increment the position as you iterate to mark off consumed elements.
+        #[inline]
+        pub unsafe fn iter_position(&mut self) -> (slice::Iter<T>, &mut usize) {
+            (self.array.iter(), &mut self.position)
         }
     }
 
-    /// Creates an iterator and mutable reference to the internal position
-    /// to keep track of consumed elements.
-    ///
-    /// Increment the position as you iterate to mark off consumed elements
-    #[doc(hidden)]
-    #[inline]
-    pub unsafe fn iter_position(&mut self) -> (slice::Iter<T>, &mut usize) {
-        (self.array.iter(), &mut self.position)
-    }
-}
-
-impl<T, N: ArrayLength> Drop for ArrayConsumer<T, N> {
-    fn drop(&mut self) {
-        if mem::needs_drop::<T>() {
-            for value in &mut self.array[self.position..N::USIZE] {
-                unsafe {
-                    ptr::drop_in_place(value);
+    impl<T, N: ArrayLength> Drop for ArrayConsumer<T, N> {
+        fn drop(&mut self) {
+            if mem::needs_drop::<T>() {
+                for value in &mut self.array[self.position..N::USIZE] {
+                    unsafe {
+                        ptr::drop_in_place(value);
+                    }
                 }
             }
         }
@@ -417,18 +466,16 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
         unsafe {
             let mut destination = ArrayBuilder::new();
 
-            {
-                let (destination_iter, position) = destination.iter_position();
+            let (destination_iter, position) = destination.iter_position();
 
-                // .zip acts as an automatic .take(N::USIZE)
-                destination_iter.zip(&mut iter).for_each(|(dst, src)| {
-                    dst.write(src);
-                    *position += 1;
-                });
-            }
+            // .zip acts as an automatic .take(N::USIZE)
+            destination_iter.zip(&mut iter).for_each(|(dst, src)| {
+                dst.write(src);
+                *position += 1;
+            });
 
-            if destination.position < N::USIZE {
-                from_iter_length_fail(destination.position, N::USIZE);
+            if *position < N::USIZE {
+                from_iter_length_fail(*position, N::USIZE);
             }
 
             if iter.next().is_some() {
@@ -686,14 +733,17 @@ impl<'a, T, N: ArrayLength> TryFrom<&'a mut [T]> for &'a mut GenericArray<T, N> 
 }
 
 impl<T: Clone, N: ArrayLength> GenericArray<T, N> {
-    /// Construct a `GenericArray` from a slice by cloning its content
+    /// Construct a `GenericArray` from a slice by cloning its content.
+    ///
+    /// Use [`GenericArray::from_exact_iter(slice.iter().cloned())`](GenericArray::from_exact_iter)
+    /// for a fallible version.
     ///
     /// # Panics
     ///
     /// Panics if the slice is not equal to the length of the array.
     #[inline]
-    pub fn clone_from_slice(list: &[T]) -> GenericArray<T, N> {
-        Self::from_exact_iter(list.iter().cloned())
+    pub fn clone_from_slice(slice: &[T]) -> GenericArray<T, N> {
+        Self::from_exact_iter(slice.iter().cloned())
             .expect("Slice must be the same length as the array")
     }
 }

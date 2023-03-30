@@ -25,6 +25,7 @@ name = "generic_array"
 
 [features]
 alloc = []
+internals = []
 
 [dependencies]
 typenum = { version = "1.16", features = ["const-generics"] }

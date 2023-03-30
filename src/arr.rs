@@ -54,11 +54,21 @@ macro_rules! arr_impl {
 }
 
 /// Macro allowing for easy generation of Generic Arrays.
-/// Example: `let test = arr![1, 2, 3];`
 ///
 /// Type-inference works similarly to `vec![]`
 ///
 /// Can be used in `const` contexts.
+///
+/// Example:
+/// ```
+/// # use generic_array::arr;
+/// use generic_array::typenum::U6;
+///
+/// let test = arr![1, 2, 3]; // implicit length
+/// let test = arr![1; U6];   // explicit length
+/// ```
+///
+/// NOTE: As of `generic-array 1.0`, [`From`] can be used for a wide range of regular arrays as well.
 #[macro_export]
 macro_rules! arr {
     ($($x:expr),* $(,)*) => ( $crate::arr_impl!($($x),*) );
