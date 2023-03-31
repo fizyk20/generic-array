@@ -42,4 +42,9 @@ bincode = "1.0"
 version_check = "0.9"
 
 [package.metadata.docs.rs]
+# all but "internals", don't show those on docs.rs
 features = ["serde", "zeroize", "const-default", "alloc"]
+rustdoc-args = ["--cfg", "docsrs"]
+
+[package.metadata.playground]
+all-features = true
