@@ -108,6 +108,7 @@ pub extern crate alloc;
 
 mod hex;
 mod impls;
+mod iter;
 
 #[cfg(feature = "alloc")]
 mod impl_alloc;
@@ -135,7 +136,6 @@ use typenum::uint::{UInt, UTerm, Unsigned};
 pub mod arr;
 
 pub mod functional;
-pub mod iter;
 pub mod sequence;
 
 mod internal;
