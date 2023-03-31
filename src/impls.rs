@@ -18,6 +18,7 @@ impl<T: Default, N: ArrayLength> Default for GenericArray<T, N> {
 }
 
 impl<T: Clone, N: ArrayLength> Clone for GenericArray<T, N> {
+    #[inline]
     fn clone(&self) -> GenericArray<T, N> {
         self.map(Clone::clone)
     }
