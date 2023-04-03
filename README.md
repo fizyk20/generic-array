@@ -50,7 +50,7 @@ trait Bar {
 }
 ```
 
-The `ArrayLength` trait is implemented by default for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
+The `ArrayLength` trait is implemented for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
 
 ```rust
 use generic_array::typenum::U5;

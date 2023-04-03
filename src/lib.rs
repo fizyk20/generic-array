@@ -46,7 +46,7 @@
 //! }
 //! ```
 //!
-//! The [`ArrayLength`] trait is implemented by default for
+//! The [`ArrayLength`] trait is implemented for
 //! [unsigned integer types](typenum::Unsigned) from
 //! [typenum](typenum):
 //!
