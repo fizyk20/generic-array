@@ -1,27 +1,5 @@
 //! Implementation for `arr!` macro.
 
-use super::ArrayLength;
-use core::ops::Add;
-use typenum::U1;
-
-/// Helper trait for `arr!` macro
-pub trait AddLength<T, N: ArrayLength>: ArrayLength {
-    /// Resulting length
-    type Output: ArrayLength;
-}
-
-impl<T, N1, N2> AddLength<T, N2> for N1
-where
-    N1: ArrayLength + Add<N2>,
-    N2: ArrayLength,
-    <N1 as Add<N2>>::Output: ArrayLength,
-{
-    type Output = <N1 as Add<N2>>::Output;
-}
-
-/// Helper type for `arr!` macro
-pub type Inc<T, U> = <U as AddLength<T, U1>>::Output;
-
 #[doc(hidden)]
 #[macro_export]
 macro_rules! arr_impl {
