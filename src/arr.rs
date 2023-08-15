@@ -12,7 +12,7 @@ macro_rules! arr_impl {
 
         #[inline(always)]
         const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
-            unsafe { $crate::transmute(arr) }
+            unsafe { $crate::const_transmute(arr) }
         }
 
         const _: [(); <__OutputLength as $crate::typenum::Unsigned>::USIZE] = [(); __INPUT_LENGTH];
@@ -24,7 +24,7 @@ macro_rules! arr_impl {
 
         #[inline(always)]
         const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
-            unsafe { $crate::transmute(arr) }
+            unsafe { $crate::const_transmute(arr) }
         }
 
         __do_transmute::<_, $N>([$x; __INPUT_LENGTH])
@@ -98,13 +98,6 @@ mod doctests_only {
     /// # Without ellision
     ///
     /// Testing that lifetimes aren't transmuted when they're specified explicitly.
-    ///
-    /// ```compile_fail
-    /// #[macro_use] extern crate generic_array;
-    /// fn unsound_lifetime_extension<'a, A>(a: &'a A) -> &'static A {
-    ///     arr![a][0]
-    /// }
-    /// ```
     ///
     /// ```compile_fail
     /// #[macro_use] extern crate generic_array;

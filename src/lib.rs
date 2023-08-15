@@ -601,6 +601,28 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
+
+    /// Convert a native array into `GenericArray` of the same length and type.
+    ///
+    /// This is the `const` equivalent of using the standard [`From`]/[`Into`] traits methods.
+    #[inline(always)]
+    pub const fn from_array<const N2: usize>(value: [T; N2]) -> Self
+    where
+        Const<N2>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { crate::const_transmute(value) }
+    }
+
+    /// Convert the `GenericArray` into a native array of the same length and type.
+    ///
+    /// This is the `const` equivalent of using the standard [`From`]/[`Into`] traits methods.
+    #[inline(always)]
+    pub const fn into_array<const N2: usize>(self) -> [T; N2]
+    where
+        Const<N2>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { crate::const_transmute(self) }
+    }
 }
 
 /// Error for [`TryFrom`]
@@ -693,13 +715,16 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 }
 
-/// A reimplementation of the `transmute` function, avoiding problems
-/// when the compiler can't prove equal sizes.
+/// A const reimplementation of the [`transmute`](core::mem::transmute) function,
+/// avoiding problems when the compiler can't prove equal sizes.
+///
+/// # Safety
+/// Treat this the same as [`transmute`](core::mem::transmute), or (preferably) don't use it at all.
 #[inline(always)]
-#[doc(hidden)]
-pub const unsafe fn transmute<A, B>(a: A) -> B {
+#[cfg_attr(not(feature = "internals"), doc(hidden))]
+pub const unsafe fn const_transmute<A, B>(a: A) -> B {
     if mem::size_of::<A>() != mem::size_of::<B>() {
-        panic!("Size mismatch for generic_array::transmute");
+        panic!("Size mismatch for generic_array::const_transmute");
     }
 
     #[repr(C)]

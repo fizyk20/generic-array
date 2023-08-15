@@ -98,7 +98,7 @@ where
 {
     #[inline(always)]
     fn from(value: [T; N]) -> Self {
-        unsafe { crate::transmute(value) }
+        GenericArray::from_array(value)
     }
 }
 
@@ -108,7 +108,7 @@ where
 {
     #[inline(always)]
     fn from(value: GenericArray<T, ConstArrayLength<N>>) -> Self {
-        unsafe { crate::transmute(value) }
+        value.into_array()
     }
 }
 
@@ -138,7 +138,7 @@ where
 {
     #[inline(always)]
     fn as_ref(&self) -> &[T; N] {
-        unsafe { crate::transmute(self) }
+        unsafe { crate::const_transmute(self) }
     }
 }
 impl<T, const N: usize> AsMut<[T; N]> for GenericArray<T, ConstArrayLength<N>>
@@ -147,7 +147,7 @@ where
 {
     #[inline(always)]
     fn as_mut(&mut self) -> &mut [T; N] {
-        unsafe { crate::transmute(self) }
+        unsafe { crate::const_transmute(self) }
     }
 }
 
