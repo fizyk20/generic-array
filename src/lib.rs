@@ -370,42 +370,31 @@ impl<'a, T: 'a, N: ArrayLength> IntoIterator for &'a mut GenericArray<T, N> {
 }
 
 impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
+    /// Create a `GenericArray` from an iterator.
+    ///
+    /// Will panic if the number of elements is not exactly the array length.
+    ///
+    /// See [`GenericArray::try_from_iter]` for a fallible alternative.
     fn from_iter<I>(iter: I) -> GenericArray<T, N>
     where
         I: IntoIterator<Item = T>,
     {
-        let mut iter = iter.into_iter();
-
-        unsafe {
-            let mut destination = ArrayBuilder::new();
-
-            let (destination_iter, position) = destination.iter_position();
-
-            // .zip acts as an automatic .take(N::USIZE)
-            destination_iter.zip(&mut iter).for_each(|(dst, src)| {
-                dst.write(src);
-                *position += 1;
-            });
-
-            if *position < N::USIZE {
-                from_iter_length_fail(*position, N::USIZE);
-            }
-
-            if iter.next().is_some() {
-                from_iter_length_fail(N::USIZE + 1, N::USIZE);
-            }
-
-            destination.into_inner()
+        match Self::try_from_iter(iter) {
+            Ok(res) => res,
+            Err(err) => from_iter_length_fail(N::USIZE, err),
         }
     }
 }
 
 #[inline(never)]
 #[cold]
-pub(crate) fn from_iter_length_fail(length: usize, expected: usize) -> ! {
+pub(crate) fn from_iter_length_fail(length: usize, err: TryFromIterError) -> ! {
     panic!(
-        "GenericArray::from_iter received {} elements but expected {}",
-        length, expected
+        "GenericArray::from_iter expected {length} elements, but recieved {}",
+        match err {
+            TryFromIterError::TooShort => "fewer",
+            TryFromIterError::TooLong => "more",
+        }
     );
 }
 
@@ -665,31 +654,29 @@ impl<'a, T, N: ArrayLength> TryFrom<&'a mut [T]> for &'a mut GenericArray<T, N> 
     }
 }
 
-impl<T: Clone, N: ArrayLength> GenericArray<T, N> {
-    /// Construct a `GenericArray` from a slice by cloning its content.
-    ///
-    /// Use [`GenericArray::from_exact_iter(slice.iter().cloned())`](GenericArray::from_exact_iter)
-    /// for a fallible version.
-    ///
-    /// # Panics
-    ///
-    /// Panics if the slice is not equal to the length of the array.
-    #[inline]
-    pub fn clone_from_slice(slice: &[T]) -> GenericArray<T, N> {
-        Self::from_exact_iter(slice.iter().cloned())
-            .expect("Slice must be the same length as the array")
-    }
+/// Error possibly returned by [`GenericArray::try_from_iter`]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum TryFromIterError {
+    /// Recieved too many elements from the iterator
+    TooLong,
+    /// Recieved too few elements from the iterator
+    TooShort,
 }
 
 impl<T, N: ArrayLength> GenericArray<T, N> {
-    /// Creates a new `GenericArray` instance from an iterator with a specific size.
-    ///
-    /// Returns `None` if the size is not equal to the number of elements in the `GenericArray`.
-    pub fn from_exact_iter<I>(iter: I) -> Option<Self>
+    /// Fallible equivalent of [`FromIterator::from_iter`]
+    pub fn try_from_iter<I>(iter: I) -> Result<Self, TryFromIterError>
     where
         I: IntoIterator<Item = T>,
     {
         let mut iter = iter.into_iter();
+
+        // pre-checks
+        match iter.size_hint() {
+            (n, _) if n < N::USIZE => return Err(TryFromIterError::TooShort),
+            (_, Some(n)) if n > N::USIZE => return Err(TryFromIterError::TooLong),
+            _ => {}
+        }
 
         unsafe {
             let mut destination = ArrayBuilder::new();
@@ -704,16 +691,16 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
                 // The iterator produced fewer than `N` elements.
                 if *position != N::USIZE {
-                    return None;
+                    return Err(TryFromIterError::TooShort);
                 }
 
                 // The iterator produced more than `N` elements.
                 if iter.next().is_some() {
-                    return None;
+                    return Err(TryFromIterError::TooLong);
                 }
             }
 
-            Some(destination.into_inner())
+            Ok(destination.into_inner())
         }
     }
 }
