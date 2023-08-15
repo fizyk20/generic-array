@@ -8,12 +8,12 @@ use crate::sequence::*;
 
 /// Defines the relationship between one generic sequence and another,
 /// for operations such as `map` and `zip`.
-pub unsafe trait MappedGenericSequence<T, U>: GenericSequence<T> {
+pub trait MappedGenericSequence<T, U>: GenericSequence<T> {
     /// Mapped sequence type
     type Mapped: GenericSequence<U, Length = Self::Length>;
 }
 
-unsafe impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U> for &'a S
+impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U> for &'a S
 where
     &'a S: GenericSequence<T>,
     S: GenericSequence<T, Length = <&'a S as GenericSequence<T>>::Length>,
@@ -21,7 +21,7 @@ where
     type Mapped = <S as MappedGenericSequence<T, U>>::Mapped;
 }
 
-unsafe impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U> for &'a mut S
+impl<'a, T, U, S: MappedGenericSequence<T, U>> MappedGenericSequence<T, U> for &'a mut S
 where
     &'a mut S: GenericSequence<T>,
     S: GenericSequence<T, Length = <&'a mut S as GenericSequence<T>>::Length>,
@@ -34,7 +34,7 @@ pub type MappedSequence<S, T, U> =
     <<S as MappedGenericSequence<T, U>>::Mapped as GenericSequence<U>>::Sequence;
 
 /// Defines functional programming methods for generic sequences
-pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
+pub trait FunctionalSequence<T>: GenericSequence<T> {
     /// Maps a `GenericSequence` to another `GenericSequence`.
     ///
     /// If the mapping function panics, any already initialized elements in the new sequence
@@ -98,12 +98,9 @@ pub unsafe trait FunctionalSequence<T>: GenericSequence<T> {
     }
 }
 
-unsafe impl<'a, T, S: GenericSequence<T>> FunctionalSequence<T> for &'a S where
-    &'a S: GenericSequence<T>
-{
-}
+impl<'a, T, S: GenericSequence<T>> FunctionalSequence<T> for &'a S where &'a S: GenericSequence<T> {}
 
-unsafe impl<'a, T, S: GenericSequence<T>> FunctionalSequence<T> for &'a mut S where
+impl<'a, T, S: GenericSequence<T>> FunctionalSequence<T> for &'a mut S where
     &'a mut S: GenericSequence<T>
 {
 }

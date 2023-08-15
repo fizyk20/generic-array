@@ -152,11 +152,11 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
     }
 }
 
-unsafe impl<T, U, N: ArrayLength> MappedGenericSequence<T, U> for Box<GenericArray<T, N>> {
+impl<T, U, N: ArrayLength> MappedGenericSequence<T, U> for Box<GenericArray<T, N>> {
     type Mapped = Box<GenericArray<U, N>>;
 }
 
-unsafe impl<T, N: ArrayLength> FunctionalSequence<T> for Box<GenericArray<T, N>> where
+impl<T, N: ArrayLength> FunctionalSequence<T> for Box<GenericArray<T, N>> where
     Self: GenericSequence<T, Item = T, Length = N>
 {
 }

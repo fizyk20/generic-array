@@ -175,6 +175,11 @@ pub use self::iter::GenericArrayIter;
 ///     arr.iter().sum()
 /// }
 /// ```
+///
+/// # Safety
+///
+/// This trait is effectively sealed due to only being allowed on [`Unsigned`] types,
+/// and therefore cannot be implemented in user code.
 pub unsafe trait ArrayLength: Unsigned + 'static {
     /// Associated type representing the array type with the given number of elements.
     ///
@@ -238,12 +243,12 @@ unsafe impl ArrayLength for UTerm {
 ///     ga
 /// }
 /// ```
-pub unsafe trait IntoArrayLength {
+pub trait IntoArrayLength {
     /// The associated `ArrayLength`
     type ArrayLength: ArrayLength;
 }
 
-unsafe impl<const N: usize> IntoArrayLength for Const<N>
+impl<const N: usize> IntoArrayLength for Const<N>
 where
     Const<N>: ToUInt,
     U<N>: ArrayLength,
@@ -251,7 +256,7 @@ where
     type ArrayLength = U<N>;
 }
 
-unsafe impl<T> IntoArrayLength for T
+impl<T> IntoArrayLength for T
 where
     T: ArrayLength,
 {
@@ -431,7 +436,6 @@ where
         }
     }
 
-    #[doc(hidden)]
     #[inline(always)]
     fn inverted_zip<B, U, F>(
         self,
@@ -464,7 +468,6 @@ where
         }
     }
 
-    #[doc(hidden)]
     #[inline(always)]
     fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
     where
@@ -493,14 +496,14 @@ where
     }
 }
 
-unsafe impl<T, U, N: ArrayLength> MappedGenericSequence<T, U> for GenericArray<T, N>
+impl<T, U, N: ArrayLength> MappedGenericSequence<T, U> for GenericArray<T, N>
 where
     GenericArray<U, N>: GenericSequence<U, Length = N>,
 {
     type Mapped = GenericArray<U, N>;
 }
 
-unsafe impl<T, N: ArrayLength> FunctionalSequence<T> for GenericArray<T, N>
+impl<T, N: ArrayLength> FunctionalSequence<T> for GenericArray<T, N>
 where
     Self: GenericSequence<T, Item = T, Length = N>,
 {
