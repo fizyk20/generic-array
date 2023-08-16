@@ -71,7 +71,7 @@
 //!     data: GenericArray<T, N>
 //! }
 //!
-//! let foo = Foo::<i32, U5>{data: GenericArray::default()};
+//! let foo = Foo::<i32, U5> { data: GenericArray::default() };
 //! ```
 //!
 //! The `arr!` macro is provided to allow easier creation of literal arrays, as shown below:

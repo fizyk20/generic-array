@@ -59,7 +59,7 @@ struct Foo<N: ArrayLength> {
     data: GenericArray<i32, N>
 }
 
-let foo = Foo::<U5>{data: GenericArray::default()};
+let foo = Foo::<U5> { data: GenericArray::default() };
 ```
 
 For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
