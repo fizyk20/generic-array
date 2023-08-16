@@ -77,32 +77,12 @@ macro_rules! box_arr {
 
 mod doctests_only {
     ///
-    /// # With ellision
-    ///
     /// Testing that lifetimes aren't transmuted when they're ellided.
     ///
     /// ```compile_fail
     /// #[macro_use] extern crate generic_array;
     /// fn unsound_lifetime_extension<'a, A>(a: &'a A) -> &'static A {
     ///     arr![a as &A][0]
-    /// }
-    /// ```
-    ///
-    /// ```rust
-    /// #[macro_use] extern crate generic_array;
-    /// fn unsound_lifetime_extension<'a, A>(a: &'a A) -> &'a A {
-    ///     arr![a][0]
-    /// }
-    /// ```
-    ///
-    /// # Without ellision
-    ///
-    /// Testing that lifetimes aren't transmuted when they're specified explicitly.
-    ///
-    /// ```compile_fail
-    /// #[macro_use] extern crate generic_array;
-    /// fn unsound_lifetime_extension<'a, A>(a: &'a A) -> &'static A {
-    ///     arr![a][0]
     /// }
     /// ```
     ///

@@ -25,7 +25,7 @@ fn test_from_iterator() {
             self.0
         }
     }
-    assert!(GenericArray::<usize, U5>::from_exact_iter(BadExact(5)).is_none());
+    assert!(GenericArray::<usize, U5>::try_from_iter(BadExact(5)).is_err());
 }
 
 #[test]

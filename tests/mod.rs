@@ -17,7 +17,7 @@ fn test() {
     for (i, elem) in list97.iter_mut().enumerate() {
         *elem = i as i32;
     }
-    let l: GenericArray<i32, U97> = GenericArray::clone_from_slice(&list97);
+    let l: GenericArray<i32, U97> = *GenericArray::from_slice(&list97);
     assert_eq!(l[0], 0);
     assert_eq!(l[1], 1);
     assert_eq!(l[32], 32);
