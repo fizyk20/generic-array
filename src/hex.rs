@@ -18,85 +18,72 @@ use typenum::*;
 
 use crate::{ArrayLength, GenericArray};
 
-static LOWER_CHARS: &[u8] = b"0123456789abcdef";
-static UPPER_CHARS: &[u8] = b"0123456789ABCDEF";
+static LOWER_CHARS: [u8; 16] = *b"0123456789abcdef";
+static UPPER_CHARS: [u8; 16] = *b"0123456789ABCDEF";
 
-impl<T: ArrayLength> fmt::LowerHex for GenericArray<u8, T>
+fn generic_hex<N: ArrayLength>(
+    arr: &GenericArray<u8, N>,
+    alphabet: &[u8; 16], // use fixed-length array to avoid slice index checks
+    f: &mut fmt::Formatter<'_>,
+) -> fmt::Result
 where
-    T: Add<T>,
-    Sum<T, T>: ArrayLength,
+    N: Add<N>,
+    Sum<N, N>: ArrayLength,
 {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let max_digits = f.precision().unwrap_or(self.len() * 2);
-        let max_hex = (max_digits >> 1) + (max_digits & 1);
+    let max_digits = N::USIZE * 2;
+    let max_digits = match f.precision() {
+        Some(precision) if precision < max_digits => precision,
+        _ => max_digits,
+    };
 
-        if T::USIZE <= 1024 {
-            // For small arrays use a stack allocated
-            // buffer of 2x number of bytes
-            let mut res = GenericArray::<u8, Sum<T, T>>::default();
+    let max_hex = (max_digits >> 1) + (max_digits & 1);
 
-            self.iter().take(max_hex).enumerate().for_each(|(i, c)| {
-                res[i * 2] = LOWER_CHARS[(c >> 4) as usize];
-                res[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
+    if N::USIZE <= 1024 {
+        // For small arrays use a stack allocated
+        // buffer of 2x number of bytes
+        let mut res = GenericArray::<u8, Sum<N, N>>::default();
+
+        arr.iter().take(max_hex).enumerate().for_each(|(i, c)| {
+            res[i * 2] = alphabet[(c >> 4) as usize];
+            res[i * 2 + 1] = alphabet[(c & 0xF) as usize];
+        });
+
+        f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits]) })?;
+    } else {
+        // For large array use chunks of up to 1024 bytes (2048 hex chars)
+        let mut buf = [0u8; 2048];
+        let mut digits_left = max_digits;
+
+        for chunk in arr[..max_hex].chunks(1024) {
+            chunk.iter().enumerate().for_each(|(i, c)| {
+                buf[i * 2] = alphabet[(c >> 4) as usize];
+                buf[i * 2 + 1] = alphabet[(c & 0xF) as usize];
             });
 
-            f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits]) })?;
-        } else {
-            // For large array use chunks of up to 1024 bytes (2048 hex chars)
-            let mut buf = [0u8; 2048];
-            let mut digits_left = max_digits;
-
-            for chunk in self[..max_hex].chunks(1024) {
-                chunk.iter().enumerate().for_each(|(i, c)| {
-                    buf[i * 2] = LOWER_CHARS[(c >> 4) as usize];
-                    buf[i * 2 + 1] = LOWER_CHARS[(c & 0xF) as usize];
-                });
-
-                let n = min(chunk.len() * 2, digits_left);
-                f.write_str(unsafe { str::from_utf8_unchecked(&buf[..n]) })?;
-                digits_left -= n;
-            }
+            let n = min(chunk.len() * 2, digits_left);
+            f.write_str(unsafe { str::from_utf8_unchecked(&buf[..n]) })?;
+            digits_left -= n;
         }
-        Ok(())
+    }
+    Ok(())
+}
+
+impl<N: ArrayLength> fmt::LowerHex for GenericArray<u8, N>
+where
+    N: Add<N>,
+    Sum<N, N>: ArrayLength,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        generic_hex(self, &LOWER_CHARS, f)
     }
 }
 
-impl<T: ArrayLength> fmt::UpperHex for GenericArray<u8, T>
+impl<N: ArrayLength> fmt::UpperHex for GenericArray<u8, N>
 where
-    T: Add<T>,
-    Sum<T, T>: ArrayLength,
+    N: Add<N>,
+    Sum<N, N>: ArrayLength,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let max_digits = f.precision().unwrap_or(self.len() * 2);
-        let max_hex = (max_digits >> 1) + (max_digits & 1);
-
-        if T::USIZE <= 1024 {
-            // For small arrays use a stack allocated
-            // buffer of 2x number of bytes
-            let mut res = GenericArray::<u8, Sum<T, T>>::default();
-
-            self.iter().take(max_hex).enumerate().for_each(|(i, c)| {
-                res[i * 2] = UPPER_CHARS[(c >> 4) as usize];
-                res[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
-            });
-
-            f.write_str(unsafe { str::from_utf8_unchecked(&res[..max_digits]) })?;
-        } else {
-            // For large array use chunks of up to 1024 bytes (2048 hex chars)
-            let mut buf = [0u8; 2048];
-            let mut digits_left = max_digits;
-
-            for chunk in self[..max_hex].chunks(1024) {
-                chunk.iter().enumerate().for_each(|(i, c)| {
-                    buf[i * 2] = UPPER_CHARS[(c >> 4) as usize];
-                    buf[i * 2 + 1] = UPPER_CHARS[(c & 0xF) as usize];
-                });
-
-                let n = min(chunk.len() * 2, digits_left);
-                f.write_str(unsafe { str::from_utf8_unchecked(&buf[..n]) })?;
-                digits_left -= n;
-            }
-        }
-        Ok(())
+        generic_hex(self, &UPPER_CHARS, f)
     }
 }
