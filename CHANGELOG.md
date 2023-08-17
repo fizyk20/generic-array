@@ -6,6 +6,7 @@
     * Add `arr!` repeat-expressions [#130](https://github.com/fizyk20/generic-array/pull/130)
     * Implement `const-default` trait support [#131](https://github.com/fizyk20/generic-array/pull/131)
     * Make `as_slice()/from_slice()` const.
+    * Add const `from_array`/`into_array` methods.
     * Make `ArrayLength: 'static`
     * Replace `From<&[T]>` with `TryFrom<&[T]>`
     * Use `typenum`'s `const-generics` feature for `const N: usize`-based `From` implementations between `[T; N]` and `GenericArray<T, N>`
@@ -20,10 +21,12 @@
         * Methods for converting between `Box<GenericArray<T, N>>` and `Vec<T>`/`Box<[T]>`
         * `GenericSequence` and `FunctionalSequence` implemented for `Box<GenericArray<T, N>>`, allowing for heap-based manipulation of fixed-size arrays.
     * `Deserialize` no longer requires `T: Default`
+    * Make `IntoArrayLength`, `MappedSequence`, and `FunctionalSequence` safe traits.
     * Simplify `arr!` macro syntax.
         * `arr![1, 2, 3, 4]` or `arr![T; N]` forms, no explicit length for first variant.
         * No longer casts given expressions internally.
         * Type-deduction works similarly to `vec![]`, in that an empty array has an unknown type
+    * Add the `internals` Cargo feature to expose dangerous things.
 
 * **`0.14.6`**
     * Add an optional `Zeroize` impl for `GenericArray` ([#126](https://github.com/fizyk20/generic-array/pull/126) and [#112](https://github.com/fizyk20/generic-array/pull/112))
