@@ -1,6 +1,6 @@
 use alloc::{boxed::Box, vec::Vec};
 
-use crate::{ArrayLength, GenericArray, LengthError};
+use crate::{ArrayLength, GenericArray, LengthError, TryFromIterError};
 
 impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
     type Error = crate::LengthError;
@@ -81,6 +81,34 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     {
         Box::<GenericArray<T, N>>::generate(|_| T::default())
     }
+
+    /// Like [`GenericArray::try_from_iter`] but returns a `Box<GenericArray<T, N>>` instead.
+    pub fn try_boxed_from_iter<I>(iter: I) -> Result<Box<GenericArray<T, N>>, TryFromIterError>
+    where
+        I: IntoIterator<Item = T>,
+    {
+        let mut iter = iter.into_iter();
+
+        // pre-checks
+        match iter.size_hint() {
+            (n, _) if n < N::USIZE => return Err(TryFromIterError::TooShort),
+            (_, Some(n)) if n > N::USIZE => return Err(TryFromIterError::TooLong),
+            _ => {}
+        }
+
+        let mut v = Vec::with_capacity(N::USIZE);
+        v.extend((&mut iter).take(N::USIZE));
+
+        if v.len() != N::USIZE {
+            return Err(TryFromIterError::TooShort);
+        }
+
+        if iter.next().is_some() {
+            return Err(TryFromIterError::TooLong);
+        }
+
+        Ok(GenericArray::try_from_vec(v).unwrap())
+    }
 }
 
 impl<T, N: ArrayLength> TryFrom<Box<[T]>> for GenericArray<T, N> {
@@ -115,21 +143,16 @@ impl<T, N: ArrayLength> IntoIterator for Box<GenericArray<T, N>> {
 }
 
 impl<T, N: ArrayLength> FromIterator<T> for Box<GenericArray<T, N>> {
+    /// Create a `Box<GenericArray>` from an iterator.
+    ///
+    /// Will panic if the number of elements is not exactly the array length.
+    ///
+    /// See [`GenericArray::try_boxed_from_iter]` for a fallible alternative.
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
-        let mut iter = iter.into_iter();
-
-        let mut v = Vec::with_capacity(N::USIZE);
-        v.extend((&mut iter).take(N::USIZE));
-
-        if v.len() != N::USIZE {
-            crate::from_iter_length_fail(v.len(), N::USIZE);
+        match GenericArray::try_boxed_from_iter(iter) {
+            Ok(res) => res,
+            Err(err) => crate::from_iter_length_fail(N::USIZE, err),
         }
-
-        if iter.next().is_some() {
-            crate::from_iter_length_fail(N::USIZE + 1, N::USIZE);
-        }
-
-        GenericArray::try_from_vec(v).unwrap()
     }
 }
 
