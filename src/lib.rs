@@ -48,20 +48,7 @@
 //!
 //! The [`ArrayLength`] trait is implemented for
 //! [unsigned integer types](typenum::Unsigned) from
-//! [typenum](typenum):
-//!
-//! ```rust
-//! # use generic_array::{ArrayLength, GenericArray};
-//! use generic_array::typenum::U5;
-//!
-//! struct Foo<N: ArrayLength> {
-//!     data: GenericArray<i32, N>
-//! }
-//!
-//! let foo = Foo::<U5>{data: GenericArray::default()};
-//! ```
-//!
-//! For example, [`GenericArray<T, U5>`] would work almost like `[T; 5]`:
+//! [typenum](typenum). For example, [`GenericArray<T, U5>`] would work almost like `[T; 5]`:
 //!
 //! ```rust
 //! # use generic_array::{ArrayLength, GenericArray};
@@ -327,9 +314,9 @@ unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1> {
 /// For how to implement [`Copy`] on structs using generic-lengthed `GenericArray` internally, see
 /// the docs for [`ArrayLength::ArrayType`].
 #[repr(transparent)]
-pub struct GenericArray<T, U: ArrayLength> {
+pub struct GenericArray<T, N: ArrayLength> {
     #[allow(dead_code)] // data is never accessed directly
-    data: U::ArrayType<T>,
+    data: N::ArrayType<T>,
 }
 
 unsafe impl<T: Send, N: ArrayLength> Send for GenericArray<T, N> {}

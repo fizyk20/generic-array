@@ -50,19 +50,7 @@ trait Bar {
 }
 ```
 
-The `ArrayLength` trait is implemented for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
-
-```rust
-use generic_array::typenum::U5;
-
-struct Foo<N: ArrayLength> {
-    data: GenericArray<i32, N>
-}
-
-let foo = Foo::<U5> { data: GenericArray::default() };
-```
-
-For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
+The `ArrayLength` trait is implemented for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate. For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
 
 ```rust
 use generic_array::typenum::U5;
@@ -71,7 +59,7 @@ struct Foo<T, N: ArrayLength> {
     data: GenericArray<T, N>
 }
 
-let foo = Foo::<i32, U5>{data: GenericArray::default()};
+let foo = Foo::<i32, U5> { data: GenericArray::default() };
 ```
 
 The `arr!` macro is provided to allow easier creation of literal arrays, as shown below:
