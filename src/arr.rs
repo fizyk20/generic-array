@@ -1,41 +1,10 @@
 //! Implementation for `arr!` macro.
 
-#[doc(hidden)]
-#[macro_export]
-macro_rules! arr_impl {
-    (@replace_expr $e:expr) => { 1 };
-    (@count_ty) => { $crate::typenum::U0 };
-    (@count_ty $val:expr$(, $vals:expr)* $(,)?) => { $crate::typenum::Add1<$crate::arr_impl!(@count_ty $($vals),*)> };
-    ($($x:expr),*) => ({
-        const __INPUT_LENGTH: usize = 0 $(+ $crate::arr_impl!(@replace_expr $x) )*;
-        type __OutputLength = $crate::arr_impl!(@count_ty $($x),*);
-
-        #[inline(always)]
-        const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
-            unsafe { $crate::const_transmute(arr) }
-        }
-
-        const _: [(); <__OutputLength as $crate::typenum::Unsigned>::USIZE] = [(); __INPUT_LENGTH];
-
-        __do_transmute::<_, __OutputLength>([$($x),*])
-    });
-    ($x:expr; $N:ty) => ({
-        const __INPUT_LENGTH: usize = <$N as $crate::typenum::Unsigned>::USIZE;
-
-        #[inline(always)]
-        const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
-            unsafe { $crate::const_transmute(arr) }
-        }
-
-        __do_transmute::<_, $N>([$x; __INPUT_LENGTH])
-    });
-}
-
 /// Macro allowing for easy generation of Generic Arrays.
 ///
 /// Type-inference works similarly to `vec![]`
 ///
-/// Can be used in `const` contexts.
+/// **`arr!` can be used in `const` expressions.**
 ///
 /// Example:
 /// ```
@@ -43,14 +12,19 @@ macro_rules! arr_impl {
 /// use generic_array::typenum::U6;
 ///
 /// let test = arr![1, 2, 3]; // implicit length
-/// let test = arr![1; U6];   // explicit length
+/// let test = arr![1; 6];    // explicit length via `Const<N>`
+/// let test = arr![1; U6];   // explicit length via typenum
 /// ```
 ///
 /// NOTE: As of `generic-array 1.0`, [`From`] can be used for a wide range of regular arrays as well.
+///
+/// The `[T; N]` variants are limited to `Copy` values. Use
+/// [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
 #[macro_export]
 macro_rules! arr {
-    ($($x:expr),* $(,)*) => ( $crate::arr_impl!($($x),*) );
-    ($x:expr; $N:ty)     => ( $crate::arr_impl!($x; $N) );
+    ($($x:expr),* $(,)*) => ( $crate::GenericArray::from_array([$($x),*]) );
+    ($x:expr; $N:ty)     => ( $crate::GenericArray::from_array([$x; <$N as $crate::typenum::Unsigned>::USIZE]) );
+    ($x:expr; $n:expr)   => ( $crate::GenericArray::from_array([$x; $n]) );
 }
 
 /// Like [`arr!`], but returns a `Box<GenericArray<T, N>>`
@@ -69,10 +43,23 @@ macro_rules! arr {
 #[macro_export]
 macro_rules! box_arr {
     ($($x:expr),* $(,)*) => ({
-        type __OutputLength = $crate::arr_impl!(@count_ty $($x),*);
+        type __OutputLength = $crate::box_arr_helper!(@count_ty $($x),*);
         $crate::GenericArray::<_, __OutputLength>::try_from_vec($crate::alloc::vec![$($x),*]).unwrap()
     });
     ($x:expr; $N:ty) => ( $crate::GenericArray::<_, $N>::try_from_vec($crate::alloc::vec![$x; <$N as $crate::typenum::Unsigned>::USIZE]).unwrap() );
+    ($x:expr; $n:expr) => ({
+        const __LEN: usize = $n;
+
+        $crate::GenericArray::<_, <$crate::typenum::Const<__LEN> as $crate::IntoArrayLength>::ArrayLength>::try_from_vec($crate::alloc::vec![$x; __LEN]).unwrap()
+    });
+}
+
+#[cfg(feature = "alloc")]
+#[doc(hidden)]
+#[macro_export]
+macro_rules! box_arr_helper {
+    (@count_ty) => { $crate::typenum::U0 };
+    (@count_ty $val:expr$(, $vals:expr)* $(,)?) => { $crate::typenum::Add1<$crate::box_arr_helper!(@count_ty $($vals),*)> };
 }
 
 mod doctests_only {

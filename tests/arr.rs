@@ -1,3 +1,6 @@
+#[cfg(feature = "alloc")]
+extern crate alloc;
+
 use generic_array::{arr, GenericArray};
 
 #[test]
@@ -34,4 +37,19 @@ fn const_context() {
 fn repeat_expression() {
     let ar = arr![0xc0u8; typenum::U4];
     assert_eq!(format!("{:x}", ar), "c0c0c0c0");
+
+    _ = arr![0; 12];
+    _ = arr![1; 't' as usize];
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn alloc_arr() {
+    use generic_array::box_arr;
+
+    let ar = box_arr![0xc0u8; typenum::U4];
+    assert_eq!(format!("{:x}", &*ar), "c0c0c0c0");
+
+    _ = box_arr![0; 12];
+    _ = box_arr![1; 't' as usize];
 }
