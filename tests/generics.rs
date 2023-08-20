@@ -1,4 +1,3 @@
-#![recursion_limit = "128"]
 use generic_array::arr;
 
 use generic_array::typenum::consts::U4;

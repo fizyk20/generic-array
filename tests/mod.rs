@@ -1,4 +1,3 @@
-#![recursion_limit = "128"]
 #![no_std]
 use core::cell::Cell;
 use core::ops::{Add, Drop};

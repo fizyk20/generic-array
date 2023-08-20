@@ -1,6 +1,3 @@
-#[cfg(feature = "alloc")]
-extern crate alloc;
-
 use generic_array::{arr, GenericArray};
 
 #[test]

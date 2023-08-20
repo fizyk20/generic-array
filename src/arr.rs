@@ -1,6 +1,6 @@
 //! Implementation for `arr!` macro.
 
-/// Macro allowing for easy generation of Generic Arrays.
+/// Macro allowing for easy construction of Generic Arrays.
 ///
 /// Type-inference works similarly to `vec![]`
 ///
@@ -16,15 +16,27 @@
 /// let test = arr![1; U6];   // explicit length via typenum
 /// ```
 ///
-/// NOTE: As of `generic-array 1.0`, [`From`] can be used for a wide range of regular arrays as well.
-///
-/// The `[T; N]` variants are limited to `Copy` values. Use
+/// # NOTES AND LIMITATIONS
+/// * As of `generic-array 1.0`, [`From`]/[`from_array`](crate::GenericArray::from_array) can be used directly for a wide range of regular arrays.
+/// * The `[T; N: ArrayLength]` and `[T; usize]` explicit forms are limited to `Copy` values. Use
 /// [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
+/// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const<U>`](typenum::Const)
+
 #[macro_export]
 macro_rules! arr {
     ($($x:expr),* $(,)*) => ( $crate::GenericArray::from_array([$($x),*]) );
-    ($x:expr; $N:ty)     => ( $crate::GenericArray::from_array([$x; <$N as $crate::typenum::Unsigned>::USIZE]) );
-    ($x:expr; $n:expr)   => ( $crate::GenericArray::from_array([$x; $n]) );
+    ($x:expr; $N:ty)     => ({
+        // Bypass `from_array` to allow for any Unsigned array length
+        const __INPUT_LENGTH: usize = <$N as $crate::typenum::Unsigned>::USIZE;
+
+        #[inline(always)]
+        const fn __do_transmute<T, N: $crate::ArrayLength>(arr: [T; __INPUT_LENGTH]) -> $crate::GenericArray<T, N> {
+            unsafe { $crate::const_transmute(arr) }
+        }
+
+        __do_transmute::<_, $N>([$x; __INPUT_LENGTH])
+    });
+    ($x:expr; $n:expr) => ( $crate::GenericArray::from_array([$x; $n]) );
 }
 
 /// Like [`arr!`], but returns a `Box<GenericArray<T, N>>`
@@ -39,6 +51,9 @@ macro_rules! arr {
 /// let test = box_arr![1u128; typenum::Exp<U10, U6>];
 /// //  test: Box<GenericArray<u128, _>>
 /// ```
+///
+/// # NOTES AND LIMITATIONS
+/// * The `[0, 1, 2, 3]` implicit form will likely be limited by macro recursion depth.
 #[cfg(feature = "alloc")]
 #[macro_export]
 macro_rules! box_arr {
