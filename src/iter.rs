@@ -5,7 +5,7 @@ use core::iter::FusedIterator;
 use core::mem::ManuallyDrop;
 use core::{cmp, fmt, mem, ptr};
 
-/// An iterator that moves out of a `GenericArray`
+/// An iterator that moves out of a [`GenericArray`]
 pub struct GenericArrayIter<T, N: ArrayLength> {
     // Invariants: index <= index_back <= N
     // Only values in array[index..index_back] are alive at any given time.
