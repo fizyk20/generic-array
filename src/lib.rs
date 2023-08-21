@@ -660,8 +660,10 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
         // pre-checks
         match iter.size_hint() {
-            (n, _) if n < N::USIZE => return Err(TryFromIterError::TooShort),
-            (_, Some(n)) if n > N::USIZE => return Err(TryFromIterError::TooLong),
+            // if the lower bound is greater than N, array will overflow
+            (n, _) if n > N::USIZE => return Err(TryFromIterError::TooLong),
+            // if the upper bound is smaller than N, array cannot be filled
+            (_, Some(n)) if n < N::USIZE => return Err(TryFromIterError::TooShort),
             _ => {}
         }
 
