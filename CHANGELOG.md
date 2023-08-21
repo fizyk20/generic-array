@@ -9,6 +9,7 @@
     * Add const `from_array`/`into_array` methods.
     * Make `ArrayLength: 'static`
     * Replace `From<&[T]>` with `TryFrom<&[T]>`
+    * Add `try_from_iter` for fallible construction from iterator.
     * Use `typenum`'s `const-generics` feature for `const N: usize`-based `From` implementations between `[T; N]` and `GenericArray<T, N>`
         * Also added the `IntoArrayLength` trait and `ConstArrayLength` type-alias for working with typenum's `Const<N>` easier.
     * `alloc` crate feature
@@ -27,6 +28,7 @@
         * No longer casts given expressions internally.
         * Type-deduction works similarly to `vec![]`, in that an empty array has an unknown type
     * Add the `internals` Cargo feature to expose dangerous things.
+    * Improve documentation
 
 * **`0.14.6`**
     * Add an optional `Zeroize` impl for `GenericArray` ([#126](https://github.com/fizyk20/generic-array/pull/126) and [#112](https://github.com/fizyk20/generic-array/pull/112))
