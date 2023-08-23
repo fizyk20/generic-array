@@ -21,7 +21,6 @@
 /// * The `[T; N: ArrayLength]` and `[T; usize]` explicit forms are limited to `Copy` values. Use
 /// [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
 /// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const<U>`](typenum::Const)
-
 #[macro_export]
 macro_rules! arr {
     ($($x:expr),* $(,)*) => ( $crate::GenericArray::from_array([$($x),*]) );
