@@ -243,9 +243,9 @@ where
     type ArrayLength = typenum::U<N>;
 }
 
-impl<T> IntoArrayLength for T
+impl<N> IntoArrayLength for N
 where
-    T: ArrayLength,
+    N: ArrayLength,
 {
     type ArrayLength = Self;
 }
@@ -531,7 +531,6 @@ where
         GenericArray<B, Self::Length>:
             GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength,
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
@@ -558,7 +557,6 @@ where
     where
         Lhs: GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
         unsafe {
@@ -594,7 +592,6 @@ where
 {
     fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
     where
-        Self::Length: ArrayLength,
         Self: MappedGenericSequence<T, U>,
         F: FnMut(T) -> U,
     {
@@ -618,7 +615,6 @@ where
     where
         Self: MappedGenericSequence<T, U>,
         Rhs: MappedGenericSequence<B, U, Mapped = MappedSequence<Self, T, U>>,
-        Self::Length: ArrayLength,
         Rhs: GenericSequence<B, Length = Self::Length>,
         F: FnMut(T, Rhs::Item) -> U,
     {
