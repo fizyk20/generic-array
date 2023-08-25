@@ -28,6 +28,7 @@
         * No longer casts given expressions internally.
         * Type-deduction works similarly to `vec![]`, in that an empty array has an unknown type
     * Add the `internals` Cargo feature to expose dangerous things.
+    * Added additional methods for working with chunks of arrays.
     * Improve documentation
 
 * **`0.14.6`**

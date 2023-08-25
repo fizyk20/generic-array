@@ -48,7 +48,7 @@
 //!
 //! The [`ArrayLength`] trait is implemented for
 //! [unsigned integer types](typenum::Unsigned) from
-//! [typenum](typenum). For example, [`GenericArray<T, U5>`] would work almost like `[T; 5]`:
+//! [typenum]. For example, [`GenericArray<T, U5>`] would work almost like `[T; 5]`:
 //!
 //! ```rust
 //! # use generic_array::{ArrayLength, GenericArray};
@@ -741,13 +741,13 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         )
     }
 
-    /// Convert a slice of `GenericArray<T, N>` into a slice of `T`
+    /// Convert a slice of `GenericArray<T, N>` into a slice of `T`, effectively flattening the arrays.
     #[inline(always)]
     pub const fn slice_from_chunks(slice: &[GenericArray<T, N>]) -> &[T] {
         unsafe { slice::from_raw_parts(slice.as_ptr() as *const T, slice.len() * N::USIZE) }
     }
 
-    /// Convert a slice of `GenericArray<T, N>` into a slice of `T`
+    /// Convert a slice of `GenericArray<T, N>` into a slice of `T`, effectively flattening the arrays.
     #[inline(always)]
     pub fn slice_from_chunks_mut(slice: &mut [GenericArray<T, N>]) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(slice.as_mut_ptr() as *mut T, slice.len() * N::USIZE) }
