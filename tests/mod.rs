@@ -438,3 +438,38 @@ fn test_alloc() {
         let _ = GenericArray::<i128, typenum::Exp<typenum::U10, typenum::U6>>::default_boxed();
     }
 }
+
+#[test]
+fn test_chunks() {
+    // intended usage
+    let (chunks, rem) = GenericArray::<u8, U3>::chunks_from_slice(&[1, 2, 3, 4, 5, 6, 7]);
+
+    assert_eq!(chunks[0], arr![1, 2, 3]);
+    assert_eq!(chunks[1], arr![4, 5, 6]);
+    assert_eq!(rem, &[7]);
+
+    // zero-length input
+    let (chunks, rem) = GenericArray::<u8, U3>::chunks_from_slice(&[]);
+    assert!(chunks.is_empty());
+    assert!(rem.is_empty());
+
+    // zero-length output with zero-length input
+    let (chunks, rem) = GenericArray::<u8, U0>::chunks_from_slice(&[]);
+    assert!(chunks.is_empty());
+    assert!(rem.is_empty());
+
+    // only remainder
+    let (chunks, rem) = GenericArray::<u8, U3>::chunks_from_slice(&[1, 2]);
+
+    assert!(chunks.is_empty());
+    assert_eq!(rem, &[1, 2]);
+}
+
+#[test]
+#[should_panic]
+fn test_chunks_fail() {
+    // zero-length output with input
+    let (chunks, rem) = GenericArray::<u8, U0>::chunks_from_slice(&[1, 2, 3]);
+    assert!(chunks.is_empty());
+    assert!(rem.is_empty());
+}

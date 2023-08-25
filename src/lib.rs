@@ -686,6 +686,73 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         unsafe { &mut *(slice.as_mut_ptr() as *mut GenericArray<T, N>) }
     }
 
+    /// Converts a slice of `T` elements into a slice of `GenericArray<T, N>` chunks.
+    ///
+    /// Any remaining elements that do not fill the array will be returned as a second slice.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `N` is `U0` _AND_ the input slice is not empty.
+    #[inline(always)]
+    pub const fn chunks_from_slice(slice: &[T]) -> (&[GenericArray<T, N>], &[T]) {
+        if N::USIZE == 0 {
+            assert!(slice.is_empty(), "GenericArray length N must be non-zero");
+            return (&[], &[]);
+        }
+
+        // TODO: Use const `slice.split_at()` once MSRV is increased to 1.71.0
+        let num_chunks = slice.len() / N::USIZE;
+        let num_in_chunks = num_chunks * N::USIZE;
+        let num_remainder = slice.len() - num_in_chunks;
+
+        unsafe {
+            (
+                slice::from_raw_parts(slice.as_ptr() as *const GenericArray<T, N>, num_chunks),
+                slice::from_raw_parts(slice.as_ptr().add(num_in_chunks), num_remainder),
+            )
+        }
+    }
+
+    /// Converts a mutable slice of `T` elements into a mutable slice `GenericArray<T, N>` chunks.
+    ///
+    /// Any remaining elements that do not fill the array will be returned as a second slice.
+    ///
+    /// # Panics
+    ///
+    /// Panics if `N` is `U0` _AND_ the input slice is not empty.
+    #[inline(always)]
+    pub fn chunks_from_slice_mut(slice: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
+        if N::USIZE == 0 {
+            assert!(slice.is_empty(), "GenericArray length N must be non-zero");
+            return (&mut [], &mut []);
+        }
+
+        let num_chunks = slice.len() / N::USIZE;
+        let (chunks, remainder) = slice.split_at_mut(num_chunks * N::USIZE);
+
+        (
+            unsafe {
+                slice::from_raw_parts_mut(
+                    chunks.as_mut_ptr() as *mut GenericArray<T, N>,
+                    num_chunks,
+                )
+            },
+            remainder,
+        )
+    }
+
+    /// Convert a slice of `GenericArray<T, N>` into a slice of `T`
+    #[inline(always)]
+    pub const fn slice_from_chunks(slice: &[GenericArray<T, N>]) -> &[T] {
+        unsafe { slice::from_raw_parts(slice.as_ptr() as *const T, slice.len() * N::USIZE) }
+    }
+
+    /// Convert a slice of `GenericArray<T, N>` into a slice of `T`
+    #[inline(always)]
+    pub fn slice_from_chunks_mut(slice: &mut [GenericArray<T, N>]) -> &mut [T] {
+        unsafe { slice::from_raw_parts_mut(slice.as_mut_ptr() as *mut T, slice.len() * N::USIZE) }
+    }
+
     /// Convert a native array into `GenericArray` of the same length and type.
     ///
     /// This is the `const` equivalent of using the standard [`From`]/[`Into`] traits methods.
@@ -706,6 +773,42 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
         unsafe { crate::const_transmute(self) }
+    }
+
+    /// Convert a slice of native arrays into a slice of `GenericArray`s.
+    #[inline(always)]
+    pub const fn from_chunks<const U: usize>(chunks: &[[T; U]]) -> &[GenericArray<T, N>]
+    where
+        Const<U>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { crate::const_transmute(chunks) }
+    }
+
+    /// Convert a mutable slice of native arrays into a mutable slice of `GenericArray`s.
+    #[inline(always)]
+    pub fn from_chunks_mut<const U: usize>(chunks: &mut [[T; U]]) -> &mut [GenericArray<T, N>]
+    where
+        Const<U>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { crate::const_transmute(chunks) }
+    }
+
+    /// Converts a slice `GenericArray<T, N>` into a slice of `[T; N]`
+    #[inline(always)]
+    pub const fn into_chunks<const U: usize>(chunks: &[GenericArray<T, N>]) -> &[[T; U]]
+    where
+        Const<U>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { crate::const_transmute(chunks) }
+    }
+
+    /// Converts a mutable slice `GenericArray<T, N>` into a mutable slice of `[T; N]`
+    #[inline(always)]
+    pub fn into_chunks_mut<const U: usize>(chunks: &mut [GenericArray<T, N>]) -> &mut [[T; U]]
+    where
+        Const<U>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { crate::const_transmute(chunks) }
     }
 }
 
