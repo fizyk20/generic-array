@@ -1,6 +1,6 @@
 use alloc::{boxed::Box, vec::Vec};
 
-use crate::{ArrayLength, GenericArray, LengthError, TryFromIterError};
+use crate::{ArrayLength, GenericArray, LengthError};
 
 impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
     type Error = crate::LengthError;
@@ -83,7 +83,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 
     /// Like [`GenericArray::try_from_iter`] but returns a `Box<GenericArray<T, N>>` instead.
-    pub fn try_boxed_from_iter<I>(iter: I) -> Result<Box<GenericArray<T, N>>, TryFromIterError>
+    pub fn try_boxed_from_iter<I>(iter: I) -> Result<Box<GenericArray<T, N>>, LengthError>
     where
         I: IntoIterator<Item = T>,
     {
@@ -92,21 +92,17 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         // pre-checks
         match iter.size_hint() {
             // if the lower bound is greater than N, array will overflow
-            (n, _) if n > N::USIZE => return Err(TryFromIterError::TooLong),
+            (n, _) if n > N::USIZE => return Err(LengthError),
             // if the upper bound is smaller than N, array cannot be filled
-            (_, Some(n)) if n < N::USIZE => return Err(TryFromIterError::TooShort),
+            (_, Some(n)) if n < N::USIZE => return Err(LengthError),
             _ => {}
         }
 
         let mut v = Vec::with_capacity(N::USIZE);
         v.extend((&mut iter).take(N::USIZE));
 
-        if v.len() != N::USIZE {
-            return Err(TryFromIterError::TooShort);
-        }
-
-        if iter.next().is_some() {
-            return Err(TryFromIterError::TooLong);
+        if v.len() != N::USIZE || iter.next().is_some() {
+            return Err(LengthError);
         }
 
         Ok(GenericArray::try_from_vec(v).unwrap())
@@ -153,7 +149,7 @@ impl<T, N: ArrayLength> FromIterator<T> for Box<GenericArray<T, N>> {
     fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
         match GenericArray::try_boxed_from_iter(iter) {
             Ok(res) => res,
-            Err(err) => crate::from_iter_length_fail(N::USIZE, err),
+            Err(_) => crate::from_iter_length_fail(N::USIZE),
         }
     }
 }

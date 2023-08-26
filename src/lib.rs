@@ -478,21 +478,15 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
     {
         match Self::try_from_iter(iter) {
             Ok(res) => res,
-            Err(err) => from_iter_length_fail(N::USIZE, err),
+            Err(_) => from_iter_length_fail(N::USIZE),
         }
     }
 }
 
 #[inline(never)]
 #[cold]
-pub(crate) fn from_iter_length_fail(length: usize, err: TryFromIterError) -> ! {
-    panic!(
-        "GenericArray::from_iter expected {length} elements, but recieved {}",
-        match err {
-            TryFromIterError::TooShort => "fewer",
-            TryFromIterError::TooLong => "more",
-        }
-    );
+pub(crate) fn from_iter_length_fail(length: usize) -> ! {
+    panic!("GenericArray::from_iter expected {length} items");
 }
 
 unsafe impl<T, N: ArrayLength> GenericSequence<T> for GenericArray<T, N>
@@ -813,16 +807,17 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 }
 
-/// Error for [`TryFrom`]
+/// Error for [`TryFrom`] and [`try_from_iter`](GenericArray::try_from_iter)
 #[derive(Debug, Clone, Copy)]
 pub struct LengthError;
 
 // TODO: Impl core::error::Error when when https://github.com/rust-lang/rust/issues/103765 is finished
-// impl core::fmt::Display for LengthError {
-//     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-//         f.write_str("LengthError: Length of given slice does not match GenericArray length")
-//     }
-// }
+
+impl core::fmt::Display for LengthError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("LengthError: Slice or iterator does not match GenericArray length")
+    }
+}
 
 impl<'a, T, N: ArrayLength> TryFrom<&'a [T]> for &'a GenericArray<T, N> {
     type Error = LengthError;
@@ -850,21 +845,12 @@ impl<'a, T, N: ArrayLength> TryFrom<&'a mut [T]> for &'a mut GenericArray<T, N> 
     }
 }
 
-/// Error possibly returned by [`GenericArray::try_from_iter`]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum TryFromIterError {
-    /// Recieved too many elements from the iterator
-    TooLong,
-    /// Recieved too few elements from the iterator
-    TooShort,
-}
-
 impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Fallible equivalent of [`FromIterator::from_iter`]
     ///
     /// Given iterator must yield exactly `N` elements or an error will be returned. Using [`.take(N)`](Iterator::take)
     /// with an iterator longer than the array may be helpful.
-    pub fn try_from_iter<I>(iter: I) -> Result<Self, TryFromIterError>
+    pub fn try_from_iter<I>(iter: I) -> Result<Self, LengthError>
     where
         I: IntoIterator<Item = T>,
     {
@@ -873,9 +859,9 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         // pre-checks
         match iter.size_hint() {
             // if the lower bound is greater than N, array will overflow
-            (n, _) if n > N::USIZE => return Err(TryFromIterError::TooLong),
+            (n, _) if n > N::USIZE => return Err(LengthError),
             // if the upper bound is smaller than N, array cannot be filled
-            (_, Some(n)) if n < N::USIZE => return Err(TryFromIterError::TooShort),
+            (_, Some(n)) if n < N::USIZE => return Err(LengthError),
             _ => {}
         }
 
@@ -890,14 +876,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
                     *position += 1;
                 });
 
-                // The iterator produced fewer than `N` elements.
-                if *position != N::USIZE {
-                    return Err(TryFromIterError::TooShort);
-                }
-
-                // The iterator produced more than `N` elements.
-                if iter.next().is_some() {
-                    return Err(TryFromIterError::TooLong);
+                if *position != N::USIZE || iter.next().is_some() {
+                    return Err(LengthError);
                 }
             }
 
