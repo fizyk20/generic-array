@@ -50,15 +50,13 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
 
             let (left_array_iter, left_position) = left.iter_position();
 
-            FromIterator::from_iter(left_array_iter.zip(self.into_iter()).map(
-                |(l, right_value)| {
-                    let left_value = ptr::read(l);
+            FromIterator::from_iter(left_array_iter.zip(self).map(|(l, right_value)| {
+                let left_value = ptr::read(l);
 
-                    *left_position += 1;
+                *left_position += 1;
 
-                    f(left_value, right_value)
-                },
-            ))
+                f(left_value, right_value)
+            }))
         }
     }
 
@@ -71,7 +69,7 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         Self: MappedGenericSequence<T, U>,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
-        FromIterator::from_iter(lhs.into_iter().zip(self.into_iter()).map(|(l, r)| f(l, r)))
+        FromIterator::from_iter(lhs.into_iter().zip(self).map(|(l, r)| f(l, r)))
     }
 }
 

@@ -168,7 +168,8 @@ pub use self::iter::GenericArrayIter;
 /// This trait is effectively sealed due to only being allowed on [`Unsigned`] types,
 /// and therefore cannot be implemented in user code.
 pub unsafe trait ArrayLength: Unsigned + 'static {
-    /// Associated type representing the array type with the given number of elements.
+    /// Associated type representing the underlying contiguous memory
+    /// that constitutes an array with the given number of elements.
     ///
     /// This is an implementation detail, but is required to be public in cases where certain attributes
     /// of the inner type of [`GenericArray`] cannot be proven, such as [`Copy`] bounds.
