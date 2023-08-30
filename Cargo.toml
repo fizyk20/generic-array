@@ -10,7 +10,7 @@ readme = "README.md"
 
 license = "MIT"
 
-documentation = "http://fizyk20.github.io/generic-array/generic_array/"
+documentation = "https://fizyk20.github.io/generic-array/generic_array/"
 repository = "https://github.com/fizyk20/generic-array.git"
 
 keywords = ["generic", "array"]

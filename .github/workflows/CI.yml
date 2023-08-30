@@ -1,0 +1,50 @@
+name: Build
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build_test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+
+      - name: Install Miri
+        run: |
+          rustup toolchain install nightly --component miri
+          cargo miri setup
+
+      - name: Test with Miri
+        run: cargo miri test --all-features
+
+  deploy_docs:
+    name: Deploy documentation
+    runs-on: ubuntu-latest
+    needs: build_test
+    if: github.ref == 'refs/heads/master' && github.event_name != 'pull_request'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build documentation
+        run: cargo doc --all-features
+
+      - name: Finalize documentation
+        run: |
+          echo "<meta http-equiv=\"refresh\" content=\"0; url=generic_array\">" > target/doc/index.html
+          touch target/doc/.nojekyll
+
+      - name: Deploy
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          folder: target/doc
