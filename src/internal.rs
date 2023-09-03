@@ -16,11 +16,9 @@ pub struct ArrayBuilder<T, N: ArrayLength> {
 impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// Begin building an array
     #[inline(always)]
-    #[allow(clippy::uninit_assumed_init)]
-    pub const unsafe fn new() -> ArrayBuilder<T, N> {
+    pub const fn new() -> ArrayBuilder<T, N> {
         ArrayBuilder {
-            // SAFETY: An uninitialized `[MaybeUninit<_>; N]` is valid, same as regular array
-            array: MaybeUninit::uninit().assume_init(),
+            array: GenericArray::uninit(),
             position: 0,
         }
     }
@@ -59,9 +57,9 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     pub unsafe fn into_inner(self) -> GenericArray<T, N> {
         debug_assert_eq!(self.position, N::USIZE);
 
-        let array = ptr::read(&self.array as *const _ as *const MaybeUninit<GenericArray<T, N>>);
+        let array = ptr::read(&self.array);
         mem::forget(self);
-        array.assume_init()
+        GenericArray::assume_init(array)
     }
 }
 
@@ -89,7 +87,7 @@ pub struct ArrayConsumer<T, N: ArrayLength> {
 impl<T, N: ArrayLength> ArrayConsumer<T, N> {
     /// Give ownership of the array to the consumer
     #[inline(always)]
-    pub const unsafe fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
+    pub const fn new(array: GenericArray<T, N>) -> ArrayConsumer<T, N> {
         ArrayConsumer {
             array: ManuallyDrop::new(array),
             position: 0,
@@ -100,7 +98,7 @@ impl<T, N: ArrayLength> ArrayConsumer<T, N> {
     /// to keep track of consumed elements.
     ///
     /// You MUST increment the position as you iterate to mark off consumed elements.
-    #[inline]
+    #[inline(always)]
     pub unsafe fn iter_position(&mut self) -> (slice::Iter<T>, &mut usize) {
         (self.array.iter(), &mut self.position)
     }

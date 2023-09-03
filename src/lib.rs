@@ -807,6 +807,48 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 }
 
+impl<T, N: ArrayLength> GenericArray<T, N> {
+    /// Create a new array of `MaybeUninit<T>` items, in an uninitialized state.
+    ///
+    /// See [`GenericArray::assume_init`] for a full example.
+    #[inline(always)]
+    #[allow(clippy::uninit_assumed_init)]
+    pub const fn uninit() -> GenericArray<MaybeUninit<T>, N> {
+        unsafe {
+            // SAFETY: An uninitialized `[MaybeUninit<_>; N]` is valid, same as regular array
+            MaybeUninit::<GenericArray<MaybeUninit<T>, N>>::uninit().assume_init()
+        }
+    }
+
+    /// Extracts the values from a generic array of `MaybeUninit` containers.
+    ///
+    /// # Safety
+    ///
+    /// It is up to the caller to guarantee that all elements of the array are in an initialized state.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use core::mem::MaybeUninit;
+    /// # use generic_array::{GenericArray, typenum::U3, arr};
+    /// let mut array: GenericArray<MaybeUninit<i32>, U3> = GenericArray::uninit();
+    /// array[0].write(0);
+    /// array[1].write(1);
+    /// array[2].write(2);
+    ///
+    /// // SAFETY: Now safe as we initialised all elements
+    /// let array = unsafe {
+    ///     GenericArray::assume_init(array)
+    /// };
+    ///
+    /// assert_eq!(array, arr![0, 1, 2]);
+    /// ```
+    #[inline(always)]
+    pub const unsafe fn assume_init(array: GenericArray<MaybeUninit<T>, N>) -> Self {
+        crate::const_transmute::<_, MaybeUninit<GenericArray<T, N>>>(array).assume_init()
+    }
+}
+
 /// Error for [`TryFrom`] and [`try_from_iter`](GenericArray::try_from_iter)
 #[derive(Debug, Clone, Copy)]
 pub struct LengthError;
