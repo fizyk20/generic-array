@@ -23,6 +23,27 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
         }
     }
 
+    /// Consume an iterator, `.zip`-ing it to fill some or all of the array. This does not check if the
+    /// iterator had extra elements or too few elements.
+    ///
+    /// This makes no attempt to continue where a previous `extend` leaves off. Therefore, it should
+    /// only be used once per `ArrayBuilder`.
+    #[inline(always)]
+    pub unsafe fn extend(&mut self, source: impl Iterator<Item = T>) {
+        let (destination, position) = (self.array.iter_mut(), &mut self.position);
+
+        destination.zip(source).for_each(|(dst, src)| {
+            dst.write(src);
+            *position += 1;
+        });
+    }
+
+    /// Returns true if the write position equals the array size
+    #[inline(always)]
+    pub const fn is_full(&self) -> bool {
+        self.position == N::USIZE
+    }
+
     /// Creates a mutable iterator for writing to the array elements.
     ///
     /// You MUST increment the position value (given as a mutable reference) as you iterate
@@ -42,7 +63,7 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     ///         // MUST be done AFTER ownership of the value has been given to `dst.write`
     ///         *position += 1;
     ///     }
-    ///     let your_array = builder.into_inner();
+    ///     let your_array = builder.assume_init();
     /// }
     /// # }
     /// ```
@@ -54,8 +75,8 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// When done writing (assuming all elements have been written to),
     /// get the inner array.
     #[inline(always)]
-    pub unsafe fn into_inner(self) -> GenericArray<T, N> {
-        debug_assert_eq!(self.position, N::USIZE);
+    pub unsafe fn assume_init(self) -> GenericArray<T, N> {
+        debug_assert!(self.is_full());
 
         let array = ptr::read(&self.array);
         mem::forget(self);

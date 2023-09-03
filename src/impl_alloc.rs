@@ -13,14 +13,9 @@ impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
         unsafe {
             let mut destination = crate::ArrayBuilder::new();
 
-            let (dst_iter, position) = destination.iter_position();
+            destination.extend(v.into_iter());
 
-            dst_iter.zip(v).for_each(|(dst, src)| {
-                dst.write(src);
-                *position += 1;
-            });
-
-            Ok(destination.into_inner())
+            Ok(destination.assume_init())
         }
     }
 }
@@ -119,6 +114,7 @@ impl<T, N: ArrayLength> TryFrom<Box<[T]>> for GenericArray<T, N> {
 }
 
 impl<T, N: ArrayLength> From<GenericArray<T, N>> for Box<[T]> {
+    #[inline]
     fn from(value: GenericArray<T, N>) -> Self {
         Box::new(value).into_boxed_slice()
     }

@@ -496,6 +496,7 @@ where
     type Length = N;
     type Sequence = Self;
 
+    #[inline(always)]
     fn generate<F>(mut f: F) -> GenericArray<T, N>
     where
         F: FnMut(usize) -> T,
@@ -512,7 +513,7 @@ where
                 });
             }
 
-            destination.into_inner()
+            destination.assume_init()
         }
     }
 
@@ -529,21 +530,39 @@ where
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
-            let mut left = ArrayConsumer::new(lhs);
-            let mut right = ArrayConsumer::new(self);
+            if mem::needs_drop::<T>() || mem::needs_drop::<B>() {
+                let mut left = ArrayConsumer::new(lhs);
+                let mut right = ArrayConsumer::new(self);
 
-            let (left_array_iter, left_position) = left.iter_position();
-            let (right_array_iter, right_position) = right.iter_position();
+                let (left_array_iter, left_position) = left.iter_position();
+                let (right_array_iter, right_position) = right.iter_position();
 
-            FromIterator::from_iter(left_array_iter.zip(right_array_iter).map(|(l, r)| {
-                let left_value = ptr::read(l);
-                let right_value = ptr::read(r);
+                FromIterator::from_iter(left_array_iter.zip(right_array_iter).map(|(l, r)| {
+                    let left_value = ptr::read(l);
+                    let right_value = ptr::read(r);
 
-                *left_position += 1;
-                *right_position += 1;
+                    *left_position += 1;
+                    *right_position += 1;
 
-                f(left_value, right_value)
-            }))
+                    f(left_value, right_value)
+                }))
+            } else {
+                // Neither self nor lhs require `Drop` be called, so choose an iterator that's easily optimized
+                //
+                // Note that because ArrayConsumer checks for `needs_drop` itself, if `f` panics then nothing
+                // would have been done about it anyway. Only the other branch needs `ArrayConsumer`
+                let res = FromIterator::from_iter(lhs.iter().zip(self.iter()).map(|(l, r)| {
+                    let left_value = ptr::read(l);
+                    let right_value = ptr::read(r);
+
+                    f(left_value, right_value)
+                }));
+
+                mem::forget(self);
+                mem::forget(lhs);
+
+                res
+            }
         }
     }
 
@@ -555,21 +574,30 @@ where
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
         unsafe {
-            let mut right = ArrayConsumer::new(self);
+            if mem::needs_drop::<T>() {
+                let mut right = ArrayConsumer::new(self);
 
-            let (right_array_iter, right_position) = right.iter_position();
+                let (right_array_iter, right_position) = right.iter_position();
 
-            FromIterator::from_iter(
-                lhs.into_iter()
-                    .zip(right_array_iter)
-                    .map(|(left_value, r)| {
-                        let right_value = ptr::read(r);
+                FromIterator::from_iter(right_array_iter.zip(lhs).map(move |(r, left_value)| {
+                    let right_value = ptr::read(r);
 
-                        *right_position += 1;
+                    *right_position += 1;
 
-                        f(left_value, right_value)
-                    }),
-            )
+                    f(left_value, right_value)
+                }))
+            } else {
+                // Similar logic to `inverted_zip`'s no-drop branch
+                let res = FromIterator::from_iter(self.iter().zip(lhs).map(|(r, left_value)| {
+                    let right_value = ptr::read(r);
+
+                    f(left_value, right_value)
+                }));
+
+                mem::forget(self);
+
+                res
+            }
         }
     }
 }
@@ -585,6 +613,7 @@ impl<T, N: ArrayLength> FunctionalSequence<T> for GenericArray<T, N>
 where
     Self: GenericSequence<T, Item = T, Length = N>,
 {
+    #[inline(always)]
     fn map<U, F>(self, mut f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
@@ -605,7 +634,7 @@ where
         }
     }
 
-    #[inline]
+    #[inline(always)]
     fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
@@ -616,6 +645,7 @@ where
         rhs.inverted_zip(self, f)
     }
 
+    #[inline(always)]
     fn fold<U, F>(self, init: U, mut f: F) -> U
     where
         F: FnMut(U, T) -> U,
@@ -892,6 +922,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     ///
     /// Given iterator must yield exactly `N` elements or an error will be returned. Using [`.take(N)`](Iterator::take)
     /// with an iterator longer than the array may be helpful.
+    #[inline]
     pub fn try_from_iter<I>(iter: I) -> Result<Self, LengthError>
     where
         I: IntoIterator<Item = T>,
@@ -910,20 +941,13 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         unsafe {
             let mut destination = ArrayBuilder::new();
 
-            {
-                let (destination_iter, position) = destination.iter_position();
+            destination.extend(&mut iter);
 
-                destination_iter.zip(&mut iter).for_each(|(dst, src)| {
-                    dst.write(src);
-                    *position += 1;
-                });
-
-                if *position != N::USIZE || iter.next().is_some() {
-                    return Err(LengthError);
-                }
+            if !destination.is_full() || iter.next().is_some() {
+                return Err(LengthError);
             }
 
-            Ok(destination.into_inner())
+            Ok(destination.assume_init())
         }
     }
 }

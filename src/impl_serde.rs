@@ -74,7 +74,7 @@ where
                     return Err(de::Error::invalid_length(*position + 1, &self));
                 }
 
-                return Ok(dst.into_inner());
+                return Ok(dst.assume_init());
             }
 
             Err(de::Error::invalid_length(*position, &self))
