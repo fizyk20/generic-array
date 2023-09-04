@@ -896,10 +896,9 @@ impl<'a, T, N: ArrayLength> TryFrom<&'a [T]> for &'a GenericArray<T, N> {
 
     #[inline(always)]
     fn try_from(slice: &'a [T]) -> Result<Self, Self::Error> {
-        if slice.len() == N::USIZE {
-            Ok(GenericArray::from_slice(slice))
-        } else {
-            Err(LengthError)
+        match slice.len() == N::USIZE {
+            true => Ok(GenericArray::from_slice(slice)),
+            false => Err(LengthError),
         }
     }
 }
@@ -909,10 +908,9 @@ impl<'a, T, N: ArrayLength> TryFrom<&'a mut [T]> for &'a mut GenericArray<T, N> 
 
     #[inline(always)]
     fn try_from(slice: &'a mut [T]) -> Result<Self, Self::Error> {
-        if slice.len() == N::USIZE {
-            Ok(GenericArray::from_mut_slice(slice))
-        } else {
-            Err(LengthError)
+        match slice.len() == N::USIZE {
+            true => Ok(GenericArray::from_mut_slice(slice)),
+            false => Err(LengthError),
         }
     }
 }

@@ -86,12 +86,12 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
 
 impl<T, N: ArrayLength> Drop for ArrayBuilder<T, N> {
     fn drop(&mut self) {
-        if mem::needs_drop::<T>() {
-            unsafe {
-                for value in &mut self.array[..self.position] {
-                    value.assume_init_drop();
-                }
-            }
+        unsafe {
+            ptr::drop_in_place(
+                // Same cast as MaybeUninit::slice_assume_init_mut
+                self.array.get_unchecked_mut(..self.position) as *mut [MaybeUninit<T>]
+                    as *mut [T],
+            );
         }
     }
 }
@@ -127,12 +127,8 @@ impl<T, N: ArrayLength> ArrayConsumer<T, N> {
 
 impl<T, N: ArrayLength> Drop for ArrayConsumer<T, N> {
     fn drop(&mut self) {
-        if mem::needs_drop::<T>() {
-            for value in &mut self.array[self.position..N::USIZE] {
-                unsafe {
-                    ptr::drop_in_place(value);
-                }
-            }
+        unsafe {
+            ptr::drop_in_place(self.array.get_unchecked_mut(self.position..N::USIZE));
         }
     }
 }

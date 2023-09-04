@@ -29,15 +29,17 @@ mod test {
 
 impl<T, N: ArrayLength> GenericArrayIter<T, N> {
     /// Returns the remaining items of this iterator as a slice
-    #[inline]
+    #[inline(always)]
     pub fn as_slice(&self) -> &[T] {
-        &self.array.as_slice()[self.index..self.index_back]
+        // SAFETY: index and index_back are guaranteed to be within bounds
+        unsafe { self.array.get_unchecked(self.index..self.index_back) }
     }
 
     /// Returns the remaining items of this iterator as a mutable slice
-    #[inline]
+    #[inline(always)]
     pub fn as_mut_slice(&mut self) -> &mut [T] {
-        &mut self.array.as_mut_slice()[self.index..self.index_back]
+        // SAFETY: index and index_back are guaranteed to be within bounds
+        unsafe { self.array.get_unchecked_mut(self.index..self.index_back) }
     }
 }
 
@@ -64,15 +66,9 @@ impl<T: fmt::Debug, N: ArrayLength> fmt::Debug for GenericArrayIter<T, N> {
 }
 
 impl<T, N: ArrayLength> Drop for GenericArrayIter<T, N> {
-    #[inline]
     fn drop(&mut self) {
-        if mem::needs_drop::<T>() {
-            // Drop values that are still alive.
-            for p in self.as_mut_slice() {
-                unsafe {
-                    ptr::drop_in_place(p);
-                }
-            }
+        unsafe {
+            ptr::drop_in_place(self.as_mut_slice());
         }
     }
 }
@@ -126,7 +122,7 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
                 index_back,
             } = self;
 
-            let remaining = &array[*index..index_back];
+            let remaining = array.get_unchecked(*index..index_back);
 
             remaining.iter().fold(init, |acc, src| {
                 let value = ptr::read(src);
@@ -137,19 +133,19 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
             })
         };
 
-        // ensure the drop happens here after iteration
-        drop(self);
+        // ensure this happens here after iteration
+        mem::forget(self);
 
         ret
     }
 
-    #[inline]
+    #[inline(always)]
     fn size_hint(&self) -> (usize, Option<usize>) {
         let len = self.len();
         (len, Some(len))
     }
 
-    #[inline]
+    #[inline(always)]
     fn count(self) -> usize {
         self.len()
     }
@@ -158,13 +154,13 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
         // First consume values prior to the nth.
         let ndrop = cmp::min(n, self.len());
 
-        for p in &mut self.array[self.index..self.index + ndrop] {
-            self.index += 1;
+        let next_index = self.index + ndrop;
 
-            unsafe {
-                ptr::drop_in_place(p);
-            }
+        unsafe {
+            ptr::drop_in_place(self.array.get_unchecked_mut(self.index..next_index));
         }
+
+        self.index = next_index;
 
         self.next()
     }
@@ -177,6 +173,7 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
 }
 
 impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
+    #[inline]
     fn next_back(&mut self) -> Option<T> {
         if self.index < self.index_back {
             self.index_back -= 1;
@@ -198,7 +195,7 @@ impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
                 ref mut index_back,
             } = self;
 
-            let remaining = &array[index..*index_back];
+            let remaining = array.get_unchecked(index..*index_back);
 
             remaining.iter().rfold(init, |acc, src| {
                 let value = ptr::read(src);
@@ -209,14 +206,15 @@ impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
             })
         };
 
-        // ensure the drop happens here after iteration
-        drop(self);
+        // ensure this happens here after iteration
+        mem::forget(self);
 
         ret
     }
 }
 
 impl<T, N: ArrayLength> ExactSizeIterator for GenericArrayIter<T, N> {
+    #[inline]
     fn len(&self) -> usize {
         self.index_back - self.index
     }
