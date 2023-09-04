@@ -547,19 +547,21 @@ where
                     f(left_value, right_value)
                 }))
             } else {
-                // Neither self nor lhs require `Drop` be called, so choose an iterator that's easily optimized
+                // Despite neither needing `Drop`, they may not be `Copy`, so be paranoid
+                // and avoid anything related to drop anyway. Assume it's moved out on each read.
+                let left = ManuallyDrop::new(lhs);
+                let right = ManuallyDrop::new(self);
+
+                // Neither right nor left require `Drop` be called, so choose an iterator that's easily optimized
                 //
                 // Note that because ArrayConsumer checks for `needs_drop` itself, if `f` panics then nothing
                 // would have been done about it anyway. Only the other branch needs `ArrayConsumer`
-                let res = FromIterator::from_iter(lhs.iter().zip(self.iter()).map(|(l, r)| {
+                let res = FromIterator::from_iter(left.iter().zip(right.iter()).map(|(l, r)| {
                     let left_value = ptr::read(l);
                     let right_value = ptr::read(r);
 
                     f(left_value, right_value)
                 }));
-
-                mem::forget(self);
-                mem::forget(lhs);
 
                 res
             }
@@ -587,14 +589,14 @@ where
                     f(left_value, right_value)
                 }))
             } else {
+                let right = ManuallyDrop::new(self);
+
                 // Similar logic to `inverted_zip`'s no-drop branch
-                let res = FromIterator::from_iter(self.iter().zip(lhs).map(|(r, left_value)| {
+                let res = FromIterator::from_iter(right.iter().zip(lhs).map(|(r, left_value)| {
                     let right_value = ptr::read(r);
 
                     f(left_value, right_value)
                 }));
-
-                mem::forget(self);
 
                 res
             }

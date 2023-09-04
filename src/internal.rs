@@ -128,7 +128,7 @@ impl<T, N: ArrayLength> ArrayConsumer<T, N> {
 impl<T, N: ArrayLength> Drop for ArrayConsumer<T, N> {
     fn drop(&mut self) {
         unsafe {
-            ptr::drop_in_place(self.array.get_unchecked_mut(self.position..N::USIZE));
+            ptr::drop_in_place(self.array.get_unchecked_mut(self.position..));
         }
     }
 }
