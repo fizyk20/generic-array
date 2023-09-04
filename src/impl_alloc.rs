@@ -23,7 +23,7 @@ impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
 impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Converts a `Box<GenericArray<T, N>>` into `Box<[T]>` without reallocating.
     ///
-    /// This operation is O(1)
+    /// This operation is O(1), constant-time regardless of the array length N.
     #[inline]
     pub fn into_boxed_slice(self: Box<GenericArray<T, N>>) -> Box<[T]> {
         unsafe {
@@ -37,7 +37,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Converts a `Box<GenericArray<T, N>>` into `Vec<T>` without reallocating.
     ///
-    /// This operation is O(1)
+    /// This operation is O(1), constant-time regardless of the array length N.
     #[inline]
     pub fn into_vec(self: Box<GenericArray<T, N>>) -> Vec<T> {
         Vec::from(self.into_boxed_slice())
@@ -45,7 +45,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Attempts to convert a `Box<[T]>` into `Box<GenericArray<T, N>>` without reallocating.
     ///
-    /// This operation is O(1)
+    /// This operation is O(1), constant-time regardless of the array length N.
     #[inline]
     pub fn try_from_boxed_slice(slice: Box<[T]>) -> Result<Box<GenericArray<T, N>>, LengthError> {
         if slice.len() != N::USIZE {
@@ -58,7 +58,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Attempts to convert a `Vec<T>` into `Box<GenericArray<T, N>>` without reallocating.
     ///
     /// This operation is O(1) **if the `Vec` has the same length and capacity as `N`**,
-    /// otherwise it will be forced to call `Vec::shrink_to_fit` which is O(N)
+    /// otherwise it will be forced to call `Vec::shrink_to_fit` which is O(N),
+    /// where N is the number of elements.
     #[inline]
     pub fn try_from_vec(vec: Vec<T>) -> Result<Box<GenericArray<T, N>>, LengthError> {
         Self::try_from_boxed_slice(vec.into_boxed_slice())

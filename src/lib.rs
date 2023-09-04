@@ -542,7 +542,7 @@ where
                     let right_value = ptr::read(r);
 
                     *left_position += 1;
-                    *right_position += 1;
+                    *right_position = *left_position;
 
                     f(left_value, right_value)
                 }))
@@ -579,7 +579,7 @@ where
 
                 let (right_array_iter, right_position) = right.iter_position();
 
-                FromIterator::from_iter(right_array_iter.zip(lhs).map(move |(r, left_value)| {
+                FromIterator::from_iter(right_array_iter.zip(lhs).map(|(r, left_value)| {
                     let right_value = ptr::read(r);
 
                     *right_position += 1;

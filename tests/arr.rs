@@ -49,4 +49,11 @@ fn alloc_arr() {
 
     _ = box_arr![0; 12];
     _ = box_arr![1; 't' as usize];
+
+    // ZSTs
+    _ = box_arr![0f32; 0].into_boxed_slice();
+    let z = box_arr![(); 5].into_boxed_slice();
+
+    #[allow(clippy::let_unit_value)]
+    let _ = z[0];
 }
