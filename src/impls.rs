@@ -138,7 +138,7 @@ where
 {
     #[inline(always)]
     fn as_ref(&self) -> &[T; N] {
-        unsafe { crate::const_transmute(self) }
+        unsafe { core::mem::transmute(self) }
     }
 }
 impl<T, const N: usize> AsMut<[T; N]> for GenericArray<T, ConstArrayLength<N>>
@@ -147,7 +147,7 @@ where
 {
     #[inline(always)]
     fn as_mut(&mut self) -> &mut [T; N] {
-        unsafe { crate::const_transmute(self) }
+        unsafe { core::mem::transmute(self) }
     }
 }
 

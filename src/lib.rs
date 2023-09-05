@@ -832,7 +832,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
-        unsafe { crate::const_transmute(chunks) }
+        unsafe { mem::transmute(chunks) }
     }
 
     /// Convert a mutable slice of native arrays into a mutable slice of `GenericArray`s.
@@ -841,7 +841,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
-        unsafe { crate::const_transmute(chunks) }
+        unsafe { mem::transmute(chunks) }
     }
 
     /// Converts a slice `GenericArray<T, N>` into a slice of `[T; N]`
@@ -850,7 +850,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
-        unsafe { crate::const_transmute(chunks) }
+        unsafe { mem::transmute(chunks) }
     }
 
     /// Converts a mutable slice `GenericArray<T, N>` into a mutable slice of `[T; N]`
@@ -859,7 +859,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
-        unsafe { crate::const_transmute(chunks) }
+        unsafe { mem::transmute(chunks) }
     }
 }
 
@@ -901,7 +901,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// ```
     #[inline(always)]
     pub const unsafe fn assume_init(array: GenericArray<MaybeUninit<T>, N>) -> Self {
-        crate::const_transmute::<_, MaybeUninit<GenericArray<T, N>>>(array).assume_init()
+        const_transmute::<_, MaybeUninit<GenericArray<T, N>>>(array).assume_init()
     }
 }
 
