@@ -667,6 +667,15 @@ where
 }
 
 impl<T, N: ArrayLength> GenericArray<T, N> {
+    /// Returns the number of elements in the array.
+    ///
+    /// Equivalent to [`<N as Unsigned>::USIZE`](typenum::Unsigned) where `N` is the array length.
+    ///
+    /// Useful for when only a type alias is available.
+    pub const fn len() -> usize {
+        N::USIZE
+    }
+
     /// Extracts a slice containing the entire array.
     #[inline(always)]
     pub const fn as_slice(&self) -> &[T] {
