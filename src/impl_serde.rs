@@ -54,6 +54,13 @@ where
     where
         A: SeqAccess<'de>,
     {
+        match seq.size_hint() {
+            Some(n) if n != N::USIZE => {
+                return Err(de::Error::invalid_length(n, &self));
+            }
+            _ => {}
+        }
+
         unsafe {
             let mut dst = crate::ArrayBuilder::new();
 
