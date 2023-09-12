@@ -753,7 +753,6 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # Panics
     ///
     /// Panics if `N` is `U0` _AND_ the input slice is not empty.
-    #[inline(always)]
     pub const fn chunks_from_slice(slice: &[T]) -> (&[GenericArray<T, N>], &[T]) {
         if N::USIZE == 0 {
             assert!(slice.is_empty(), "GenericArray length N must be non-zero");
@@ -780,7 +779,6 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # Panics
     ///
     /// Panics if `N` is `U0` _AND_ the input slice is not empty.
-    #[inline(always)]
     pub fn chunks_from_slice_mut(slice: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
         if N::USIZE == 0 {
             assert!(slice.is_empty(), "GenericArray length N must be non-zero");

@@ -47,6 +47,7 @@ impl<T, N: ArrayLength> IntoIterator for GenericArray<T, N> {
     type Item = T;
     type IntoIter = GenericArrayIter<T, N>;
 
+    #[inline]
     fn into_iter(self) -> Self::IntoIter {
         GenericArrayIter {
             array: ManuallyDrop::new(self),
@@ -111,6 +112,7 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
         }
     }
 
+    #[inline]
     fn fold<B, F>(mut self, init: B, mut f: F) -> B
     where
         F: FnMut(B, Self::Item) -> B,
@@ -158,9 +160,7 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
 
     fn nth(&mut self, n: usize) -> Option<T> {
         // First consume values prior to the nth.
-        let ndrop = cmp::min(n, self.len());
-
-        let next_index = self.index + ndrop;
+        let next_index = self.index + cmp::min(n, self.len());
 
         unsafe {
             ptr::drop_in_place(self.array.get_unchecked_mut(self.index..next_index));
@@ -190,6 +190,7 @@ impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
         }
     }
 
+    #[inline]
     fn rfold<B, F>(mut self, init: B, mut f: F) -> B
     where
         F: FnMut(B, Self::Item) -> B,

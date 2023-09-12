@@ -83,7 +83,6 @@ impl<T, N: ArrayLength> AsMut<[T]> for GenericArray<T, N> {
 }
 
 impl<T: Hash, N: ArrayLength> Hash for GenericArray<T, N> {
-    #[inline]
     fn hash<H>(&self, state: &mut H)
     where
         H: Hasher,
