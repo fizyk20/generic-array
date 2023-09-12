@@ -759,8 +759,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
             return (&[], &[]);
         }
 
-        // TODO: Use const `slice.split_at()` once MSRV is increased to 1.71.0
-        let num_chunks = slice.len() / N::USIZE;
+        // NOTE: Using `slice.split_at` adds an unnecessary assert
+        let num_chunks = slice.len() / N::USIZE; // integer division
         let num_in_chunks = num_chunks * N::USIZE;
         let num_remainder = slice.len() - num_in_chunks;
 
@@ -785,18 +785,20 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
             return (&mut [], &mut []);
         }
 
-        let num_chunks = slice.len() / N::USIZE;
-        let (chunks, remainder) = slice.split_at_mut(num_chunks * N::USIZE);
+        // NOTE: Using `slice.split_at_mut` adds an unnecessary assert
+        let num_chunks = slice.len() / N::USIZE; // integer division
+        let num_in_chunks = num_chunks * N::USIZE;
+        let num_remainder = slice.len() - num_in_chunks;
 
-        (
-            unsafe {
+        unsafe {
+            (
                 slice::from_raw_parts_mut(
-                    chunks.as_mut_ptr() as *mut GenericArray<T, N>,
+                    slice.as_mut_ptr() as *mut GenericArray<T, N>,
                     num_chunks,
-                )
-            },
-            remainder,
-        )
+                ),
+                slice::from_raw_parts_mut(slice.as_mut_ptr().add(num_in_chunks), num_remainder),
+            )
+        }
     }
 
     /// Convert a slice of `GenericArray<T, N>` into a slice of `T`, effectively flattening the arrays.
