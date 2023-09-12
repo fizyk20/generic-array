@@ -20,6 +20,10 @@ use crate::{ArrayLength, GenericArray};
 
 #[inline(always)]
 fn hex_encode_fallback<const UPPER: bool>(src: &[u8], dst: &mut [u8]) {
+    if dst.len() < src.len() * 2 {
+        unsafe { core::hint::unreachable_unchecked() };
+    }
+
     let alphabet = match UPPER {
         true => b"0123456789ABCDEF",
         false => b"0123456789abcdef",
@@ -31,15 +35,15 @@ fn hex_encode_fallback<const UPPER: bool>(src: &[u8], dst: &mut [u8]) {
     });
 }
 
-#[cfg(feature = "faster-hex")]
-fn faster_hex_encode<const UPPER: bool>(src: &[u8], dst: &mut [u8]) {
+#[inline]
+fn hex_encode<const UPPER: bool>(src: &[u8], dst: &mut [u8]) {
     debug_assert!(dst.len() >= (src.len() * 2));
 
-    #[cfg(miri)]
+    #[cfg(any(miri, not(feature = "faster-hex")))]
     hex_encode_fallback::<UPPER>(src, dst);
 
     // the `unwrap_unchecked` is to avoid the length checks
-    #[cfg(not(miri))]
+    #[cfg(all(feature = "faster-hex", not(miri)))]
     match UPPER {
         true => unsafe { faster_hex::hex_encode_upper(src, dst).unwrap_unchecked() },
         false => unsafe { faster_hex::hex_encode(src, dst).unwrap_unchecked() },
@@ -81,11 +85,8 @@ where
             // just process the entire array. When "faster-hex" is enabled,
             // this avoids its logic that winds up going to the fallback anyway
             hex_encode_fallback::<UPPER>(arr, &mut buf);
-        } else if cfg!(not(feature = "faster-hex")) {
-            hex_encode_fallback::<UPPER>(input, &mut buf);
         } else {
-            #[cfg(feature = "faster-hex")]
-            faster_hex_encode::<UPPER>(input, &mut buf);
+            hex_encode::<UPPER>(input, &mut buf);
         }
 
         f.write_str(unsafe { str::from_utf8_unchecked(buf.get_unchecked(..max_digits)) })?;
@@ -95,11 +96,7 @@ where
         let mut digits_left = max_digits;
 
         for chunk in input.chunks(1024) {
-            #[cfg(feature = "faster-hex")]
-            faster_hex_encode::<UPPER>(chunk, &mut buf);
-
-            #[cfg(not(feature = "faster-hex"))]
-            hex_encode_fallback::<UPPER>(chunk, &mut buf);
+            hex_encode::<UPPER>(chunk, &mut buf);
 
             let n = min(chunk.len() * 2, digits_left);
             // SAFETY: n will always be within bounds due to the above min
@@ -115,7 +112,6 @@ where
     N: Add<N>,
     Sum<N, N>: ArrayLength,
 {
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         generic_hex::<_, false>(self, f)
     }
@@ -126,7 +122,6 @@ where
     N: Add<N>,
     Sum<N, N>: ArrayLength,
 {
-    #[inline]
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         generic_hex::<_, true>(self, f)
     }
