@@ -52,13 +52,13 @@ macro_rules! arr {
 /// ```
 ///
 /// # NOTES AND LIMITATIONS
-/// * The `[0, 1, 2, 3]` implicit form will likely be limited by macro recursion depth.
+/// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const<U>`](typenum::Const)
 #[cfg(feature = "alloc")]
 #[macro_export]
 macro_rules! box_arr {
     ($($x:expr),* $(,)*) => ({
-        type __OutputLength = $crate::box_arr_helper!(@count_ty $($x),*);
-        $crate::GenericArray::<_, __OutputLength>::try_from_vec($crate::alloc::vec![$($x),*]).unwrap()
+        // deduce length based on a ZST array of units
+        $crate::GenericArray::__from_vec_helper([$($crate::box_arr_helper!(@unit $x)),*], $crate::alloc::vec![$($x),*])
     });
     ($x:expr; $N:ty) => ( $crate::GenericArray::<_, $N>::try_from_vec($crate::alloc::vec![$x; <$N as $crate::typenum::Unsigned>::USIZE]).unwrap() );
     ($x:expr; $n:expr) => ({
@@ -68,12 +68,31 @@ macro_rules! box_arr {
     });
 }
 
+use crate::{ArrayLength, GenericArray, IntoArrayLength};
+
+#[cfg(feature = "alloc")]
+impl<T, N: ArrayLength> GenericArray<T, N> {
+    #[doc(hidden)]
+    #[inline(always)]
+    pub fn __from_vec_helper<const U: usize>(
+        _empty: [(); U],
+        vec: alloc::vec::Vec<T>,
+    ) -> alloc::boxed::Box<GenericArray<T, N>>
+    where
+        typenum::Const<U>: IntoArrayLength<ArrayLength = N>,
+    {
+        unsafe { GenericArray::try_from_vec(vec).unwrap_unchecked() }
+    }
+}
+
+// TODO: Remove this somehow?
 #[cfg(feature = "alloc")]
 #[doc(hidden)]
 #[macro_export]
 macro_rules! box_arr_helper {
-    (@count_ty) => { $crate::typenum::U0 };
-    (@count_ty $val:expr$(, $vals:expr)* $(,)?) => { $crate::typenum::Add1<$crate::box_arr_helper!(@count_ty $($vals),*)> };
+    (@unit $e:expr) => {
+        ()
+    };
 }
 
 mod doctests_only {
