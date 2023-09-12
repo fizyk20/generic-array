@@ -91,6 +91,20 @@ fn test_into_iter_nth() {
 }
 
 #[test]
+fn test_into_iter_nth_back() {
+    let v = arr![0, 1, 2, 3, 4];
+
+    for i in 0..v.len() {
+        assert_eq!(v.into_iter().nth_back(i).unwrap(), v[v.len() - i - 1]);
+    }
+    assert_eq!(v.into_iter().nth_back(v.len()), None);
+
+    let mut iter = v.into_iter();
+    assert_eq!(iter.nth_back(2).unwrap(), v[2]);
+    assert_eq!(iter.nth_back(1).unwrap(), v[0]);
+}
+
+#[test]
 fn test_into_iter_last() {
     let v = arr![0, 1, 2, 3, 4];
     assert_eq!(v.into_iter().last().unwrap(), 4);
@@ -167,6 +181,16 @@ fn test_into_iter_drops() {
     {
         let mut iter = v(&i).into_iter();
         let _x = iter.nth(2);
+        assert_eq!(i.get(), 2);
+        let _y = iter.last();
+        assert_eq!(i.get(), 3);
+    }
+    assert_eq!(i.get(), 5);
+
+    let i = Cell::new(0);
+    {
+        let mut iter = v(&i).into_iter();
+        let _x = iter.nth_back(2);
         assert_eq!(i.get(), 2);
         let _y = iter.last();
         assert_eq!(i.get(), 3);

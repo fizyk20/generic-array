@@ -217,6 +217,18 @@ impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
 
         ret
     }
+
+    fn nth_back(&mut self, n: usize) -> Option<T> {
+        let next_back = self.index_back - cmp::min(n, self.len());
+
+        unsafe {
+            ptr::drop_in_place(self.array.get_unchecked_mut(next_back..self.index_back));
+        }
+
+        self.index_back = next_back;
+
+        self.next_back()
+    }
 }
 
 impl<T, N: ArrayLength> ExactSizeIterator for GenericArrayIter<T, N> {
