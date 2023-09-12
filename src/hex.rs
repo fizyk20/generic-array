@@ -99,7 +99,7 @@ where
             faster_hex_encode::<UPPER>(chunk, &mut buf);
 
             #[cfg(not(feature = "faster-hex"))]
-            hex_encode_fallback::<UPPER>(chunk, buf);
+            hex_encode_fallback::<UPPER>(chunk, &mut buf);
 
             let n = min(chunk.len() * 2, digits_left);
             // SAFETY: n will always be within bounds due to the above min
