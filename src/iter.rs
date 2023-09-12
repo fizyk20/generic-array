@@ -133,7 +133,13 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
             })
         };
 
-        // ensure this happens here after iteration
+        // The current iterator is now empty after the remaining items are
+        // consumed by the above folding. Dropping it is unnecessary,
+        // so avoid the drop codegen and forget it instead. The iterator
+        // will still drop on panics from `f`, of course.
+        //
+        // Furthermore, putting `forget` here at the end ensures the above
+        // destructuring never moves by value, so its behavior on drop remains intact.
         mem::forget(self);
 
         ret
@@ -206,7 +212,7 @@ impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
             })
         };
 
-        // ensure this happens here after iteration
+        // Same as `fold`
         mem::forget(self);
 
         ret
