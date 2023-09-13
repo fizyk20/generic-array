@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
   CARGO_TERM_COLOR: always
+  RUSTDOCFLAGS: "--cfg docsrs"
 
 jobs:
   build_test:
@@ -37,9 +38,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
 
       - name: Build documentation
-        run: |
-          echo "RUSTDOCFLAGS='--cfg docsrs'" >> $GITHUB_ENV
-          cargo doc --features "serde zeroize const-default alloc"
+        run: cargo doc --features "serde zeroize const-default alloc"
 
       - name: Finalize documentation
         run: |

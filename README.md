@@ -2,11 +2,11 @@
 [![Build Status](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml/badge.svg)](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml)
 # generic-array
 
-This crate implements generic array types for Rust.
+This crate implements a structure that can be used as a generic array type.
 
 **Requires minumum Rust version of 1.65.0
 
-[Documentation](http://fizyk20.github.io/generic-array/generic_array/)
+[Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/) may be required to view certain types on foreign crates.
 
 ## Usage
 

@@ -1,6 +1,12 @@
 //! This crate implements a structure that can be used as a generic array type.
 //!
-//! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be generic with respect to the length `N`, so this wouldn't work:
+//! **Requires minumum Rust version of 1.65.0
+//!
+//! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
+//! may be required to view certain types on foreign crates.
+//!
+//! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be
+//! generic with respect to the length `N`, so this wouldn't work:
 //!
 //! ```rust{compile_fail}
 //! struct Foo<N> {
