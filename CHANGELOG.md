@@ -31,6 +31,7 @@
     * Added additional methods for working with chunks of arrays.
     * Added `From` impls for tuples with 1-12 (inclusive) items of the same type, matching the standard library.
     * Workaround potential Rust/LLVM regressions with `FunctionalSequence::zip()`/`::map()`
+    * Added the `faster-hex` optional dependency for SIMD-accelerated hex encoding
     * Improve documentation
 
 * **`0.14.6`**
