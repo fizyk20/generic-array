@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["hex_check","hex_check_fallback","hex_check_sse","hex_check_sse_with_case","hex_check_with_case","hex_decode","hex_decode_fallback","hex_decode_unchecked","hex_encode","hex_encode_fallback","hex_encode_upper","hex_encode_upper_fallback","hex_to"]};
