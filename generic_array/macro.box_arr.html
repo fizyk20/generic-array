@@ -2,7 +2,7 @@
     ($(<span class="macro-nonterminal">$x</span>:expr),* $(,)<span class="kw-2">*</span>) =&gt; { ... };
     (<span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$N</span>:ty) =&gt; { ... };
     (<span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$n</span>:expr) =&gt; { ... };
-}</pre><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Like <a href="macro.arr.html" title="macro generic_array::arr"><code>arr!</code></a>, but returns a <code>Box&lt;GenericArray&lt;T, N&gt;&gt;</code></p>
+}</pre><span class="item-info"><div class="stab portability">Available on <strong>crate feature <code>alloc</code></strong> only.</div></span><details class="toggle top-doc" open><summary class="hideme"><span>Expand description</span></summary><div class="docblock"><p>Like <a href="macro.arr.html" title="macro generic_array::arr"><code>arr!</code></a>, but returns a <code>Box&lt;GenericArray&lt;T, N&gt;&gt;</code></p>
 <p>Unlike <a href="macro.arr.html" title="macro generic_array::arr"><code>arr!</code></a>, this is not limited by stack size, only the heap.</p>
 <p>Example:</p>
 

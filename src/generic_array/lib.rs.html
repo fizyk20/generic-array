@@ -1038,9 +1038,21 @@
 <a href="#1038" id="1038">1038</a>
 <a href="#1039" id="1039">1039</a>
 <a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
+<a href="#1043" id="1043">1043</a>
+<a href="#1044" id="1044">1044</a>
+<a href="#1045" id="1045">1045</a>
+<a href="#1046" id="1046">1046</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! This crate implements a structure that can be used as a generic array type.
 //!
-//! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn&#39;t be generic with respect to the length `N`, so this wouldn&#39;t work:
+//! **Requires minumum Rust version of 1.65.0
+//!
+//! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
+//! may be required to view certain types on foreign crates.
+//!
+//! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn&#39;t be
+//! generic with respect to the length `N`, so this wouldn&#39;t work:
 //!
 //! ```rust{compile_fail}
 //! struct Foo&lt;N&gt; {
