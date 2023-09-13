@@ -2,13 +2,12 @@
 
 use crate::{ArrayLength, GenericArray, GenericArrayImplEven, GenericArrayImplOdd};
 use const_default::ConstDefault;
-use core::marker::PhantomData;
 
 impl<T, U: ConstDefault> ConstDefault for GenericArrayImplEven<T, U> {
     const DEFAULT: Self = Self {
         parent1: U::DEFAULT,
         parent2: U::DEFAULT,
-        _marker: PhantomData,
+        _marker: core::marker::PhantomData,
     };
 }
 
@@ -20,11 +19,23 @@ impl<T: ConstDefault, U: ConstDefault> ConstDefault for GenericArrayImplOdd<T, U
     };
 }
 
-impl<T, U: ArrayLength<T>> ConstDefault for GenericArray<T, U>
+impl<T, U: ArrayLength> ConstDefault for GenericArray<T, U>
 where
-    U::ArrayType: ConstDefault,
+    U::ArrayType<T>: ConstDefault,
 {
     const DEFAULT: Self = Self {
         data: ConstDefault::DEFAULT,
     };
+}
+
+// `T: ConstDefault` is intentionally redundant to provide better hints in the docs
+impl<T: ConstDefault, U: ArrayLength> GenericArray<T, U>
+where
+    Self: ConstDefault,
+{
+    /// Returns the constant "default value" for an array using [ConstDefault]
+    #[inline(always)]
+    pub const fn const_default() -> Self {
+        Self::DEFAULT
+    }
 }

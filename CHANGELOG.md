@@ -1,3 +1,38 @@
+* **`1.0.0`**
+    * **Use GATs for `ArrayLength`** !
+    * Bump MSRV to 1.65.0
+    * Use Rust 2021 edition [#118](https://github.com/fizyk20/generic-array/pull/118) + non-PR upgrade later with GATs.
+    * Allow `arr!` macro in `const` [#129](https://github.com/fizyk20/generic-array/pull/129)
+    * Add `arr!` repeat-expressions [#130](https://github.com/fizyk20/generic-array/pull/130)
+    * Implement `const-default` trait support [#131](https://github.com/fizyk20/generic-array/pull/131)
+    * Make `as_slice()/from_slice()` const.
+    * Add const `from_array`/`into_array` methods.
+    * Make `ArrayLength: 'static`
+    * Replace `From<&[T]>` with `TryFrom<&[T]>`
+    * Add `try_from_iter` for fallible construction from iterator.
+    * Use `typenum`'s `const-generics` feature for `const N: usize`-based `From` implementations between `[T; N]` and `GenericArray<T, N>`
+        * Also added the `IntoArrayLength` trait and `ConstArrayLength` type-alias for working with typenum's `Const<N>` easier.
+    * `alloc` crate feature
+        * Added `box_arr!` macro with the same syntax as `arr!`, but returns a `Box<GenericArray<T, N>>`
+        * Moving between heap and stack
+            * `impl TryFrom<Vec<T>> for GenericArray<T, N>`
+            * `impl TryFrom<Box<[T]>> for GenericArray<T, N>`
+            * `impl From<GenericArray<T, N>> for Vec<T>`
+            * `impl From<GenericArray<T, N>> for Box<[T]>`
+        * Methods for converting between `Box<GenericArray<T, N>>` and `Vec<T>`/`Box<[T]>`
+        * `GenericSequence` and `FunctionalSequence` implemented for `Box<GenericArray<T, N>>`, allowing for heap-based manipulation of fixed-size arrays.
+    * `Deserialize` no longer requires `T: Default`
+    * Make `IntoArrayLength`, `MappedSequence`, and `FunctionalSequence` safe traits.
+    * Simplify `arr!` macro syntax.
+        * `arr![1, 2, 3, 4]` or `arr![T; N]` forms, no explicit length for first variant.
+        * No longer casts given expressions internally.
+        * Type-deduction works similarly to `vec![]`, in that an empty array has an unknown type
+    * Add the `internals` Cargo feature to expose dangerous things.
+    * Added additional methods for working with chunks of arrays.
+    * Added `From` impls for tuples with 1-12 (inclusive) items of the same type, matching the standard library.
+    * Workaround potential Rust/LLVM regressions with `FunctionalSequence::zip()`/`::map()`
+    * Improve documentation
+
 * **`0.14.6`**
     * Add an optional `Zeroize` impl for `GenericArray` ([#126](https://github.com/fizyk20/generic-array/pull/126) and [#112](https://github.com/fizyk20/generic-array/pull/112))
     * Cleanup some unsafe ([#125](https://github.com/fizyk20/generic-array/pull/125)) and typos ([#114](https://github.com/fizyk20/generic-array/pull/114))

@@ -4,59 +4,82 @@
 
 This crate implements generic array types for Rust.
 
-**Requires minumum Rust version of 1.36.0, or 1.41.0 for `From<[T; N]>` implementations**
+**Requires minumum Rust version of 1.65.0
 
 [Documentation](http://fizyk20.github.io/generic-array/generic_array/)
 
 ## Usage
 
-The Rust arrays `[T; N]` are problematic in that they can't be used generically with respect to `N`, so for example this won't work:
+Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be generic with respect to the length `N`, so this wouldn't work:
 
 ```rust
 struct Foo<N> {
-	data: [i32; N]
+    data: [i32; N],
 }
 ```
 
-**generic-array** defines a new trait `ArrayLength<T>` and a struct `GenericArray<T, N: ArrayLength<T>>`, which let the above be implemented as:
+Since 1.51, the below syntax is valid:
 
 ```rust
-struct Foo<N: ArrayLength<i32>> {
-	data: GenericArray<i32, N>
+struct Foo<const N: usize> {
+    data: [i32; N],
 }
 ```
 
-The `ArrayLength<T>` trait is implemented by default for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate:
+However, the const-generics we have as of writing this are still the minimum-viable product (`min_const_generics`), so many situations still result in errors, such as this example:
 
 ```rust
-use generic_array::typenum::U5;
+trait Bar {
+    const LEN: usize;
 
-struct Foo<N: ArrayLength<i32>> {
+    // Error: cannot perform const operation using `Self`
+    fn bar(&self) -> Foo<{ Self::LEN }>;
+}
+```
+
+**generic-array** defines a new trait `ArrayLength` and a struct `GenericArray<T, N: ArrayLength>`, which lets the above be implemented as:
+
+```rust
+struct Foo<N: ArrayLength> {
     data: GenericArray<i32, N>
 }
 
-fn main() {
-    let foo = Foo::<U5>{data: GenericArray::default()};
+trait Bar {
+    type LEN: ArrayLength;
+    fn bar(&self) -> Foo<Self::LEN>;
 }
 ```
 
-For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
+The `ArrayLength` trait is implemented for [unsigned integer types](http://fizyk20.github.io/generic-array/typenum/uint/index.html) from [typenum](http://fizyk20.github.io/generic-array/typenum/index.html) crate. For example, `GenericArray<T, U5>` would work almost like `[T; 5]`:
 
 ```rust
 use generic_array::typenum::U5;
 
-struct Foo<T, N: ArrayLength<T>> {
+struct Foo<T, N: ArrayLength> {
     data: GenericArray<T, N>
 }
 
-fn main() {
-    let foo = Foo::<i32, U5>{data: GenericArray::default()};
-}
+let foo = Foo::<i32, U5> { data: GenericArray::default() };
 ```
 
-In version 0.1.1 an `arr!` macro was introduced, allowing for creation of arrays as shown below:
+The `arr!` macro is provided to allow easier creation of literal arrays, as shown below:
 
 ```rust
-let array = arr![u32; 1, 2, 3];
+let array = arr![1, 2, 3];
+//  array: GenericArray<i32, typenum::U3>
 assert_eq!(array[2], 3);
+```
+
+## Feature flags
+
+```toml
+[dependencies.generic-array]
+features = [
+    "more_lengths",  # Expands From/Into implementation for more array lengths
+    "serde",         # Serialize/Deserialize implementation
+    "zeroize",       # Zeroize implementation for setting array elements to zero
+    "const-default", # Compile-time const default value support via trait
+    "alloc",         # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
+    "faster-hex"     # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
+]
 ```

@@ -6,10 +6,9 @@ use core::marker::PhantomData;
 use serde::de::{self, SeqAccess, Visitor};
 use serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
 
-impl<T, N> Serialize for GenericArray<T, N>
+impl<T, N: ArrayLength> Serialize for GenericArray<T, N>
 where
     T: Serialize,
-    N: ArrayLength<T>,
 {
     #[inline]
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
@@ -30,35 +29,69 @@ struct GAVisitor<T, N> {
     _n: PhantomData<N>,
 }
 
-impl<'de, T, N> Visitor<'de> for GAVisitor<T, N>
+// to avoid extra computation when testing for extra elements in the sequence
+struct Dummy;
+impl<'de> Deserialize<'de> for Dummy {
+    fn deserialize<D>(_deserializer: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>,
+    {
+        Ok(Dummy)
+    }
+}
+
+impl<'de, T, N: ArrayLength> Visitor<'de> for GAVisitor<T, N>
 where
-    T: Deserialize<'de> + Default,
-    N: ArrayLength<T>,
+    T: Deserialize<'de>,
 {
     type Value = GenericArray<T, N>;
 
     fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("struct GenericArray")
+        write!(formatter, "struct GenericArray<T, U{}>", N::USIZE)
     }
 
     fn visit_seq<A>(self, mut seq: A) -> Result<GenericArray<T, N>, A::Error>
     where
         A: SeqAccess<'de>,
     {
-        let mut result = GenericArray::default();
-        for i in 0..N::USIZE {
-            result[i] = seq
-                .next_element()?
-                .ok_or_else(|| de::Error::invalid_length(i, &self))?;
+        match seq.size_hint() {
+            Some(n) if n != N::USIZE => {
+                return Err(de::Error::invalid_length(n, &self));
+            }
+            _ => {}
         }
-        Ok(result)
+
+        unsafe {
+            let mut dst = crate::ArrayBuilder::new();
+
+            let (dst_iter, position) = dst.iter_position();
+
+            for dst in dst_iter {
+                match seq.next_element()? {
+                    Some(el) => {
+                        dst.write(el);
+                        *position += 1;
+                    }
+                    None => break,
+                }
+            }
+
+            if *position == N::USIZE {
+                if seq.size_hint() != Some(0) && seq.next_element::<Dummy>()?.is_some() {
+                    return Err(de::Error::invalid_length(*position + 1, &self));
+                }
+
+                return Ok(dst.assume_init());
+            }
+
+            Err(de::Error::invalid_length(*position, &self))
+        }
     }
 }
 
-impl<'de, T, N> Deserialize<'de> for GenericArray<T, N>
+impl<'de, T, N: ArrayLength> Deserialize<'de> for GenericArray<T, N>
 where
-    T: Deserialize<'de> + Default,
-    N: ArrayLength<T>,
+    T: Deserialize<'de>,
 {
     fn deserialize<D>(deserializer: D) -> Result<GenericArray<T, N>, D::Error>
     where
@@ -101,5 +134,12 @@ mod tests {
         let array = GenericArray::<u8, typenum::U1>::default();
         let size = bincode::serialized_size(&array).unwrap();
         assert_eq!(size, 1);
+    }
+
+    #[test]
+    #[should_panic]
+    fn test_too_many() {
+        let serialized = "[1, 2, 3, 4, 5]";
+        let _ = serde_json::from_str::<GenericArray<u8, typenum::U4>>(serialized).unwrap();
     }
 }

@@ -9,11 +9,16 @@ use typenum::operator_aliases::*;
 /// Defines some sequence with an associated length and iteration capabilities.
 ///
 /// This is useful for passing N-length generic arrays as generics.
+///
+/// # Safety
+/// Care must be taken when implementing such that methods are safe.
+///
+/// Lengths must match, and element drop on panic must be handled.
 pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// `GenericArray` associated length
-    type Length: ArrayLength<T>;
+    type Length: ArrayLength;
 
-    /// Concrete sequence type used in conjuction with reference implementations of `GenericSequence`
+    /// Owned sequence type used in conjuction with reference implementations of `GenericSequence`
     type Sequence: GenericSequence<T, Length = Self::Length> + FromIterator<T>;
 
     /// Initializes a new sequence instance using the given function.
@@ -24,7 +29,11 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     where
         F: FnMut(usize) -> T;
 
-    #[doc(hidden)]
+    /// Treats `self` as the right-hand operand in a zip operation
+    ///
+    /// This is optimized for stack-allocated `GenericArray`s
+    #[cfg_attr(not(feature = "internals"), doc(hidden))]
+    #[inline(always)]
     fn inverted_zip<B, U, F>(
         self,
         lhs: GenericArray<B, Self::Length>,
@@ -34,7 +43,6 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         GenericArray<B, Self::Length>:
             GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
@@ -42,27 +50,26 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
 
             let (left_array_iter, left_position) = left.iter_position();
 
-            FromIterator::from_iter(left_array_iter.zip(self.into_iter()).map(
-                |(l, right_value)| {
-                    let left_value = ptr::read(l);
+            FromIterator::from_iter(left_array_iter.zip(self).map(|(l, right_value)| {
+                let left_value = ptr::read(l);
 
-                    *left_position += 1;
+                *left_position += 1;
 
-                    f(left_value, right_value)
-                },
-            ))
+                f(left_value, right_value)
+            }))
         }
     }
 
-    #[doc(hidden)]
+    /// Treats `self` as the right-hand operand in a zip operation
+    #[cfg_attr(not(feature = "internals"), doc(hidden))]
+    #[inline(always)]
     fn inverted_zip2<B, Lhs, U, F>(self, lhs: Lhs, mut f: F) -> MappedSequence<Lhs, B, U>
     where
         Lhs: GenericSequence<B, Length = Self::Length> + MappedGenericSequence<B, U>,
         Self: MappedGenericSequence<T, U>,
-        Self::Length: ArrayLength<B> + ArrayLength<U>,
         F: FnMut(Lhs::Item, Self::Item) -> U,
     {
-        FromIterator::from_iter(lhs.into_iter().zip(self.into_iter()).map(|(l, r)| f(l, r)))
+        FromIterator::from_iter(lhs.into_iter().zip(self).map(|(l, r)| f(l, r)))
     }
 }
 
@@ -79,7 +86,7 @@ where
     type Length = S::Length;
     type Sequence = S::Sequence;
 
-    #[inline]
+    #[inline(always)]
     fn generate<F>(f: F) -> Self::Sequence
     where
         F: FnMut(usize) -> T,
@@ -95,7 +102,7 @@ where
     type Length = S::Length;
     type Sequence = S::Sequence;
 
-    #[inline]
+    #[inline(always)]
     fn generate<F>(f: F) -> Self::Sequence
     where
         F: FnMut(usize) -> T,
@@ -108,6 +115,10 @@ where
 /// or prepending an element to it.
 ///
 /// Any lengthened sequence can be shortened back to the original using `pop_front` or `pop_back`
+///
+/// # Safety
+/// While the [`append`](Lengthen::append) and [`prepend`](Lengthen::prepend)
+/// methods are marked safe, care must be taken when implementing them.
 pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     /// `GenericSequence` that has one more element than `Self`
     type Longer: Shorten<T, Shorter = Self>;
@@ -118,13 +129,12 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Lengthen};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let a = arr![1, 2, 3];
     ///
     /// let b = a.append(4);
     ///
-    /// assert_eq!(b, arr![i32; 1, 2, 3, 4]);
-    /// # }
+    /// assert_eq!(b, arr![1, 2, 3, 4]);
     /// ```
     fn append(self, last: T) -> Self::Longer;
 
@@ -134,13 +144,12 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Lengthen};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let a = arr![1, 2, 3];
     ///
     /// let b = a.prepend(4);
     ///
-    /// assert_eq!(b, arr![i32; 4, 1, 2, 3]);
-    /// # }
+    /// assert_eq!(b, arr![4, 1, 2, 3]);
     /// ```
     fn prepend(self, first: T) -> Self::Longer;
 }
@@ -149,6 +158,10 @@ pub unsafe trait Lengthen<T>: Sized + GenericSequence<T> {
 ///
 /// Additionally, any shortened sequence can be lengthened by
 /// appending or prepending an element to it.
+///
+/// # Safety
+/// While the [`pop_back`](Shorten::pop_back) and [`pop_front`](Shorten::pop_front)
+/// methods are marked safe, care must be taken when implementing them.
 pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     /// `GenericSequence` that has one less element than `Self`
     type Shorter: Lengthen<T, Longer = Self>;
@@ -159,14 +172,13 @@ pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Shorten};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let a = arr![1, 2, 3, 4];
     ///
     /// let (init, last) = a.pop_back();
     ///
-    /// assert_eq!(init, arr![i32; 1, 2, 3]);
+    /// assert_eq!(init, arr![1, 2, 3]);
     /// assert_eq!(last, 4);
-    /// # }
     /// ```
     fn pop_back(self) -> (Self::Shorter, T);
 
@@ -175,27 +187,27 @@ pub unsafe trait Shorten<T>: Sized + GenericSequence<T> {
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Shorten};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let a = arr![1, 2, 3, 4];
     ///
     /// let (head, tail) = a.pop_front();
     ///
     /// assert_eq!(head, 1);
-    /// assert_eq!(tail, arr![i32; 2, 3, 4]);
-    /// # }
+    /// assert_eq!(tail, arr![2, 3, 4]);
     /// ```
     fn pop_front(self) -> (T, Self::Shorter);
 }
 
-unsafe impl<T, N: ArrayLength<T>> Lengthen<T> for GenericArray<T, N>
+unsafe impl<T, N: ArrayLength> Lengthen<T> for GenericArray<T, N>
 where
     N: Add<B1>,
-    Add1<N>: ArrayLength<T>,
+    Add1<N>: ArrayLength,
     Add1<N>: Sub<B1, Output = N>,
-    Sub1<Add1<N>>: ArrayLength<T>,
+    Sub1<Add1<N>>: ArrayLength,
 {
     type Longer = GenericArray<T, Add1<N>>;
 
+    #[inline]
     fn append(self, last: T) -> Self::Longer {
         let mut longer: MaybeUninit<Self::Longer> = MaybeUninit::uninit();
 
@@ -212,6 +224,7 @@ where
         }
     }
 
+    #[inline]
     fn prepend(self, first: T) -> Self::Longer {
         let mut longer: MaybeUninit<Self::Longer> = MaybeUninit::uninit();
 
@@ -229,15 +242,16 @@ where
     }
 }
 
-unsafe impl<T, N: ArrayLength<T>> Shorten<T> for GenericArray<T, N>
+unsafe impl<T, N: ArrayLength> Shorten<T> for GenericArray<T, N>
 where
     N: Sub<B1>,
-    Sub1<N>: ArrayLength<T>,
+    Sub1<N>: ArrayLength,
     Sub1<N>: Add<B1, Output = N>,
-    Add1<Sub1<N>>: ArrayLength<T>,
+    Add1<Sub1<N>>: ArrayLength,
 {
     type Shorter = GenericArray<T, Sub1<N>>;
 
+    #[inline]
     fn pop_back(self) -> (Self::Shorter, T) {
         let whole = ManuallyDrop::new(self);
 
@@ -249,6 +263,7 @@ where
         }
     }
 
+    #[inline]
     fn pop_front(self) -> (T, Self::Shorter) {
         // ensure this doesn't get dropped
         let whole = ManuallyDrop::new(self);
@@ -263,10 +278,11 @@ where
 }
 
 /// Defines a `GenericSequence` that can be split into two parts at a given pivot index.
-pub unsafe trait Split<T, K>: GenericSequence<T>
-where
-    K: ArrayLength<T>,
-{
+///
+/// # Safety
+/// While the [`split`](Split::split) method is marked safe,
+/// care must be taken when implementing it.
+pub unsafe trait Split<T, K: ArrayLength>: GenericSequence<T> {
     /// First part of the resulting split array
     type First: GenericSequence<T>;
     /// Second part of the resulting split array
@@ -278,14 +294,15 @@ where
 
 unsafe impl<T, N, K> Split<T, K> for GenericArray<T, N>
 where
-    N: ArrayLength<T>,
-    K: ArrayLength<T>,
+    N: ArrayLength,
+    K: ArrayLength,
     N: Sub<K>,
-    Diff<N, K>: ArrayLength<T>,
+    Diff<N, K>: ArrayLength,
 {
     type First = GenericArray<T, K>;
     type Second = GenericArray<T, Diff<N, K>>;
 
+    #[inline]
     fn split(self) -> (Self::First, Self::Second) {
         unsafe {
             // ensure this doesn't get dropped
@@ -301,14 +318,15 @@ where
 
 unsafe impl<'a, T, N, K> Split<T, K> for &'a GenericArray<T, N>
 where
-    N: ArrayLength<T>,
-    K: ArrayLength<T> + 'static,
+    N: ArrayLength,
+    K: ArrayLength,
     N: Sub<K>,
-    Diff<N, K>: ArrayLength<T>,
+    Diff<N, K>: ArrayLength,
 {
     type First = &'a GenericArray<T, K>;
     type Second = &'a GenericArray<T, Diff<N, K>>;
 
+    #[inline]
     fn split(self) -> (Self::First, Self::Second) {
         unsafe {
             let ptr_to_first: *const T = self.as_ptr();
@@ -321,14 +339,15 @@ where
 
 unsafe impl<'a, T, N, K> Split<T, K> for &'a mut GenericArray<T, N>
 where
-    N: ArrayLength<T>,
-    K: ArrayLength<T> + 'static,
+    N: ArrayLength,
+    K: ArrayLength,
     N: Sub<K>,
-    Diff<N, K>: ArrayLength<T>,
+    Diff<N, K>: ArrayLength,
 {
     type First = &'a mut GenericArray<T, K>;
     type Second = &'a mut GenericArray<T, Diff<N, K>>;
 
+    #[inline]
     fn split(self) -> (Self::First, Self::Second) {
         unsafe {
             let ptr_to_first: *mut T = self.as_mut_ptr();
@@ -340,10 +359,11 @@ where
 }
 
 /// Defines `GenericSequence`s which can be joined together, forming a larger array.
-pub unsafe trait Concat<T, M>: GenericSequence<T>
-where
-    M: ArrayLength<T>,
-{
+///
+/// # Safety
+/// While the [`concat`](Concat::concat) method is marked safe,
+/// care must be taken when implementing it.
+pub unsafe trait Concat<T, M: ArrayLength>: GenericSequence<T> {
     /// Sequence to be concatenated with `self`
     type Rest: GenericSequence<T, Length = M>;
 
@@ -356,13 +376,14 @@ where
 
 unsafe impl<T, N, M> Concat<T, M> for GenericArray<T, N>
 where
-    N: ArrayLength<T> + Add<M>,
-    M: ArrayLength<T>,
-    Sum<N, M>: ArrayLength<T>,
+    N: ArrayLength + Add<M>,
+    M: ArrayLength,
+    Sum<N, M>: ArrayLength,
 {
     type Rest = GenericArray<T, M>;
     type Output = GenericArray<T, Sum<N, M>>;
 
+    #[inline]
     fn concat(self, rest: Self::Rest) -> Self::Output {
         let mut output: MaybeUninit<Self::Output> = MaybeUninit::uninit();
 
