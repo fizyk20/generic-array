@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/impl_serde.rs`."><title>impl_serde.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../static.files/ayu-be46fdc453a55015.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/impl_serde.rs`."><title>impl_serde.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -103,7 +103,47 @@
 <a href="#103" id="103">103</a>
 <a href="#104" id="104">104</a>
 <a href="#105" id="105">105</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Serde serialization/deserialization implementation
+<a href="#106" id="106">106</a>
+<a href="#107" id="107">107</a>
+<a href="#108" id="108">108</a>
+<a href="#109" id="109">109</a>
+<a href="#110" id="110">110</a>
+<a href="#111" id="111">111</a>
+<a href="#112" id="112">112</a>
+<a href="#113" id="113">113</a>
+<a href="#114" id="114">114</a>
+<a href="#115" id="115">115</a>
+<a href="#116" id="116">116</a>
+<a href="#117" id="117">117</a>
+<a href="#118" id="118">118</a>
+<a href="#119" id="119">119</a>
+<a href="#120" id="120">120</a>
+<a href="#121" id="121">121</a>
+<a href="#122" id="122">122</a>
+<a href="#123" id="123">123</a>
+<a href="#124" id="124">124</a>
+<a href="#125" id="125">125</a>
+<a href="#126" id="126">126</a>
+<a href="#127" id="127">127</a>
+<a href="#128" id="128">128</a>
+<a href="#129" id="129">129</a>
+<a href="#130" id="130">130</a>
+<a href="#131" id="131">131</a>
+<a href="#132" id="132">132</a>
+<a href="#133" id="133">133</a>
+<a href="#134" id="134">134</a>
+<a href="#135" id="135">135</a>
+<a href="#136" id="136">136</a>
+<a href="#137" id="137">137</a>
+<a href="#138" id="138">138</a>
+<a href="#139" id="139">139</a>
+<a href="#140" id="140">140</a>
+<a href="#141" id="141">141</a>
+<a href="#142" id="142">142</a>
+<a href="#143" id="143">143</a>
+<a href="#144" id="144">144</a>
+<a href="#145" id="145">145</a>
+</pre></div><pre class="rust"><code><span class="doccomment">//! Serde serialization/deserialization implementation
 
 </span><span class="kw">use crate</span>::{ArrayLength, GenericArray};
 <span class="kw">use </span>core::fmt;
@@ -111,10 +151,9 @@
 <span class="kw">use </span>serde::de::{<span class="self">self</span>, SeqAccess, Visitor};
 <span class="kw">use </span>serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
 
-<span class="kw">impl</span>&lt;T, N&gt; Serialize <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Serialize <span class="kw">for </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
     </span>T: Serialize,
-    N: ArrayLength&lt;T&gt;,
 {
     <span class="attr">#[inline]
     </span><span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
@@ -135,35 +174,69 @@
     _n: PhantomData&lt;N&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, T, N&gt; Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>GAVisitor&lt;T, N&gt;
+<span class="comment">// to avoid extra computation when testing for extra elements in the sequence
+</span><span class="kw">struct </span>Dummy;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Dummy {
+    <span class="kw">fn </span>deserialize&lt;D&gt;(_deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
+    {
+        <span class="prelude-val">Ok</span>(Dummy)
+    }
+}
+
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, T, N: ArrayLength&gt; Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>GAVisitor&lt;T, N&gt;
 <span class="kw">where
-    </span>T: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; + Default,
-    N: ArrayLength&lt;T&gt;,
+    </span>T: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;,
 {
     <span class="kw">type </span>Value = GenericArray&lt;T, N&gt;;
 
     <span class="kw">fn </span>expecting(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
-        formatter.write_str(<span class="string">&quot;struct GenericArray&quot;</span>)
+        <span class="macro">write!</span>(formatter, <span class="string">&quot;struct GenericArray&lt;T, U{}&gt;&quot;</span>, N::USIZE)
     }
 
     <span class="kw">fn </span>visit_seq&lt;A&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>seq: A) -&gt; <span class="prelude-ty">Result</span>&lt;GenericArray&lt;T, N&gt;, A::Error&gt;
     <span class="kw">where
         </span>A: SeqAccess&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="kw">let </span><span class="kw-2">mut </span>result = GenericArray::default();
-        <span class="kw">for </span>i <span class="kw">in </span><span class="number">0</span>..N::USIZE {
-            result[i] = seq
-                .next_element()<span class="question-mark">?
-                </span>.ok_or_else(|| de::Error::invalid_length(i, <span class="kw-2">&amp;</span><span class="self">self</span>))<span class="question-mark">?</span>;
+        <span class="kw">match </span>seq.size_hint() {
+            <span class="prelude-val">Some</span>(n) <span class="kw">if </span>n != N::USIZE =&gt; {
+                <span class="kw">return </span><span class="prelude-val">Err</span>(de::Error::invalid_length(n, <span class="kw-2">&amp;</span><span class="self">self</span>));
+            }
+            <span class="kw">_ </span>=&gt; {}
         }
-        <span class="prelude-val">Ok</span>(result)
+
+        <span class="kw">unsafe </span>{
+            <span class="kw">let </span><span class="kw-2">mut </span>dst = <span class="kw">crate</span>::ArrayBuilder::new();
+
+            <span class="kw">let </span>(dst_iter, position) = dst.iter_position();
+
+            <span class="kw">for </span>dst <span class="kw">in </span>dst_iter {
+                <span class="kw">match </span>seq.next_element()<span class="question-mark">? </span>{
+                    <span class="prelude-val">Some</span>(el) =&gt; {
+                        dst.write(el);
+                        <span class="kw-2">*</span>position += <span class="number">1</span>;
+                    }
+                    <span class="prelude-val">None </span>=&gt; <span class="kw">break</span>,
+                }
+            }
+
+            <span class="kw">if </span><span class="kw-2">*</span>position == N::USIZE {
+                <span class="kw">if </span>seq.size_hint() != <span class="prelude-val">Some</span>(<span class="number">0</span>) &amp;&amp; seq.next_element::&lt;Dummy&gt;()<span class="question-mark">?</span>.is_some() {
+                    <span class="kw">return </span><span class="prelude-val">Err</span>(de::Error::invalid_length(<span class="kw-2">*</span>position + <span class="number">1</span>, <span class="kw-2">&amp;</span><span class="self">self</span>));
+                }
+
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(dst.assume_init());
+            }
+
+            <span class="prelude-val">Err</span>(de::Error::invalid_length(<span class="kw-2">*</span>position, <span class="kw-2">&amp;</span><span class="self">self</span>))
+        }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, T, N&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, T, N: ArrayLength&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
-    </span>T: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; + Default,
-    N: ArrayLength&lt;T&gt;,
+    </span>T: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;,
 {
     <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;GenericArray&lt;T, N&gt;, D::Error&gt;
     <span class="kw">where
@@ -207,6 +280,12 @@
         <span class="kw">let </span>size = bincode::serialized_size(<span class="kw-2">&amp;</span>array).unwrap();
         <span class="macro">assert_eq!</span>(size, <span class="number">1</span>);
     }
+
+    <span class="attr">#[test]
+    #[should_panic]
+    </span><span class="kw">fn </span>test_too_many() {
+        <span class="kw">let </span>serialized = <span class="string">&quot;[1, 2, 3, 4, 5]&quot;</span>;
+        <span class="kw">let _ </span>= serde_json::from_str::&lt;GenericArray&lt;u8, typenum::U4&gt;&gt;(serialized).unwrap();
+    }
 }
-</code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

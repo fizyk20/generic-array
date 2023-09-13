@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/iter.rs`."><title>iter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../static.files/ayu-be46fdc453a55015.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/iter.rs`."><title>iter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -242,22 +242,15 @@
 <a href="#242" id="242">242</a>
 <a href="#243" id="243">243</a>
 <a href="#244" id="244">244</a>
-<a href="#245" id="245">245</a>
-<a href="#246" id="246">246</a>
-<a href="#247" id="247">247</a>
-<a href="#248" id="248">248</a>
-<a href="#249" id="249">249</a>
-<a href="#250" id="250">250</a>
-<a href="#251" id="251">251</a>
-</pre><pre class="rust"><code><span class="doccomment">//! `GenericArray` iterator implementation.
+</pre></div><pre class="rust"><code><span class="doccomment">//! `GenericArray` iterator implementation.
 
 </span><span class="kw">use super</span>::{ArrayLength, GenericArray};
 <span class="kw">use </span>core::iter::FusedIterator;
 <span class="kw">use </span>core::mem::ManuallyDrop;
 <span class="kw">use </span>core::{cmp, fmt, mem, ptr};
 
-<span class="doccomment">/// An iterator that moves out of a `GenericArray`
-</span><span class="kw">pub struct </span>GenericArrayIter&lt;T, N: ArrayLength&lt;T&gt;&gt; {
+<span class="doccomment">/// An iterator that moves out of a [`GenericArray`]
+</span><span class="kw">pub struct </span>GenericArrayIter&lt;T, N: ArrayLength&gt; {
     <span class="comment">// Invariants: index &lt;= index_back &lt;= N
     // Only values in array[index..index_back] are alive at any given time.
     // Values from array[..index] and array[index_back..] are already moved/dropped.
@@ -278,31 +271,28 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; GenericArrayIter&lt;T, N&gt; {
     <span class="doccomment">/// Returns the remaining items of this iterator as a slice
-    </span><span class="attr">#[inline]
+    </span><span class="attr">#[inline(always)]
     </span><span class="kw">pub fn </span>as_slice(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[T] {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.array.as_slice()[<span class="self">self</span>.index..<span class="self">self</span>.index_back]
+        <span class="comment">// SAFETY: index and index_back are guaranteed to be within bounds
+        </span><span class="kw">unsafe </span>{ <span class="self">self</span>.array.get_unchecked(<span class="self">self</span>.index..<span class="self">self</span>.index_back) }
     }
 
     <span class="doccomment">/// Returns the remaining items of this iterator as a mutable slice
-    </span><span class="attr">#[inline]
+    </span><span class="attr">#[inline(always)]
     </span><span class="kw">pub fn </span>as_mut_slice(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>[T] {
-        <span class="kw-2">&amp;mut </span><span class="self">self</span>.array.as_mut_slice()[<span class="self">self</span>.index..<span class="self">self</span>.index_back]
+        <span class="comment">// SAFETY: index and index_back are guaranteed to be within bounds
+        </span><span class="kw">unsafe </span>{ <span class="self">self</span>.array.get_unchecked_mut(<span class="self">self</span>.index..<span class="self">self</span>.index_back) }
     }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; IntoIterator <span class="kw">for </span>GenericArray&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; IntoIterator <span class="kw">for </span>GenericArray&lt;T, N&gt; {
     <span class="kw">type </span>Item = T;
     <span class="kw">type </span>IntoIter = GenericArrayIter&lt;T, N&gt;;
 
-    <span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>into_iter(<span class="self">self</span>) -&gt; <span class="self">Self</span>::IntoIter {
         GenericArrayIter {
             array: ManuallyDrop::new(<span class="self">self</span>),
             index: <span class="number">0</span>,
@@ -312,10 +302,7 @@
 }
 
 <span class="comment">// Based on work in rust-lang/rust#49000
-</span><span class="kw">impl</span>&lt;T: fmt::Debug, N&gt; fmt::Debug <span class="kw">for </span>GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
+</span><span class="kw">impl</span>&lt;T: fmt::Debug, N: ArrayLength&gt; fmt::Debug <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         f.debug_tuple(<span class="string">&quot;GenericArrayIter&quot;</span>)
             .field(<span class="kw-2">&amp;</span><span class="self">self</span>.as_slice())
@@ -323,28 +310,16 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; Drop <span class="kw">for </span>GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
-    <span class="attr">#[inline]
-    </span><span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="kw">if </span>mem::needs_drop::&lt;T&gt;() {
-            <span class="comment">// Drop values that are still alive.
-            </span><span class="kw">for </span>p <span class="kw">in </span><span class="self">self</span>.as_mut_slice() {
-                <span class="kw">unsafe </span>{
-                    ptr::drop_in_place(p);
-                }
-            }
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Drop <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {
+    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+        <span class="kw">unsafe </span>{
+            ptr::drop_in_place(<span class="self">self</span>.as_mut_slice());
         }
     }
 }
 
 <span class="comment">// Based on work in rust-lang/rust#49000
-</span><span class="kw">impl</span>&lt;T: Clone, N&gt; Clone <span class="kw">for </span>GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
+</span><span class="kw">impl</span>&lt;T: Clone, N: ArrayLength&gt; Clone <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {
     <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self </span>{
         <span class="comment">// This places all cloned elements at the start of the new array iterator,
         // not at their original indices.
@@ -352,7 +327,7 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>array = <span class="kw">unsafe </span>{ ptr::read(<span class="kw-2">&amp;</span><span class="self">self</span>.array) };
         <span class="kw">let </span><span class="kw-2">mut </span>index_back = <span class="number">0</span>;
 
-        <span class="kw">for </span>(dst, src) <span class="kw">in </span>array.as_mut_slice().into_iter().zip(<span class="self">self</span>.as_slice()) {
+        <span class="kw">for </span>(dst, src) <span class="kw">in </span>array.as_mut_slice().iter_mut().zip(<span class="self">self</span>.as_slice()) {
             <span class="kw">unsafe </span>{ ptr::write(dst, src.clone()) };
             index_back += <span class="number">1</span>;
         }
@@ -365,10 +340,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; Iterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Iterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {
     <span class="kw">type </span>Item = T;
 
     <span class="attr">#[inline]
@@ -384,7 +356,8 @@
         </span>}
     }
 
-    <span class="kw">fn </span>fold&lt;B, F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, init: B, <span class="kw-2">mut </span>f: F) -&gt; B
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>fold&lt;B, F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, init: B, <span class="kw-2">mut </span>f: F) -&gt; B
     <span class="kw">where
         </span>F: FnMut(B, <span class="self">Self</span>::Item) -&gt; B,
     {
@@ -395,7 +368,7 @@
                 index_back,
             } = <span class="self">self</span>;
 
-            <span class="kw">let </span>remaining = <span class="kw-2">&amp;</span>array[<span class="kw-2">*</span>index..index_back];
+            <span class="kw">let </span>remaining = array.get_unchecked(<span class="kw-2">*</span>index..index_back);
 
             remaining.iter().fold(init, |acc, src| {
                 <span class="kw">let </span>value = ptr::read(src);
@@ -406,34 +379,38 @@
             })
         };
 
-        <span class="comment">// ensure the drop happens here after iteration
-        </span>drop(<span class="self">self</span>);
+        <span class="comment">// The current iterator is now empty after the remaining items are
+        // consumed by the above folding. Dropping it is unnecessary,
+        // so avoid the drop codegen and forget it instead. The iterator
+        // will still drop on panics from `f`, of course.
+        //
+        // Furthermore, putting `forget` here at the end ensures the above
+        // destructuring never moves by value, so its behavior on drop remains intact.
+        </span>mem::forget(<span class="self">self</span>);
 
         ret
     }
 
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>size_hint(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; (usize, <span class="prelude-ty">Option</span>&lt;usize&gt;) {
         <span class="kw">let </span>len = <span class="self">self</span>.len();
         (len, <span class="prelude-val">Some</span>(len))
     }
 
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>count(<span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.len()
     }
 
     <span class="kw">fn </span>nth(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: usize) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
         <span class="comment">// First consume values prior to the nth.
-        </span><span class="kw">let </span>ndrop = cmp::min(n, <span class="self">self</span>.len());
+        </span><span class="kw">let </span>next_index = <span class="self">self</span>.index + cmp::min(n, <span class="self">self</span>.len());
 
-        <span class="kw">for </span>p <span class="kw">in </span><span class="kw-2">&amp;mut </span><span class="self">self</span>.array[<span class="self">self</span>.index..<span class="self">self</span>.index + ndrop] {
-            <span class="self">self</span>.index += <span class="number">1</span>;
-
-            <span class="kw">unsafe </span>{
-                ptr::drop_in_place(p);
-            }
+        <span class="kw">unsafe </span>{
+            ptr::drop_in_place(<span class="self">self</span>.array.get_unchecked_mut(<span class="self">self</span>.index..next_index));
         }
+
+        <span class="self">self</span>.index = next_index;
 
         <span class="self">self</span>.next()
     }
@@ -445,11 +422,9 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; DoubleEndedIterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
-    <span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; DoubleEndedIterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>next_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
         <span class="kw">if </span><span class="self">self</span>.index &lt; <span class="self">self</span>.index_back {
             <span class="self">self</span>.index_back -= <span class="number">1</span>;
 
@@ -459,7 +434,8 @@
         </span>}
     }
 
-    <span class="kw">fn </span>rfold&lt;B, F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, init: B, <span class="kw-2">mut </span>f: F) -&gt; B
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>rfold&lt;B, F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, init: B, <span class="kw-2">mut </span>f: F) -&gt; B
     <span class="kw">where
         </span>F: FnMut(B, <span class="self">Self</span>::Item) -&gt; B,
     {
@@ -470,7 +446,7 @@
                 <span class="kw-2">ref mut </span>index_back,
             } = <span class="self">self</span>;
 
-            <span class="kw">let </span>remaining = <span class="kw-2">&amp;</span>array[index..<span class="kw-2">*</span>index_back];
+            <span class="kw">let </span>remaining = array.get_unchecked(index..<span class="kw-2">*</span>index_back);
 
             remaining.iter().rfold(init, |acc, src| {
                 <span class="kw">let </span>value = ptr::read(src);
@@ -481,24 +457,33 @@
             })
         };
 
-        <span class="comment">// ensure the drop happens here after iteration
-        </span>drop(<span class="self">self</span>);
+        <span class="comment">// Same as `fold`
+        </span>mem::forget(<span class="self">self</span>);
 
         ret
     }
+
+    <span class="kw">fn </span>nth_back(<span class="kw-2">&amp;mut </span><span class="self">self</span>, n: usize) -&gt; <span class="prelude-ty">Option</span>&lt;T&gt; {
+        <span class="kw">let </span>next_back = <span class="self">self</span>.index_back - cmp::min(n, <span class="self">self</span>.len());
+
+        <span class="kw">unsafe </span>{
+            ptr::drop_in_place(<span class="self">self</span>.array.get_unchecked_mut(next_back..<span class="self">self</span>.index_back));
+        }
+
+        <span class="self">self</span>.index_back = next_back;
+
+        <span class="self">self</span>.next_back()
+    }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; ExactSizeIterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt;
-<span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-{
-    <span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; ExactSizeIterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>len(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; usize {
         <span class="self">self</span>.index_back - <span class="self">self</span>.index
     }
 }
 
-<span class="kw">impl</span>&lt;T, N&gt; FusedIterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; <span class="kw">where </span>N: ArrayLength&lt;T&gt; {}
+<span class="kw">impl</span>&lt;T, N: ArrayLength&gt; FusedIterator <span class="kw">for </span>GenericArrayIter&lt;T, N&gt; {}
 
 <span class="comment">// TODO: Implement `TrustedLen` when stabilized
-</span></code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</span></code></pre></div></section></main></body></html>

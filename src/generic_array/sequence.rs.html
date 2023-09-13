@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/sequence.rs`."><title>sequence.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../static.files/ayu-be46fdc453a55015.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/sequence.rs`."><title>sequence.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -378,7 +378,28 @@
 <a href="#378" id="378">378</a>
 <a href="#379" id="379">379</a>
 <a href="#380" id="380">380</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Useful traits for manipulating sequences of data stored in `GenericArray`s
+<a href="#381" id="381">381</a>
+<a href="#382" id="382">382</a>
+<a href="#383" id="383">383</a>
+<a href="#384" id="384">384</a>
+<a href="#385" id="385">385</a>
+<a href="#386" id="386">386</a>
+<a href="#387" id="387">387</a>
+<a href="#388" id="388">388</a>
+<a href="#389" id="389">389</a>
+<a href="#390" id="390">390</a>
+<a href="#391" id="391">391</a>
+<a href="#392" id="392">392</a>
+<a href="#393" id="393">393</a>
+<a href="#394" id="394">394</a>
+<a href="#395" id="395">395</a>
+<a href="#396" id="396">396</a>
+<a href="#397" id="397">397</a>
+<a href="#398" id="398">398</a>
+<a href="#399" id="399">399</a>
+<a href="#400" id="400">400</a>
+<a href="#401" id="401">401</a>
+</pre></div><pre class="rust"><code><span class="doccomment">//! Useful traits for manipulating sequences of data stored in `GenericArray`s
 
 </span><span class="kw">use super</span>::<span class="kw-2">*</span>;
 <span class="kw">use </span>core::mem::MaybeUninit;
@@ -389,11 +410,16 @@
 <span class="doccomment">/// Defines some sequence with an associated length and iteration capabilities.
 ///
 /// This is useful for passing N-length generic arrays as generics.
+///
+/// # Safety
+/// Care must be taken when implementing such that methods are safe.
+///
+/// Lengths must match, and element drop on panic must be handled.
 </span><span class="kw">pub unsafe trait </span>GenericSequence&lt;T&gt;: Sized + IntoIterator {
     <span class="doccomment">/// `GenericArray` associated length
-    </span><span class="kw">type </span>Length: ArrayLength&lt;T&gt;;
+    </span><span class="kw">type </span>Length: ArrayLength;
 
-    <span class="doccomment">/// Concrete sequence type used in conjuction with reference implementations of `GenericSequence`
+    <span class="doccomment">/// Owned sequence type used in conjuction with reference implementations of `GenericSequence`
     </span><span class="kw">type </span>Sequence: GenericSequence&lt;T, Length = <span class="self">Self</span>::Length&gt; + FromIterator&lt;T&gt;;
 
     <span class="doccomment">/// Initializes a new sequence instance using the given function.
@@ -404,7 +430,11 @@
     <span class="kw">where
         </span>F: FnMut(usize) -&gt; T;
 
-    <span class="attr">#[doc(hidden)]
+    <span class="doccomment">/// Treats `self` as the right-hand operand in a zip operation
+    ///
+    /// This is optimized for stack-allocated `GenericArray`s
+    </span><span class="attr">#[cfg_attr(not(feature = <span class="string">&quot;internals&quot;</span>), doc(hidden))]
+    #[inline(always)]
     </span><span class="kw">fn </span>inverted_zip&lt;B, U, F&gt;(
         <span class="self">self</span>,
         lhs: GenericArray&lt;B, <span class="self">Self</span>::Length&gt;,
@@ -414,7 +444,6 @@
         </span>GenericArray&lt;B, <span class="self">Self</span>::Length&gt;:
             GenericSequence&lt;B, Length = <span class="self">Self</span>::Length&gt; + MappedGenericSequence&lt;B, U&gt;,
         <span class="self">Self</span>: MappedGenericSequence&lt;T, U&gt;,
-        <span class="self">Self</span>::Length: ArrayLength&lt;B&gt; + ArrayLength&lt;U&gt;,
         F: FnMut(B, <span class="self">Self</span>::Item) -&gt; U,
     {
         <span class="kw">unsafe </span>{
@@ -422,27 +451,26 @@
 
             <span class="kw">let </span>(left_array_iter, left_position) = left.iter_position();
 
-            FromIterator::from_iter(left_array_iter.zip(<span class="self">self</span>.into_iter()).map(
-                |(l, right_value)| {
-                    <span class="kw">let </span>left_value = ptr::read(l);
+            FromIterator::from_iter(left_array_iter.zip(<span class="self">self</span>).map(|(l, right_value)| {
+                <span class="kw">let </span>left_value = ptr::read(l);
 
-                    <span class="kw-2">*</span>left_position += <span class="number">1</span>;
+                <span class="kw-2">*</span>left_position += <span class="number">1</span>;
 
-                    f(left_value, right_value)
-                },
-            ))
+                f(left_value, right_value)
+            }))
         }
     }
 
-    <span class="attr">#[doc(hidden)]
+    <span class="doccomment">/// Treats `self` as the right-hand operand in a zip operation
+    </span><span class="attr">#[cfg_attr(not(feature = <span class="string">&quot;internals&quot;</span>), doc(hidden))]
+    #[inline(always)]
     </span><span class="kw">fn </span>inverted_zip2&lt;B, Lhs, U, F&gt;(<span class="self">self</span>, lhs: Lhs, <span class="kw-2">mut </span>f: F) -&gt; MappedSequence&lt;Lhs, B, U&gt;
     <span class="kw">where
         </span>Lhs: GenericSequence&lt;B, Length = <span class="self">Self</span>::Length&gt; + MappedGenericSequence&lt;B, U&gt;,
         <span class="self">Self</span>: MappedGenericSequence&lt;T, U&gt;,
-        <span class="self">Self</span>::Length: ArrayLength&lt;B&gt; + ArrayLength&lt;U&gt;,
         F: FnMut(Lhs::Item, <span class="self">Self</span>::Item) -&gt; U,
     {
-        FromIterator::from_iter(lhs.into_iter().zip(<span class="self">self</span>.into_iter()).map(|(l, r)| f(l, r)))
+        FromIterator::from_iter(lhs.into_iter().zip(<span class="self">self</span>).map(|(l, r)| f(l, r)))
     }
 }
 
@@ -459,7 +487,7 @@
     <span class="kw">type </span>Length = S::Length;
     <span class="kw">type </span>Sequence = S::Sequence;
 
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>generate&lt;F&gt;(f: F) -&gt; <span class="self">Self</span>::Sequence
     <span class="kw">where
         </span>F: FnMut(usize) -&gt; T,
@@ -475,7 +503,7 @@
     <span class="kw">type </span>Length = S::Length;
     <span class="kw">type </span>Sequence = S::Sequence;
 
-    <span class="attr">#[inline]
+    <span class="attr">#[inline(always)]
     </span><span class="kw">fn </span>generate&lt;F&gt;(f: F) -&gt; <span class="self">Self</span>::Sequence
     <span class="kw">where
         </span>F: FnMut(usize) -&gt; T,
@@ -488,6 +516,10 @@
 /// or prepending an element to it.
 ///
 /// Any lengthened sequence can be shortened back to the original using `pop_front` or `pop_back`
+///
+/// # Safety
+/// While the [`append`](Lengthen::append) and [`prepend`](Lengthen::prepend)
+/// methods are marked safe, care must be taken when implementing them.
 </span><span class="kw">pub unsafe trait </span>Lengthen&lt;T&gt;: Sized + GenericSequence&lt;T&gt; {
     <span class="doccomment">/// `GenericSequence` that has one more element than `Self`
     </span><span class="kw">type </span>Longer: Shorten&lt;T, Shorter = <span class="self">Self</span>&gt;;
@@ -498,13 +530,12 @@
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Lengthen};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let a = arr![1, 2, 3];
     ///
     /// let b = a.append(4);
     ///
-    /// assert_eq!(b, arr![i32; 1, 2, 3, 4]);
-    /// # }
+    /// assert_eq!(b, arr![1, 2, 3, 4]);
     /// ```
     </span><span class="kw">fn </span>append(<span class="self">self</span>, last: T) -&gt; <span class="self">Self</span>::Longer;
 
@@ -514,13 +545,12 @@
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Lengthen};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3];
+    ///
+    /// let a = arr![1, 2, 3];
     ///
     /// let b = a.prepend(4);
     ///
-    /// assert_eq!(b, arr![i32; 4, 1, 2, 3]);
-    /// # }
+    /// assert_eq!(b, arr![4, 1, 2, 3]);
     /// ```
     </span><span class="kw">fn </span>prepend(<span class="self">self</span>, first: T) -&gt; <span class="self">Self</span>::Longer;
 }
@@ -529,6 +559,10 @@
 ///
 /// Additionally, any shortened sequence can be lengthened by
 /// appending or prepending an element to it.
+///
+/// # Safety
+/// While the [`pop_back`](Shorten::pop_back) and [`pop_front`](Shorten::pop_front)
+/// methods are marked safe, care must be taken when implementing them.
 </span><span class="kw">pub unsafe trait </span>Shorten&lt;T&gt;: Sized + GenericSequence&lt;T&gt; {
     <span class="doccomment">/// `GenericSequence` that has one less element than `Self`
     </span><span class="kw">type </span>Shorter: Lengthen&lt;T, Longer = <span class="self">Self</span>&gt;;
@@ -539,14 +573,13 @@
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Shorten};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let a = arr![1, 2, 3, 4];
     ///
     /// let (init, last) = a.pop_back();
     ///
-    /// assert_eq!(init, arr![i32; 1, 2, 3]);
+    /// assert_eq!(init, arr![1, 2, 3]);
     /// assert_eq!(last, 4);
-    /// # }
     /// ```
     </span><span class="kw">fn </span>pop_back(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::Shorter, T);
 
@@ -555,28 +588,28 @@
     ///
     /// ```rust
     /// # use generic_array::{arr, sequence::Shorten};
-    /// # fn main() {
-    /// let a = arr![i32; 1, 2, 3, 4];
+    ///
+    /// let a = arr![1, 2, 3, 4];
     ///
     /// let (head, tail) = a.pop_front();
     ///
     /// assert_eq!(head, 1);
-    /// assert_eq!(tail, arr![i32; 2, 3, 4]);
-    /// # }
+    /// assert_eq!(tail, arr![2, 3, 4]);
     /// ```
     </span><span class="kw">fn </span>pop_front(<span class="self">self</span>) -&gt; (T, <span class="self">Self</span>::Shorter);
 }
 
-<span class="kw">unsafe impl</span>&lt;T, N: ArrayLength&lt;T&gt;&gt; Lengthen&lt;T&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">unsafe impl</span>&lt;T, N: ArrayLength&gt; Lengthen&lt;T&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
     </span>N: Add&lt;B1&gt;,
-    Add1&lt;N&gt;: ArrayLength&lt;T&gt;,
+    Add1&lt;N&gt;: ArrayLength,
     Add1&lt;N&gt;: Sub&lt;B1, Output = N&gt;,
-    Sub1&lt;Add1&lt;N&gt;&gt;: ArrayLength&lt;T&gt;,
+    Sub1&lt;Add1&lt;N&gt;&gt;: ArrayLength,
 {
     <span class="kw">type </span>Longer = GenericArray&lt;T, Add1&lt;N&gt;&gt;;
 
-    <span class="kw">fn </span>append(<span class="self">self</span>, last: T) -&gt; <span class="self">Self</span>::Longer {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>append(<span class="self">self</span>, last: T) -&gt; <span class="self">Self</span>::Longer {
         <span class="kw">let </span><span class="kw-2">mut </span>longer: MaybeUninit&lt;<span class="self">Self</span>::Longer&gt; = MaybeUninit::uninit();
 
         <span class="comment">// Note this is *mut Self, so add(1) increments by the whole array
@@ -592,7 +625,8 @@
         }
     }
 
-    <span class="kw">fn </span>prepend(<span class="self">self</span>, first: T) -&gt; <span class="self">Self</span>::Longer {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>prepend(<span class="self">self</span>, first: T) -&gt; <span class="self">Self</span>::Longer {
         <span class="kw">let </span><span class="kw-2">mut </span>longer: MaybeUninit&lt;<span class="self">Self</span>::Longer&gt; = MaybeUninit::uninit();
 
         <span class="comment">// Note this is *mut T, so add(1) increments by a single T
@@ -609,16 +643,17 @@
     }
 }
 
-<span class="kw">unsafe impl</span>&lt;T, N: ArrayLength&lt;T&gt;&gt; Shorten&lt;T&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
+<span class="kw">unsafe impl</span>&lt;T, N: ArrayLength&gt; Shorten&lt;T&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
     </span>N: Sub&lt;B1&gt;,
-    Sub1&lt;N&gt;: ArrayLength&lt;T&gt;,
+    Sub1&lt;N&gt;: ArrayLength,
     Sub1&lt;N&gt;: Add&lt;B1, Output = N&gt;,
-    Add1&lt;Sub1&lt;N&gt;&gt;: ArrayLength&lt;T&gt;,
+    Add1&lt;Sub1&lt;N&gt;&gt;: ArrayLength,
 {
     <span class="kw">type </span>Shorter = GenericArray&lt;T, Sub1&lt;N&gt;&gt;;
 
-    <span class="kw">fn </span>pop_back(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::Shorter, T) {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>pop_back(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::Shorter, T) {
         <span class="kw">let </span>whole = ManuallyDrop::new(<span class="self">self</span>);
 
         <span class="kw">unsafe </span>{
@@ -629,7 +664,8 @@
         }
     }
 
-    <span class="kw">fn </span>pop_front(<span class="self">self</span>) -&gt; (T, <span class="self">Self</span>::Shorter) {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>pop_front(<span class="self">self</span>) -&gt; (T, <span class="self">Self</span>::Shorter) {
         <span class="comment">// ensure this doesn&#39;t get dropped
         </span><span class="kw">let </span>whole = ManuallyDrop::new(<span class="self">self</span>);
 
@@ -643,10 +679,11 @@
 }
 
 <span class="doccomment">/// Defines a `GenericSequence` that can be split into two parts at a given pivot index.
-</span><span class="kw">pub unsafe trait </span>Split&lt;T, K&gt;: GenericSequence&lt;T&gt;
-<span class="kw">where
-    </span>K: ArrayLength&lt;T&gt;,
-{
+///
+/// # Safety
+/// While the [`split`](Split::split) method is marked safe,
+/// care must be taken when implementing it.
+</span><span class="kw">pub unsafe trait </span>Split&lt;T, K: ArrayLength&gt;: GenericSequence&lt;T&gt; {
     <span class="doccomment">/// First part of the resulting split array
     </span><span class="kw">type </span>First: GenericSequence&lt;T&gt;;
     <span class="doccomment">/// Second part of the resulting split array
@@ -658,15 +695,16 @@
 
 <span class="kw">unsafe impl</span>&lt;T, N, K&gt; Split&lt;T, K&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-    K: ArrayLength&lt;T&gt;,
+    </span>N: ArrayLength,
+    K: ArrayLength,
     N: Sub&lt;K&gt;,
-    Diff&lt;N, K&gt;: ArrayLength&lt;T&gt;,
+    Diff&lt;N, K&gt;: ArrayLength,
 {
     <span class="kw">type </span>First = GenericArray&lt;T, K&gt;;
     <span class="kw">type </span>Second = GenericArray&lt;T, Diff&lt;N, K&gt;&gt;;
 
-    <span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::First, <span class="self">Self</span>::Second) {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::First, <span class="self">Self</span>::Second) {
         <span class="kw">unsafe </span>{
             <span class="comment">// ensure this doesn&#39;t get dropped
             </span><span class="kw">let </span>whole = ManuallyDrop::new(<span class="self">self</span>);
@@ -681,15 +719,16 @@
 
 <span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>, T, N, K&gt; Split&lt;T, K&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-    K: ArrayLength&lt;T&gt; + <span class="lifetime">&#39;static</span>,
+    </span>N: ArrayLength,
+    K: ArrayLength,
     N: Sub&lt;K&gt;,
-    Diff&lt;N, K&gt;: ArrayLength&lt;T&gt;,
+    Diff&lt;N, K&gt;: ArrayLength,
 {
     <span class="kw">type </span>First = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>GenericArray&lt;T, K&gt;;
     <span class="kw">type </span>Second = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>GenericArray&lt;T, Diff&lt;N, K&gt;&gt;;
 
-    <span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::First, <span class="self">Self</span>::Second) {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::First, <span class="self">Self</span>::Second) {
         <span class="kw">unsafe </span>{
             <span class="kw">let </span>ptr_to_first: <span class="kw-2">*const </span>T = <span class="self">self</span>.as_ptr();
             <span class="kw">let </span>head = <span class="kw-2">&amp;*</span>(ptr_to_first <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_</span>);
@@ -701,15 +740,16 @@
 
 <span class="kw">unsafe impl</span>&lt;<span class="lifetime">&#39;a</span>, T, N, K&gt; Split&lt;T, K&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
-    </span>N: ArrayLength&lt;T&gt;,
-    K: ArrayLength&lt;T&gt; + <span class="lifetime">&#39;static</span>,
+    </span>N: ArrayLength,
+    K: ArrayLength,
     N: Sub&lt;K&gt;,
-    Diff&lt;N, K&gt;: ArrayLength&lt;T&gt;,
+    Diff&lt;N, K&gt;: ArrayLength,
 {
     <span class="kw">type </span>First = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>GenericArray&lt;T, K&gt;;
     <span class="kw">type </span>Second = <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>GenericArray&lt;T, Diff&lt;N, K&gt;&gt;;
 
-    <span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::First, <span class="self">Self</span>::Second) {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>split(<span class="self">self</span>) -&gt; (<span class="self">Self</span>::First, <span class="self">Self</span>::Second) {
         <span class="kw">unsafe </span>{
             <span class="kw">let </span>ptr_to_first: <span class="kw-2">*mut </span>T = <span class="self">self</span>.as_mut_ptr();
             <span class="kw">let </span>head = <span class="kw-2">&amp;mut *</span>(ptr_to_first <span class="kw">as </span><span class="kw-2">*mut </span><span class="kw">_</span>);
@@ -720,10 +760,11 @@
 }
 
 <span class="doccomment">/// Defines `GenericSequence`s which can be joined together, forming a larger array.
-</span><span class="kw">pub unsafe trait </span>Concat&lt;T, M&gt;: GenericSequence&lt;T&gt;
-<span class="kw">where
-    </span>M: ArrayLength&lt;T&gt;,
-{
+///
+/// # Safety
+/// While the [`concat`](Concat::concat) method is marked safe,
+/// care must be taken when implementing it.
+</span><span class="kw">pub unsafe trait </span>Concat&lt;T, M: ArrayLength&gt;: GenericSequence&lt;T&gt; {
     <span class="doccomment">/// Sequence to be concatenated with `self`
     </span><span class="kw">type </span>Rest: GenericSequence&lt;T, Length = M&gt;;
 
@@ -736,14 +777,15 @@
 
 <span class="kw">unsafe impl</span>&lt;T, N, M&gt; Concat&lt;T, M&gt; <span class="kw">for </span>GenericArray&lt;T, N&gt;
 <span class="kw">where
-    </span>N: ArrayLength&lt;T&gt; + Add&lt;M&gt;,
-    M: ArrayLength&lt;T&gt;,
-    Sum&lt;N, M&gt;: ArrayLength&lt;T&gt;,
+    </span>N: ArrayLength + Add&lt;M&gt;,
+    M: ArrayLength,
+    Sum&lt;N, M&gt;: ArrayLength,
 {
     <span class="kw">type </span>Rest = GenericArray&lt;T, M&gt;;
     <span class="kw">type </span>Output = GenericArray&lt;T, Sum&lt;N, M&gt;&gt;;
 
-    <span class="kw">fn </span>concat(<span class="self">self</span>, rest: <span class="self">Self</span>::Rest) -&gt; <span class="self">Self</span>::Output {
+    <span class="attr">#[inline]
+    </span><span class="kw">fn </span>concat(<span class="self">self</span>, rest: <span class="self">Self</span>::Rest) -&gt; <span class="self">Self</span>::Output {
         <span class="kw">let </span><span class="kw-2">mut </span>output: MaybeUninit&lt;<span class="self">Self</span>::Output&gt; = MaybeUninit::uninit();
 
         <span class="kw">let </span>out_ptr = output.as_mut_ptr() <span class="kw">as </span><span class="kw-2">*mut </span><span class="self">Self</span>;
@@ -758,5 +800,4 @@
         }
     }
 }
-</code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</code></pre></div></section></main></body></html>

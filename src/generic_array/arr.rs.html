@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/arr.rs`."><title>arr.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-c4dbdcde0fbd8430.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" disabled href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" disabled href="../../static.files/ayu-be46fdc453a55015.css"><script src="../../static.files/storage-3891ce972e3a2bf8.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-98a684e84ae5b08b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/arr.rs`."><title>arr.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-9bb858ba049f1f21.css" id="mainThemeStyle"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.72.0 (5680fa18f 2023-08-23)" data-channel="1.72.0" data-search-js="search-f6292fe389d70017.js" data-settings-js="settings-de11bff964e9d4e5.js" data-settings-css="settings-8c76f75bfb6bd192.css" data-theme-light-css="light-0f8c037637f9eb3e.css" data-theme-dark-css="dark-1097f8e92a01e3cf.css" data-theme-ayu-css="ayu-614652228113ac93.css" ><script src="../../static.files/storage-59fd9b8ccb335783.js"></script><script defer src="../../static.files/source-script-106908c7a7964ba4.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-0795b7d26be81095.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-0f8c037637f9eb3e.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-1097f8e92a01e3cf.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../generic_array/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -117,144 +117,123 @@
 <a href="#117" id="117">117</a>
 <a href="#118" id="118">118</a>
 <a href="#119" id="119">119</a>
-<a href="#120" id="120">120</a>
-<a href="#121" id="121">121</a>
-<a href="#122" id="122">122</a>
-<a href="#123" id="123">123</a>
-<a href="#124" id="124">124</a>
-<a href="#125" id="125">125</a>
-<a href="#126" id="126">126</a>
-<a href="#127" id="127">127</a>
-<a href="#128" id="128">128</a>
-<a href="#129" id="129">129</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Implementation for `arr!` macro.
+</pre></div><pre class="rust"><code><span class="doccomment">//! Implementation for `arr!` macro.
 
-</span><span class="kw">use </span><span class="kw">super</span>::ArrayLength;
-<span class="kw">use </span>core::ops::Add;
-<span class="kw">use </span>typenum::U1;
-
-<span class="doccomment">/// Helper trait for `arr!` macro
-</span><span class="kw">pub trait </span>AddLength&lt;T, N: ArrayLength&lt;T&gt;&gt;: ArrayLength&lt;T&gt; {
-    <span class="doccomment">/// Resulting length
-    </span><span class="kw">type </span>Output: ArrayLength&lt;T&gt;;
-}
-
-<span class="kw">impl</span>&lt;T, N1, N2&gt; AddLength&lt;T, N2&gt; <span class="kw">for </span>N1
-<span class="kw">where
-    </span>N1: ArrayLength&lt;T&gt; + Add&lt;N2&gt;,
-    N2: ArrayLength&lt;T&gt;,
-    &lt;N1 <span class="kw">as </span>Add&lt;N2&gt;&gt;::Output: ArrayLength&lt;T&gt;,
-{
-    <span class="kw">type </span>Output = &lt;N1 <span class="kw">as </span>Add&lt;N2&gt;&gt;::Output;
-}
-
-<span class="doccomment">/// Helper type for `arr!` macro
-</span><span class="kw">pub type </span>Inc&lt;T, U&gt; = &lt;U <span class="kw">as </span>AddLength&lt;T, U1&gt;&gt;::Output;
-
-<span class="attr">#[doc(hidden)]
-#[macro_export]
-</span><span class="macro">macro_rules! </span>arr_impl {
-    (@replace_expr <span class="macro-nonterminal">$e</span>:expr) =&gt; { <span class="number">1 </span>};
-    (@count_ty) =&gt; { <span class="macro-nonterminal">$crate::typenum::U0 </span>};
-    (@count_ty <span class="macro-nonterminal">$val</span>:expr$(, <span class="macro-nonterminal">$vals</span>:expr)* $(,)<span class="question-mark">?</span>) =&gt; { <span class="macro-nonterminal">$crate::typenum::Add1</span>&lt;<span class="macro-nonterminal">$</span><span class="macro">crate::arr_impl!</span>(@<span class="macro-nonterminal">count_ty </span>$(<span class="macro-nonterminal">$vals</span>),<span class="kw-2">*</span>)&gt; };
-    (<span class="macro-nonterminal">$T</span>:ty; $(<span class="macro-nonterminal">$x</span>:expr),<span class="kw-2">*</span>) =&gt; ({
-        <span class="kw">const </span>__INPUT_LENGTH: usize = <span class="number">0 </span>$(+ <span class="macro-nonterminal">$</span><span class="macro">crate::arr_impl!</span>(@<span class="macro-nonterminal">replace_expr $x</span>) )<span class="kw-2">*</span>;
-        <span class="kw">type </span>__OutputLength = <span class="macro-nonterminal">$</span><span class="macro">crate::arr_impl!</span>(@<span class="macro-nonterminal">count_ty </span>$(<span class="macro-nonterminal">$x</span>),<span class="kw-2">*</span>);
-
-        <span class="attr">#[inline(always)]
-        </span><span class="kw">const fn </span>__do_transmute&lt;T, N: <span class="macro-nonterminal">$crate::ArrayLength</span>&lt;T&gt;&gt;(arr: [T; __INPUT_LENGTH]) -&gt; <span class="macro-nonterminal">$crate::GenericArray</span>&lt;T, N&gt; {
-            <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(arr) }
-        }
-
-        <span class="kw">const _</span>: [(); &lt;__OutputLength <span class="kw">as </span><span class="macro-nonterminal">$crate::typenum::Unsigned</span>&gt;::USIZE] = [(); __INPUT_LENGTH];
-
-        __do_transmute::&lt;<span class="macro-nonterminal">$T</span>, __OutputLength&gt;([$(<span class="macro-nonterminal">$x </span><span class="kw">as </span><span class="macro-nonterminal">$T</span>),<span class="kw-2">*</span>])
-    });
-    (<span class="macro-nonterminal">$T</span>:ty; <span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$N</span>: ty) =&gt; ({
-        <span class="kw">const </span>__INPUT_LENGTH: usize = &lt;<span class="macro-nonterminal">$N </span><span class="kw">as </span><span class="macro-nonterminal">$crate::typenum::Unsigned</span>&gt;::USIZE;
-
-        <span class="attr">#[inline(always)]
-        </span><span class="kw">const fn </span>__do_transmute&lt;T, N: <span class="macro-nonterminal">$crate::ArrayLength</span>&lt;T&gt;&gt;(arr: [T; __INPUT_LENGTH]) -&gt; <span class="macro-nonterminal">$crate::GenericArray</span>&lt;T, N&gt; {
-            <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>(arr) }
-        }
-
-        __do_transmute::&lt;<span class="macro-nonterminal">$T</span>, <span class="macro-nonterminal">$N</span>&gt;([<span class="macro-nonterminal">$x</span>; __INPUT_LENGTH])
-    });
-}
-
-<span class="doccomment">/// Macro allowing for easy generation of Generic Arrays.
-/// Example: `let test = arr![u32; 1, 2, 3];`
+/// Macro allowing for easy construction of Generic Arrays.
+///
+/// Type-inference works similarly to `vec![]`
+///
+/// **`arr!` can be used in `const` expressions.**
+///
+/// Example:
+/// ```
+/// # use generic_array::arr;
+/// use generic_array::typenum::U6;
+///
+/// let test = arr![1, 2, 3]; // implicit length
+/// let test = arr![1; 6];    // explicit length via `Const&lt;N&gt;`
+/// let test = arr![1; U6];   // explicit length via typenum
+/// ```
+///
+/// # NOTES AND LIMITATIONS
+/// * As of `generic-array 1.0`, [`From`]/[`from_array`](crate::GenericArray::from_array) can be used directly for a wide range of regular arrays.
+/// * The `[T; N: ArrayLength]` and `[T; usize]` explicit forms are limited to `Copy` values. Use
+/// [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
+/// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const&lt;U&gt;`](typenum::Const)
 </span><span class="attr">#[macro_export]
 </span><span class="macro">macro_rules! </span>arr {
-    (<span class="macro-nonterminal">$T</span>:ty; $(,)<span class="kw-2">*</span>) =&gt; ({
-        <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::transmute</span>::&lt;[<span class="macro-nonterminal">$T</span>; <span class="number">0</span>], <span class="macro-nonterminal">$crate::GenericArray</span>&lt;<span class="macro-nonterminal">$T</span>, <span class="macro-nonterminal">$crate::typenum::U0</span>&gt;&gt;([]) }
+    ($(<span class="macro-nonterminal">$x</span>:expr),* $(,)<span class="kw-2">*</span>) =&gt; ( <span class="macro-nonterminal">$crate::GenericArray::from_array</span>([$(<span class="macro-nonterminal">$x</span>),<span class="kw-2">*</span>]) );
+    (<span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$N</span>:ty)     =&gt; ({
+        <span class="comment">// Bypass `from_array` to allow for any Unsigned array length
+        </span><span class="kw">const </span>__INPUT_LENGTH: usize = &lt;<span class="macro-nonterminal">$N </span><span class="kw">as </span><span class="macro-nonterminal">$crate::typenum::Unsigned</span>&gt;::USIZE;
+
+        <span class="attr">#[inline(always)]
+        </span><span class="kw">const fn </span>__do_transmute&lt;T, N: <span class="macro-nonterminal">$crate::ArrayLength</span>&gt;(arr: [T; __INPUT_LENGTH]) -&gt; <span class="macro-nonterminal">$crate::GenericArray</span>&lt;T, N&gt; {
+            <span class="kw">unsafe </span>{ <span class="macro-nonterminal">$crate::const_transmute</span>(arr) }
+        }
+
+        __do_transmute::&lt;<span class="kw">_</span>, <span class="macro-nonterminal">$N</span>&gt;([<span class="macro-nonterminal">$x</span>; __INPUT_LENGTH])
     });
-    (<span class="macro-nonterminal">$T</span>:ty; $(<span class="macro-nonterminal">$x</span>:expr),* $(,)<span class="kw-2">*</span>) =&gt; (
-        <span class="macro-nonterminal">$</span><span class="macro">crate::arr_impl!</span>(<span class="macro-nonterminal">$T</span>; $(<span class="macro-nonterminal">$x</span>),<span class="kw-2">*</span>)
-    );
-    (<span class="macro-nonterminal">$T</span>:ty; <span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$N</span>:ty) =&gt; (
-        <span class="macro-nonterminal">$</span><span class="macro">crate::arr_impl!</span>(<span class="macro-nonterminal">$T</span>; <span class="macro-nonterminal">$x</span>; <span class="macro-nonterminal">$N</span>)
-    );
-    ($(<span class="macro-nonterminal">$x</span>:expr,)+) =&gt; (<span class="macro">arr!</span>[$(<span class="macro-nonterminal">$x</span>),+]);
-    () =&gt; (<span class="string">&quot;&quot;&quot;Macro requires a type, e.g. `let array = arr![u32; 1, 2, 3];`&quot;</span>)
+    (<span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$n</span>:expr) =&gt; ( <span class="macro-nonterminal">$crate::GenericArray::from_array</span>([<span class="macro-nonterminal">$x</span>; <span class="macro-nonterminal">$n</span>]) );
+}
+
+<span class="doccomment">/// Like [`arr!`], but returns a `Box&lt;GenericArray&lt;T, N&gt;&gt;`
+///
+/// Unlike [`arr!`], this is not limited by stack size, only the heap.
+///
+/// Example:
+/// ```
+/// # use generic_array::{box_arr, typenum::{self, *}};
+/// // allocate a 16MB Buffer of u128 elements (16 bytes * 10 ^ 6)
+/// # #[cfg(not(miri))]
+/// let test = box_arr![1u128; typenum::Exp&lt;U10, U6&gt;];
+/// //  test: Box&lt;GenericArray&lt;u128, _&gt;&gt;
+/// ```
+///
+/// # NOTES AND LIMITATIONS
+/// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const&lt;U&gt;`](typenum::Const)
+</span><span class="attr">#[cfg(feature = <span class="string">&quot;alloc&quot;</span>)]
+#[macro_export]
+</span><span class="macro">macro_rules! </span>box_arr {
+    ($(<span class="macro-nonterminal">$x</span>:expr),* $(,)<span class="kw-2">*</span>) =&gt; ({
+        <span class="comment">// deduce length based on a ZST array of units
+        </span><span class="macro-nonterminal">$crate::GenericArray::__from_vec_helper</span>([$(<span class="macro-nonterminal">$</span><span class="macro">crate::box_arr_helper!</span>(@<span class="macro-nonterminal">unit $x</span>)),<span class="kw-2">*</span>], <span class="macro-nonterminal">$</span><span class="macro">crate::alloc::vec!</span>[$(<span class="macro-nonterminal">$x</span>),<span class="kw-2">*</span>])
+    });
+    (<span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$N</span>:ty) =&gt; ( <span class="macro-nonterminal">$crate::GenericArray</span>::&lt;<span class="kw">_</span>, <span class="macro-nonterminal">$N</span>&gt;::try_from_vec(<span class="macro-nonterminal">$</span><span class="macro">crate::alloc::vec!</span>[<span class="macro-nonterminal">$x</span>; &lt;<span class="macro-nonterminal">$N </span><span class="kw">as </span><span class="macro-nonterminal">$crate::typenum::Unsigned</span>&gt;::USIZE]).unwrap() );
+    (<span class="macro-nonterminal">$x</span>:expr; <span class="macro-nonterminal">$n</span>:expr) =&gt; ({
+        <span class="kw">const </span>__LEN: usize = <span class="macro-nonterminal">$n</span>;
+
+        <span class="macro-nonterminal">$crate::GenericArray</span>::&lt;<span class="kw">_</span>, &lt;<span class="macro-nonterminal">$crate::typenum::Const</span>&lt;__LEN&gt; <span class="kw">as </span><span class="macro-nonterminal">$crate::IntoArrayLength</span>&gt;::ArrayLength&gt;::try_from_vec(<span class="macro-nonterminal">$</span><span class="macro">crate::alloc::vec!</span>[<span class="macro-nonterminal">$x</span>; __LEN]).unwrap()
+    });
+}
+
+<span class="attr">#[cfg(feature = <span class="string">&quot;alloc&quot;</span>)]
+</span><span class="kw">mod </span>alloc_helper {
+    <span class="kw">use crate</span>::{ArrayLength, GenericArray, IntoArrayLength};
+
+    <span class="kw">impl</span>&lt;T, N: ArrayLength&gt; GenericArray&lt;T, N&gt; {
+        <span class="attr">#[doc(hidden)]
+        #[inline(always)]
+        </span><span class="kw">pub fn </span>__from_vec_helper&lt;<span class="kw">const </span>U: usize&gt;(
+            _empty: [(); U],
+            vec: alloc::vec::Vec&lt;T&gt;,
+        ) -&gt; alloc::boxed::Box&lt;GenericArray&lt;T, N&gt;&gt;
+        <span class="kw">where
+            </span>typenum::Const&lt;U&gt;: IntoArrayLength&lt;ArrayLength = N&gt;,
+        {
+            <span class="kw">unsafe </span>{ GenericArray::try_from_vec(vec).unwrap_unchecked() }
+        }
+    }
+}
+
+<span class="comment">// TODO: Remove this somehow?
+</span><span class="attr">#[cfg(feature = <span class="string">&quot;alloc&quot;</span>)]
+#[doc(hidden)]
+#[macro_export]
+</span><span class="macro">macro_rules! </span>box_arr_helper {
+    (@unit <span class="macro-nonterminal">$e</span>:expr) =&gt; {
+        ()
+    };
 }
 
 <span class="kw">mod </span>doctests_only {
     <span class="doccomment">///
-    /// # With ellision
-    ///
     /// Testing that lifetimes aren&#39;t transmuted when they&#39;re ellided.
     ///
     /// ```compile_fail
     /// #[macro_use] extern crate generic_array;
-    /// fn main() {
-    ///    fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;static A {
-    ///        arr![&amp;A; a][0]
-    ///    }
+    /// fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;static A {
+    ///     arr![a as &amp;A][0]
     /// }
     /// ```
     ///
     /// ```rust
     /// #[macro_use] extern crate generic_array;
-    /// fn main() {
-    ///    fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;a A {
-    ///        arr![&amp;A; a][0]
-    ///    }
-    /// }
-    /// ```
-    ///
-    /// # Without ellision
-    ///
-    /// Testing that lifetimes aren&#39;t transmuted when they&#39;re specified explicitly.
-    ///
-    /// ```compile_fail
-    /// #[macro_use] extern crate generic_array;
-    /// fn main() {
-    ///    fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;static A {
-    ///        arr![&amp;&#39;a A; a][0]
-    ///    }
-    /// }
-    /// ```
-    ///
-    /// ```compile_fail
-    /// #[macro_use] extern crate generic_array;
-    /// fn main() {
-    ///    fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;static A {
-    ///        arr![&amp;&#39;static A; a][0]
-    ///    }
-    /// }
-    /// ```
-    ///
-    /// ```rust
-    /// #[macro_use] extern crate generic_array;
-    /// fn main() {
-    ///    fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;a A {
-    ///        arr![&amp;&#39;a A; a][0]
-    ///    }
+    /// fn unsound_lifetime_extension&lt;&#39;a, A&gt;(a: &amp;&#39;a A) -&gt; &amp;&#39;a A {
+    ///     arr![a][0]
     /// }
     /// ```
     </span><span class="attr">#[allow(dead_code)]
     </span><span class="kw">pub enum </span>DocTests {}
 }
-</code></pre></div>
-</section></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.69.0 (84c898d65 2023-04-16)" data-search-js="search-8a59a8356673ec1f.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" ></div></body></html>
+</code></pre></div></section></main></body></html>
