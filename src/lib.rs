@@ -563,14 +563,9 @@ where
                 //
                 // Note that because ArrayConsumer checks for `needs_drop` itself, if `f` panics then nothing
                 // would have been done about it anyway. Only the other branch needs `ArrayConsumer`
-                let res = FromIterator::from_iter(left.iter().zip(right.iter()).map(|(l, r)| {
-                    let left_value = ptr::read(l);
-                    let right_value = ptr::read(r);
-
-                    f(left_value, right_value)
-                }));
-
-                res
+                FromIterator::from_iter(left.iter().zip(right.iter()).map(|(l, r)| {
+                    f(ptr::read(l), ptr::read(r)) //
+                }))
             }
         }
     }
@@ -599,13 +594,9 @@ where
                 let right = ManuallyDrop::new(self);
 
                 // Similar logic to `inverted_zip`'s no-drop branch
-                let res = FromIterator::from_iter(right.iter().zip(lhs).map(|(r, left_value)| {
-                    let right_value = ptr::read(r);
-
-                    f(left_value, right_value)
-                }));
-
-                res
+                FromIterator::from_iter(right.iter().zip(lhs).map(|(r, left_value)| {
+                    f(left_value, ptr::read(r)) //
+                }))
             }
         }
     }
