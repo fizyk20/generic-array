@@ -15,7 +15,7 @@ repository = "https://github.com/fizyk20/generic-array.git"
 
 keywords = ["generic", "array"]
 categories = ["data-structures", "no-std"]
-include = ["src/**/*", "benches/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
+include = ["src/**/*", "LICENSE", "README.md", "CHANGELOG.md"]
 
 [badges]
 travis-ci = { repository = "fizyk20/generic-array" }
@@ -43,6 +43,7 @@ rand = "0.8"
 
 [[bench]]
 name = "hex"
+path = "benches/hex.rs"
 harness = false
 
 [profile.bench]
