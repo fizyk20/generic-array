@@ -473,3 +473,55 @@ fn test_chunks_fail() {
     assert!(chunks.is_empty());
     assert!(rem.is_empty());
 }
+
+#[test]
+fn test_remove_various_sizes() {
+    let a = arr![1u8, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u16, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u32, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u64, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u128, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_remove_drop_type() {
+    use alloc::vec;
+    let a = arr![vec![1], vec![2], vec![3, 4]];
+    assert_eq!((arr![vec![2], vec![3, 4]], vec![1]), a.clone().remove(0));
+    assert_eq!((arr![vec![1], vec![3, 4]], vec![2]), a.clone().remove(1));
+    assert_eq!((arr![vec![1], vec![2]], vec![3, 4]), a.remove(2));
+}
+
+#[test]
+fn test_remove_length_one() {
+    let a = arr![1];
+    assert_eq!((arr![], 1), a.remove(0));
+}
+
+#[test]
+fn test_remove_zst() {
+    let a = arr![(), ()];
+    assert_eq!((arr![()], ()), a.remove(0));
+    assert_eq!((arr![], ()), a.remove(0).0.remove(0));
+}
