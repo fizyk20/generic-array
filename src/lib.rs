@@ -140,7 +140,7 @@ use internal::{ArrayBuilder, ArrayConsumer, Sealed};
 pub mod internals {
     //! Very unsafe internal functionality.
     //!
-    //! These are used internally for building and consuming generic arrays. WHen used correctly,
+    //! These are used internally for building and consuming generic arrays. When used correctly,
     //! they can ensure elements are correctly dropped if something panics while using them.
 
     pub use crate::internal::{ArrayBuilder, ArrayConsumer};
