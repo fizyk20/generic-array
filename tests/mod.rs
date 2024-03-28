@@ -23,17 +23,17 @@ fn test() {
     assert_eq!(l[56], 56);
 }
 
+#[derive(Clone)]
+struct TestDrop<'a>(&'a Cell<u32>);
+
+impl<'a> Drop for TestDrop<'a> {
+    fn drop(&mut self) {
+        self.0.set(self.0.get() + 1);
+    }
+}
+
 #[test]
 fn test_drop() {
-    #[derive(Clone)]
-    struct TestDrop<'a>(&'a Cell<u32>);
-
-    impl<'a> Drop for TestDrop<'a> {
-        fn drop(&mut self) {
-            self.0.set(self.0.get() + 1);
-        }
-    }
-
     let drop_counter = Cell::new(0);
     {
         let _: GenericArray<TestDrop, U3> = arr![
@@ -472,4 +472,75 @@ fn test_chunks_fail() {
     let (chunks, rem) = GenericArray::<u8, U0>::chunks_from_slice(&[1, 2, 3]);
     assert!(chunks.is_empty());
     assert!(rem.is_empty());
+}
+
+#[test]
+fn test_remove_various_sizes() {
+    let a = arr![1u8, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u16, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u32, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u64, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+    let a = arr![1u128, 2, 3, 4];
+    assert_eq!((arr![2, 3, 4], 1), a.remove(0));
+    assert_eq!((arr![1, 3, 4], 2), a.remove(1));
+    assert_eq!((arr![1, 2, 4], 3), a.remove(2));
+    assert_eq!((arr![1, 2, 3], 4), a.remove(3));
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_remove_drop_alloc() {
+    use alloc::vec;
+    let a = arr![vec![1], vec![2], vec![3, 4]];
+    assert_eq!((arr![vec![2], vec![3, 4]], vec![1]), a.clone().remove(0));
+    assert_eq!((arr![vec![1], vec![3, 4]], vec![2]), a.clone().remove(1));
+    assert_eq!((arr![vec![1], vec![2]], vec![3, 4]), a.remove(2));
+}
+
+#[test]
+fn test_remove_drop() {
+    let drop_counter = Cell::new(0);
+    let a = {
+        let a: GenericArray<TestDrop, U3> = arr![
+            TestDrop(&drop_counter),
+            TestDrop(&drop_counter),
+            TestDrop(&drop_counter)
+        ];
+        a.remove(2).0.remove(1).0
+    };
+    assert_eq!(drop_counter.get(), 2);
+    {
+        let _e = a.remove(0).1;
+        assert_eq!(drop_counter.get(), 2);
+    };
+    assert_eq!(drop_counter.get(), 3);
+}
+
+#[test]
+fn test_remove_length_one() {
+    let a = arr![1];
+    assert_eq!((arr![], 1), a.remove(0));
+}
+
+#[test]
+fn test_remove_zst() {
+    let a = arr![(), ()];
+    assert_eq!((arr![()], ()), a.remove(0));
+    assert_eq!((arr![], ()), a.remove(0).0.remove(0));
 }

@@ -912,6 +912,93 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 }
 
+impl<T, N: ArrayLength> GenericArray<T, N> {
+    /// Similar to [`Vec::remove`].
+    ///
+    /// Removes and returns the element at position `index` within the array,
+    /// shifting all elements after it to the left.
+    ///
+    /// Note: Because this shifts over the remaining elements, it has a
+    /// worst-case performance of *O*(*n*).
+    ///
+    /// [`Vec::remove`]: https://doc.rust-lang.org/std/vec/struct.Vec.html#method.remove
+    ///
+    /// # Panics
+    ///
+    /// Panics if `index` is out of bounds.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// # use generic_array::arr;
+    /// let mut a = arr![1, 2, 3];
+    /// assert_eq!(a.remove(1), (arr![1, 3], 2));
+    /// ```
+    #[must_use = "the new array is returned, not modified in-place"]
+    #[inline] // optimize if not using both the new array and the element
+    pub fn remove(self, index: usize) -> (GenericArray<T, typenum::Diff<N, typenum::U1>>, T)
+    where
+        N: ArrayLength + core::ops::Sub<typenum::U1>,
+        typenum::Diff<N, typenum::U1>: ArrayLength,
+    {
+        assert!(
+            index < N::to_usize(),
+            "removal index (is {index}) should be < len (is {})",
+            N::to_usize()
+        );
+        // Safety: Checked bounds already.
+        unsafe { self.remove_unchecked(index) }
+    }
+
+    /// Removes and returns the element at position `index` within the array,
+    /// shifting all elements after it to the left.
+    ///
+    /// See [`GenericArray::remove`] for a full example and a safe alternative.
+    ///
+    /// # Safety
+    ///
+    /// `index` must be a valid index within the array.
+    #[must_use = "the new array is returned, not modified in-place"]
+    #[inline] // optimize if not using both the new array and the element
+    pub unsafe fn remove_unchecked(
+        mut self,
+        index: usize,
+    ) -> (GenericArray<T, typenum::Diff<N, typenum::U1>>, T)
+    where
+        N: ArrayLength + core::ops::Sub<typenum::U1>,
+        typenum::Diff<N, typenum::U1>: ArrayLength,
+    {
+        let len = self.len();
+
+        unsafe {
+            // Safety: `idx` is in bounds by calling contract. `len` > 0 because of the `N: Sub<U1>` constraint.
+            if len == 0 {
+                core::hint::unreachable_unchecked()
+            };
+            let dst = self.get_unchecked_mut(index..len - 1).as_mut_ptr();
+            let src = self.get_unchecked(index + 1..).as_ptr();
+
+            // Safety: Equivalent to shallow copy of `array[idx]` so aligned, valid, and in-bounds.
+            let elem = self::ptr::from_ref(self.get_unchecked(index)).read();
+
+            // Safety: `src` superset of `dst` so they overlap and this must be `copy` and not `copy_nonoverlapping`.
+            // `src` and `dst` are both aligned to `T`'s alignment. `dst` contains `len-1-idx` `T`s.
+            // After this is finished `elem` is removed from `array` removing the duplicate copy.
+            self::ptr::copy(src, dst, len - 1 - index);
+
+            // Before copying make `ManuallyDrop` to avoid double-free.
+            let array: ManuallyDrop<GenericArray<T, N>> = ManuallyDrop::new(self);
+
+            // Safety: `ManuallyDrop` is `repr(transparent)`. `Dst` is smaller than `Src` **not** larger.
+            // The second copy of the last element in the last array position is not copied over.
+            let res: GenericArray<T, typenum::Diff<N, typenum::U1>> =
+                core::mem::transmute_copy(&array);
+
+            (res, elem)
+        }
+    }
+}
+
 /// Error for [`TryFrom`] and [`try_from_iter`](GenericArray::try_from_iter)
 #[derive(Debug, Clone, Copy)]
 pub struct LengthError;
