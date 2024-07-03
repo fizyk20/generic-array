@@ -479,6 +479,7 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
     /// Will panic if the number of elements is not exactly the array length.
     ///
     /// See [`GenericArray::try_from_iter]` for a fallible alternative.
+    #[inline]
     fn from_iter<I>(iter: I) -> GenericArray<T, N>
     where
         I: IntoIterator<Item = T>,
