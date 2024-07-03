@@ -1,3 +1,7 @@
+* **`1.0.1`**
+    * Update faster-hex dependency
+    * Mark `from_iter` as `#[inline]` to significantly improve codegen.
+
 * **`1.0.0`**
     * **Use GATs for `ArrayLength`** !
     * Bump MSRV to 1.65.0
