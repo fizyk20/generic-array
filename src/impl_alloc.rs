@@ -1,6 +1,6 @@
 use alloc::{boxed::Box, vec::Vec};
 
-use crate::{ArrayLength, GenericArray, LengthError};
+use crate::{ArrayLength, GenericArray, IntrusiveArrayBuilder, LengthError};
 
 impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
     type Error = crate::LengthError;
@@ -11,11 +11,15 @@ impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
         }
 
         unsafe {
-            let mut destination = crate::ArrayBuilder::new();
+            let mut destination = GenericArray::uninit();
+            let mut builder = IntrusiveArrayBuilder::new(&mut destination);
 
-            destination.extend(v.into_iter());
+            builder.extend(v.into_iter());
 
-            Ok(destination.assume_init())
+            Ok({
+                builder.finish();
+                IntrusiveArrayBuilder::array_assume_init(destination)
+            })
         }
     }
 }
@@ -162,11 +166,35 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
     where
         F: FnMut(usize) -> T,
     {
-        let mut v = Vec::with_capacity(N::USIZE);
-        for i in 0..N::USIZE {
-            v.push(f(i));
+        unsafe {
+            use core::{
+                alloc::Layout,
+                mem::{size_of, MaybeUninit},
+                ptr,
+            };
+
+            // Box::new_uninit() is nightly-only
+            let ptr: *mut GenericArray<MaybeUninit<T>, N> = if size_of::<T>() == 0 {
+                ptr::NonNull::dangling().as_ptr()
+            } else {
+                alloc::alloc::alloc(Layout::new::<GenericArray<MaybeUninit<T>, N>>()).cast()
+            };
+
+            let mut builder = IntrusiveArrayBuilder::new(&mut *ptr);
+
+            {
+                let (builder_iter, position) = builder.iter_position();
+
+                builder_iter.enumerate().for_each(|(i, dst)| {
+                    dst.write(f(i));
+                    *position += 1;
+                });
+            }
+
+            builder.finish();
+
+            Box::from_raw(ptr.cast()) // IntrusiveArrayBuilder::array_assume_init
         }
-        GenericArray::try_from_vec(v).unwrap()
     }
 }
 

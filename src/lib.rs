@@ -8,7 +8,7 @@
 //! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be
 //! generic with respect to the length `N`, so this wouldn't work:
 //!
-//! ```rust{compile_fail}
+//! ```compile_fail
 //! struct Foo<N> {
 //!     data: [i32; N],
 //! }
@@ -133,7 +133,7 @@ pub mod functional;
 pub mod sequence;
 
 mod internal;
-use internal::{ArrayBuilder, ArrayConsumer, Sealed};
+use internal::{ArrayConsumer, IntrusiveArrayBuilder, Sealed};
 
 // re-export to allow doc_auto_cfg to handle it
 #[cfg(feature = "internals")]
@@ -142,8 +142,10 @@ pub mod internals {
     //!
     //! These are used internally for building and consuming generic arrays. When used correctly,
     //! they can ensure elements are correctly dropped if something panics while using them.
+    //!
+    //! The API of these is not guarenteed to be stable, as they are not intended for general use.
 
-    pub use crate::internal::{ArrayBuilder, ArrayConsumer};
+    pub use crate::internal::{ArrayBuilder, ArrayConsumer, IntrusiveArrayBuilder};
 }
 
 use self::functional::*;
@@ -510,18 +512,20 @@ where
         F: FnMut(usize) -> T,
     {
         unsafe {
-            let mut destination = ArrayBuilder::new();
+            let mut array = GenericArray::<T, N>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new(&mut array);
 
             {
-                let (destination_iter, position) = destination.iter_position();
+                let (builder_iter, position) = builder.iter_position();
 
-                destination_iter.enumerate().for_each(|(i, dst)| {
+                builder_iter.enumerate().for_each(|(i, dst)| {
                     dst.write(f(i));
                     *position += 1;
                 });
             }
 
-            destination.assume_init()
+            builder.finish();
+            IntrusiveArrayBuilder::array_assume_init(array)
         }
     }
 
@@ -968,15 +972,19 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         }
 
         unsafe {
-            let mut destination = ArrayBuilder::new();
+            let mut array = GenericArray::uninit();
+            let mut builder = IntrusiveArrayBuilder::new(&mut array);
 
-            destination.extend(&mut iter);
+            builder.extend(&mut iter);
 
-            if !destination.is_full() || iter.next().is_some() {
+            if !builder.is_full() || iter.next().is_some() {
                 return Err(LengthError);
             }
 
-            Ok(destination.assume_init())
+            Ok({
+                builder.finish();
+                IntrusiveArrayBuilder::array_assume_init(array)
+            })
         }
     }
 }

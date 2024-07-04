@@ -15,18 +15,6 @@ pub struct GenericArrayIter<T, N: ArrayLength> {
     index_back: usize,
 }
 
-#[cfg(test)]
-mod test {
-    use super::*;
-
-    fn send<I: Send>(_iter: I) {}
-
-    #[test]
-    fn test_send_iter() {
-        send(GenericArray::from([1, 2, 3, 4]).into_iter());
-    }
-}
-
 impl<T, N: ArrayLength> GenericArrayIter<T, N> {
     /// Returns the remaining items of this iterator as a slice
     #[inline(always)]
@@ -242,3 +230,15 @@ impl<T, N: ArrayLength> ExactSizeIterator for GenericArrayIter<T, N> {
 impl<T, N: ArrayLength> FusedIterator for GenericArrayIter<T, N> {}
 
 // TODO: Implement `TrustedLen` when stabilized
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    fn send<I: Send>(_iter: I) {}
+
+    #[test]
+    fn test_send_iter() {
+        send(GenericArray::from([1, 2, 3, 4]).into_iter());
+    }
+}

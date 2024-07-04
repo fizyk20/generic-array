@@ -1,8 +1,9 @@
 //! Serde serialization/deserialization implementation
 
-use crate::{ArrayLength, GenericArray};
+use crate::{ArrayLength, GenericArray, IntrusiveArrayBuilder};
 use core::fmt;
 use core::marker::PhantomData;
+
 use serde::de::{self, SeqAccess, Visitor};
 use serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
 
@@ -62,11 +63,12 @@ where
         }
 
         unsafe {
-            let mut dst = crate::ArrayBuilder::new();
+            let mut dst = GenericArray::uninit();
+            let mut builder = IntrusiveArrayBuilder::new(&mut dst);
 
-            let (dst_iter, position) = dst.iter_position();
+            let (build_iter, position) = builder.iter_position();
 
-            for dst in dst_iter {
+            for dst in build_iter {
                 match seq.next_element()? {
                     Some(el) => {
                         dst.write(el);
@@ -81,7 +83,10 @@ where
                     return Err(de::Error::invalid_length(*position + 1, &self));
                 }
 
-                return Ok(dst.assume_init());
+                return Ok({
+                    builder.finish();
+                    IntrusiveArrayBuilder::array_assume_init(dst)
+                });
             }
 
             Err(de::Error::invalid_length(*position, &self))
