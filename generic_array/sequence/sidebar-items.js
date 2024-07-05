@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["Concat","GenericSequence","Lengthen","Shorten","Split"],"type":["SequenceItem"]};
+window.SIDEBAR_ITEMS = {"trait":["Concat","GenericSequence","Lengthen","Remove","Shorten","Split"],"type":["SequenceItem"]};
