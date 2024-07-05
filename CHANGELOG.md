@@ -1,3 +1,7 @@
+* **`1.1.0`**
+    * Add `Remove` trait that adds `remove`/`swap_remove` to `GenericArray` (inspired by [#147](https://github.com/fizyk20/generic-array/pull/147))
+    * Soft-deprecate `internals::ArrayBuilder` in favor of `internals::IntrusiveArrayBuilder`
+
 * **`1.0.1`**
     * Update faster-hex dependency
     * Mark `from_iter` as `#[inline]` to significantly improve codegen.
