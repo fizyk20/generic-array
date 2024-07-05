@@ -335,6 +335,41 @@ fn test_concat() {
 }
 
 #[test]
+fn test_removes() {
+    let a = arr![1, 2, 3, 4];
+
+    for i in 0..4 {
+        let (b, c) = a.remove(i);
+
+        assert_eq!(b, i + 1);
+        assert_eq!(
+            c,
+            match i {
+                0 => arr![2, 3, 4],
+                1 => arr![1, 3, 4],
+                2 => arr![1, 2, 4],
+                3 => arr![1, 2, 3],
+                _ => unreachable!(),
+            }
+        );
+
+        let (b, c) = a.swap_remove(i);
+
+        assert_eq!(b, i + 1);
+        assert_eq!(
+            c,
+            match i {
+                0 => arr![4, 2, 3],
+                1 => arr![1, 4, 3],
+                2 => arr![1, 2, 4],
+                3 => arr![1, 2, 3],
+                _ => unreachable!(),
+            }
+        );
+    }
+}
+
+#[test]
 fn test_fold() {
     let a = arr![1, 2, 3, 4];
 

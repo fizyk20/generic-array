@@ -399,3 +399,136 @@ where
         }
     }
 }
+
+/// Defines a `GenericSequence` which can be shortened by removing an element at a given index.
+///
+/// # Safety
+/// While the [`remove`](Remove::remove) and [`swap_remove`](Remove::swap_remove) methods are marked safe,
+/// care must be taken when implementing it. The [`remove_unchecked`](Remove::remove_unchecked)
+/// and [`swap_remove_unchecked`](Remove::swap_remove_unchecked) methods are unsafe
+/// and must be used with caution.
+pub unsafe trait Remove<T, N: ArrayLength>: GenericSequence<T> {
+    /// Resulting sequence formed by removing an element at the given index.
+    type Output: GenericSequence<T>;
+
+    /// Removes an element at the given index, shifting elements
+    /// after the given index to the left to fill the gap, resulting
+    /// in a time complexity of O(n) where `n=N-idx-1`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Remove};
+    /// let a = arr![1, 2, 3, 4];
+    ///
+    /// let (removed, b) = a.remove(2);
+    /// assert_eq!(removed, 3);
+    /// assert_eq!(b, arr![1, 2, 4]);
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Panics if the index is out of bounds.
+    #[inline]
+    fn remove(self, idx: usize) -> (T, Self::Output) {
+        assert!(
+            idx < N::USIZE,
+            "Index out of bounds: the len is {} but the index is {}",
+            N::USIZE,
+            idx
+        );
+
+        unsafe { self.remove_unchecked(idx) }
+    }
+
+    /// Removes an element at the given index, swapping it with the last element.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Remove};
+    /// let a = arr![1, 2, 3, 4];
+    ///
+    /// let (removed, b) = a.swap_remove(1);
+    /// assert_eq!(removed, 2);
+    /// assert_eq!(b, arr![1, 4, 3]); // note 4 is now at index 1
+    /// ```
+    ///
+    /// # Panics
+    ///
+    /// Panics if the index is out of bounds.
+    fn swap_remove(self, idx: usize) -> (T, Self::Output) {
+        assert!(
+            idx < N::USIZE,
+            "Index out of bounds: the len is {} but the index is {}",
+            N::USIZE,
+            idx
+        );
+
+        unsafe { self.swap_remove_unchecked(idx) }
+    }
+
+    /// Removes an element at the given index without bounds checking,
+    /// shifting elements after the given index to the left to fill the gap,
+    /// resulting in a time complexity of O(n) where `n=N-idx-1`
+    ///
+    /// See [`remove`](Remove::remove) for an example.
+    ///
+    /// # Safety
+    /// The caller must ensure that the index is within bounds, otherwise
+    /// it is undefined behavior.
+    unsafe fn remove_unchecked(self, idx: usize) -> (T, Self::Output);
+
+    /// Removes an element at the given index without bounds checking, swapping it with the last element.
+    ///
+    /// See [`swap_remove`](Remove::swap_remove) for an example.
+    ///
+    /// # Safety
+    /// The caller must ensure that the index is within bounds, otherwise
+    /// it is undefined behavior.
+    unsafe fn swap_remove_unchecked(self, idx: usize) -> (T, Self::Output);
+}
+
+unsafe impl<T, N> Remove<T, N> for GenericArray<T, N>
+where
+    N: ArrayLength + Sub<B1>,
+    Sub1<N>: ArrayLength,
+{
+    type Output = GenericArray<T, Sub1<N>>;
+
+    #[inline]
+    unsafe fn remove_unchecked(self, idx: usize) -> (T, Self::Output) {
+        if idx >= N::USIZE || N::USIZE == 0 {
+            core::hint::unreachable_unchecked();
+        }
+
+        let mut array = ManuallyDrop::new(self);
+
+        let dst = array.as_mut_ptr().add(idx);
+
+        let removed = ptr::read(dst);
+
+        // shift all elements over by one to fill gap
+        ptr::copy(dst.add(1), dst, N::USIZE - idx - 1);
+
+        // return removed element and truncated array
+        (removed, mem::transmute_copy(&array))
+    }
+
+    #[inline]
+    unsafe fn swap_remove_unchecked(self, idx: usize) -> (T, Self::Output) {
+        if idx >= N::USIZE || N::USIZE == 0 {
+            core::hint::unreachable_unchecked();
+        }
+
+        let mut array = ManuallyDrop::new(self);
+
+        array.swap(idx, N::USIZE - 1);
+
+        // remove the last element
+        let removed = ptr::read(array.as_ptr().add(N::USIZE - 1));
+
+        // return removed element and truncated array
+        (removed, mem::transmute_copy(&array))
+    }
+}
