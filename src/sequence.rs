@@ -2,7 +2,7 @@
 
 use super::*;
 use core::mem::MaybeUninit;
-use core::ops::{Add, Sub};
+use core::ops::{Add, Div, Mul, Sub};
 use core::ptr;
 use typenum::operator_aliases::*;
 
@@ -530,5 +530,147 @@ where
 
         // return removed element and truncated array
         (removed, mem::transmute_copy(&array))
+    }
+}
+
+/// Defines a `GenericSequence` of `GenericArray`s which can be flattened into a single `GenericArray`,
+/// at zero cost.
+///
+/// # Safety
+/// While the [`flatten`](Flatten::flatten) method is marked safe,
+/// care must be taken when implementing it. However, the given trait bounds
+/// should be sufficient to ensure safety.
+pub unsafe trait Flatten<T, N, M>: GenericSequence<GenericArray<T, N>, Length = M>
+where
+    N: ArrayLength + Mul<M>,
+    Prod<N, M>: ArrayLength,
+{
+    /// Flattened sequence type
+    type Output: GenericSequence<T, Length = Prod<N, M>>;
+
+    /// Flattens the sequence into a single `GenericArray`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Flatten};
+    /// assert_eq!(
+    ///     arr![arr![1, 2], arr![3, 4], arr![5, 6]].flatten(),
+    ///     arr![1, 2, 3, 4, 5, 6]
+    /// );
+    /// ```
+    fn flatten(self) -> Self::Output;
+}
+
+/// Defines a `GenericSequence` of `T` which can be split evenly into a sequence of `GenericArray`s,
+///
+/// # Safety
+/// While the [`unflatten`](Unflatten::unflatten) method is marked safe,
+/// care must be taken when implementing it. However, the given trait bounds
+/// should be sufficient to ensure safety.
+pub unsafe trait Unflatten<T, NM, N>: GenericSequence<T, Length = NM>
+where
+    NM: ArrayLength + Div<N>,
+    N: ArrayLength,
+    Quot<NM, N>: ArrayLength,
+{
+    /// Unflattened sequence type
+    type Output: GenericSequence<GenericArray<T, N>, Length = Quot<NM, N>>;
+
+    /// Unflattens the sequence into a sequence of `GenericArray`s.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// # use generic_array::{arr, sequence::Unflatten};
+    /// assert_eq!(
+    ///     arr![1, 2, 3, 4, 5, 6].unflatten(),
+    ///     arr![arr![1, 2], arr![3, 4], arr![5, 6]]
+    /// );
+    /// ```
+    fn unflatten(self) -> Self::Output;
+}
+
+unsafe impl<T, N, M> Flatten<T, N, M> for GenericArray<GenericArray<T, N>, M>
+where
+    N: ArrayLength + Mul<M>,
+    M: ArrayLength,
+    Prod<N, M>: ArrayLength,
+{
+    type Output = GenericArray<T, Prod<N, M>>;
+
+    #[inline(always)]
+    fn flatten(self) -> Self::Output {
+        unsafe { crate::const_transmute(self) }
+    }
+}
+
+unsafe impl<'a, T, N, M> Flatten<T, N, M> for &'a GenericArray<GenericArray<T, N>, M>
+where
+    N: ArrayLength + Mul<M>,
+    M: ArrayLength,
+    Prod<N, M>: ArrayLength,
+{
+    type Output = &'a GenericArray<T, Prod<N, M>>;
+
+    #[inline(always)]
+    fn flatten(self) -> Self::Output {
+        unsafe { mem::transmute(self) }
+    }
+}
+
+unsafe impl<'a, T, N, M> Flatten<T, N, M> for &'a mut GenericArray<GenericArray<T, N>, M>
+where
+    N: ArrayLength + Mul<M>,
+    M: ArrayLength,
+    Prod<N, M>: ArrayLength,
+{
+    type Output = &'a mut GenericArray<T, Prod<N, M>>;
+
+    #[inline(always)]
+    fn flatten(self) -> Self::Output {
+        unsafe { mem::transmute(self) }
+    }
+}
+
+unsafe impl<T, NM, N> Unflatten<T, NM, N> for GenericArray<T, NM>
+where
+    NM: ArrayLength + Div<N>,
+    N: ArrayLength,
+    Quot<NM, N>: ArrayLength,
+{
+    type Output = GenericArray<GenericArray<T, N>, Quot<NM, N>>;
+
+    #[inline(always)]
+    fn unflatten(self) -> Self::Output {
+        unsafe { crate::const_transmute(self) }
+    }
+}
+
+unsafe impl<'a, T, NM, N> Unflatten<T, NM, N> for &'a GenericArray<T, NM>
+where
+    NM: ArrayLength + Div<N>,
+    N: ArrayLength,
+    Quot<NM, N>: ArrayLength,
+{
+    type Output = &'a GenericArray<GenericArray<T, N>, Quot<NM, N>>;
+
+    #[inline(always)]
+    fn unflatten(self) -> Self::Output {
+        unsafe { mem::transmute(self) }
+    }
+}
+
+unsafe impl<'a, T, NM, N> Unflatten<T, NM, N> for &'a mut GenericArray<T, NM>
+where
+    NM: ArrayLength + Div<N>,
+    N: ArrayLength,
+    Quot<NM, N>: ArrayLength,
+{
+    type Output = &'a mut GenericArray<GenericArray<T, N>, Quot<NM, N>>;
+
+    #[inline(always)]
+    fn unflatten(self) -> Self::Output {
+        unsafe { mem::transmute(self) }
     }
 }
