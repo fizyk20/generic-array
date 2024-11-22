@@ -4,7 +4,7 @@
 
 This crate implements a structure that can be used as a generic array type.
 
-**Requires minumum Rust version of 1.65.0
+**Requires minimum Rust version of 1.65.0
 
 [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/) may be required to view certain types on foreign crates.
 

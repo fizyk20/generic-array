@@ -112,7 +112,7 @@ pub struct IntrusiveArrayBuilder<'a, T, N: ArrayLength> {
 impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// Begin building an array
     #[inline(always)]
-    pub fn new(array: &'a mut GenericArray<MaybeUninit<T>, N>) -> IntrusiveArrayBuilder<T, N> {
+    pub fn new(array: &'a mut GenericArray<MaybeUninit<T>, N>) -> IntrusiveArrayBuilder<'a, T, N> {
         IntrusiveArrayBuilder { array, position: 0 }
     }
 
@@ -181,7 +181,7 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     }
 }
 
-impl<'a, T, N: ArrayLength> Drop for IntrusiveArrayBuilder<'a, T, N> {
+impl<T, N: ArrayLength> Drop for IntrusiveArrayBuilder<'_, T, N> {
     fn drop(&mut self) {
         unsafe {
             ptr::drop_in_place(

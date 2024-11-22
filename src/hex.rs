@@ -50,12 +50,12 @@ fn hex_encode<const UPPER: bool>(src: &[u8], dst: &mut [u8]) {
     };
 }
 
-fn generic_hex<N: ArrayLength, const UPPER: bool>(
+fn generic_hex<N, const UPPER: bool>(
     arr: &GenericArray<u8, N>,
     f: &mut fmt::Formatter<'_>,
 ) -> fmt::Result
 where
-    N: Add<N>,
+    N: ArrayLength + Add<N>,
     Sum<N, N>: ArrayLength,
 {
     let max_digits = N::USIZE * 2;

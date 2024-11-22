@@ -18,7 +18,7 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// `GenericArray` associated length
     type Length: ArrayLength;
 
-    /// Owned sequence type used in conjuction with reference implementations of `GenericSequence`
+    /// Owned sequence type used in conjunction with reference implementations of `GenericSequence`
     type Sequence: GenericSequence<T, Length = Self::Length> + FromIterator<T>;
 
     /// Initializes a new sequence instance using the given function.

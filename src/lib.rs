@@ -1,6 +1,6 @@
 //! This crate implements a structure that can be used as a generic array type.
 //!
-//! **Requires minumum Rust version of 1.65.0
+//! **Requires minimum Rust version of 1.65.0
 //!
 //! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
 //! may be required to view certain types on foreign crates.
@@ -143,7 +143,7 @@ pub mod internals {
     //! These are used internally for building and consuming generic arrays. When used correctly,
     //! they can ensure elements are correctly dropped if something panics while using them.
     //!
-    //! The API of these is not guarenteed to be stable, as they are not intended for general use.
+    //! The API of these is not guaranteed to be stable, as they are not intended for general use.
 
     pub use crate::internal::{ArrayBuilder, ArrayConsumer, IntrusiveArrayBuilder};
 }
@@ -326,7 +326,7 @@ unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1> {
 ///
 /// # Usage Notes
 ///
-/// ### Intialization
+/// ### Initialization
 ///
 /// Initialization of known-length `GenericArray`s can be done via the [`arr![]`](arr!) macro,
 /// or [`from_array`](GenericArray::from_array)/[`from_slice`](GenericArray::from_slice).
