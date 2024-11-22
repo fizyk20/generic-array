@@ -1,4 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.203/src/de/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="serde" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (cc8da78a0 2024-07-04)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-6f17d22bba15001f/serde-1.0.215/src/de/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-42caa33d.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="serde" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (b19329a37 2024-11-21)" data-channel="nightly" data-search-js="search-92e6798f.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">serde/de/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -2327,7 +2328,12 @@
 <a href="#2327" id="2327">2327</a>
 <a href="#2328" id="2328">2328</a>
 <a href="#2329" id="2329">2329</a>
-</pre></div><pre class="rust"><code><span class="doccomment">//! Generic data structure deserialization framework.
+<a href="#2330" id="2330">2330</a>
+<a href="#2331" id="2331">2331</a>
+<a href="#2332" id="2332">2332</a>
+<a href="#2333" id="2333">2333</a>
+<a href="#2334" id="2334">2334</a>
+<a href="#2335" id="2335">2335</a></pre></div><pre class="rust"><code><span class="doccomment">//! Generic data structure deserialization framework.
 //!
 //! The two most important traits in this module are [`Deserialize`] and
 //! [`Deserializer`].
@@ -2447,17 +2453,16 @@
 
 </span><span class="kw">pub mod </span>value;
 
-<span class="kw">mod </span>format;
 <span class="kw">mod </span>ignored_any;
 <span class="kw">mod </span>impls;
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">mod </span>size_hint;
 
 <span class="kw">pub use </span><span class="self">self</span>::ignored_any::IgnoredAny;
 
-<span class="attr">#[cfg(not(any(feature = <span class="string">"std"</span>, feature = <span class="string">"unstable"</span>)))]
+<span class="attr">#[cfg(all(not(feature = <span class="string">"std"</span>), no_core_error))]
 #[doc(no_inline)]
 </span><span class="kw">pub use </span><span class="kw">crate</span>::std_error::Error <span class="kw">as </span>StdError;
-<span class="attr">#[cfg(all(feature = <span class="string">"unstable"</span>, not(feature = <span class="string">"std"</span>)))]
+<span class="attr">#[cfg(not(any(feature = <span class="string">"std"</span>, no_core_error)))]
 #[doc(no_inline)]
 </span><span class="kw">pub use </span>core::error::Error <span class="kw">as </span>StdError;
 <span class="attr">#[cfg(feature = <span class="string">"std"</span>)]
@@ -2816,13 +2821,13 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Expected <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>str {
+<span class="kw">impl </span>Expected <span class="kw">for </span><span class="kw-2">&amp;</span>str {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         formatter.write_str(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Display <span class="kw">for </span>Expected + <span class="lifetime">'a </span>{
+<span class="kw">impl </span>Display <span class="kw">for </span>Expected + <span class="lifetime">'_ </span>{
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         Expected::fmt(<span class="self">self</span>, formatter)
     }
@@ -2861,6 +2866,13 @@
 /// deserializer lifetimes] for a more detailed explanation of these lifetimes.
 ///
 /// [Understanding deserializer lifetimes]: https://serde.rs/lifetimes.html
+</span><span class="attr">#[cfg_attr(
+    not(no_diagnostic_namespace),
+    diagnostic::on_unimplemented(
+        note = <span class="string">"for local types consider adding `#[derive(serde::Deserialize)]` to your `{Self}` type"</span>,
+        note = <span class="string">"for types from other crates check whether the crate offers a `serde` feature flag"</span>,
+    )
+)]
 </span><span class="kw">pub trait </span>Deserialize&lt;<span class="lifetime">'de</span>&gt;: Sized {
     <span class="doccomment">/// Deserialize this value from the given Serde deserializer.
     ///
@@ -3696,7 +3708,7 @@
         </span>E: Error,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>buf = [<span class="number">0u8</span>; <span class="number">58</span>];
-        <span class="kw">let </span><span class="kw-2">mut </span>writer = format::Buf::new(<span class="kw-2">&amp;mut </span>buf);
+        <span class="kw">let </span><span class="kw-2">mut </span>writer = <span class="kw">crate</span>::format::Buf::new(<span class="kw-2">&amp;mut </span>buf);
         fmt::Write::write_fmt(<span class="kw-2">&amp;mut </span>writer, <span class="macro">format_args!</span>(<span class="string">"integer `{}` as i128"</span>, v)).unwrap();
         <span class="prelude-val">Err</span>(Error::invalid_type(
             Unexpected::Other(writer.as_str()),
@@ -3758,7 +3770,7 @@
         </span>E: Error,
     {
         <span class="kw">let </span><span class="kw-2">mut </span>buf = [<span class="number">0u8</span>; <span class="number">57</span>];
-        <span class="kw">let </span><span class="kw-2">mut </span>writer = format::Buf::new(<span class="kw-2">&amp;mut </span>buf);
+        <span class="kw">let </span><span class="kw-2">mut </span>writer = <span class="kw">crate</span>::format::Buf::new(<span class="kw-2">&amp;mut </span>buf);
         fmt::Write::write_fmt(<span class="kw-2">&amp;mut </span>writer, <span class="macro">format_args!</span>(<span class="string">"integer `{}` as u128"</span>, v)).unwrap();
         <span class="prelude-val">Err</span>(Error::invalid_type(
             Unexpected::Other(writer.as_str()),
@@ -4064,7 +4076,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'de</span>, <span class="lifetime">'a</span>, A&gt; SeqAccess&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>A
+<span class="kw">impl</span>&lt;<span class="lifetime">'de</span>, A&gt; SeqAccess&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span><span class="kw-2">&amp;mut </span>A
 <span class="kw">where
     </span>A: <span class="question-mark">?</span>Sized + SeqAccess&lt;<span class="lifetime">'de</span>&gt;,
 {
@@ -4217,7 +4229,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">'de</span>, <span class="lifetime">'a</span>, A&gt; MapAccess&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>A
+<span class="kw">impl</span>&lt;<span class="lifetime">'de</span>, A&gt; MapAccess&lt;<span class="lifetime">'de</span>&gt; <span class="kw">for </span><span class="kw-2">&amp;mut </span>A
 <span class="kw">where
     </span>A: <span class="question-mark">?</span>Sized + MapAccess&lt;<span class="lifetime">'de</span>&gt;,
 {
