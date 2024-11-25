@@ -1,3 +1,6 @@
+* **`1.1.1`**
+    * Add `Flatten` and `Unflatten` traits for converting between nested arrays.
+
 * **`1.1.0`**
     * Add `Remove` trait that adds `remove`/`swap_remove` to `GenericArray` (inspired by [#147](https://github.com/fizyk20/generic-array/pull/147))
     * Soft-deprecate `internals::ArrayBuilder` in favor of `internals::IntrusiveArrayBuilder`
