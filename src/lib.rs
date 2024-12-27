@@ -687,7 +687,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Extracts a mutable slice containing the entire array.
     #[inline(always)]
-    pub fn as_mut_slice(&mut self) -> &mut [T] {
+    pub const fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::USIZE) }
     }
 
@@ -729,10 +729,9 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     ///
     /// Consider [`TryFrom`]/[`TryInto`] for a fallible conversion.
     #[inline(always)]
-    pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
-        assert_eq!(
-            slice.len(),
-            N::USIZE,
+    pub const fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
+        assert!(
+            slice.len() == N::USIZE,
             "slice.len() != N in GenericArray::from_mut_slice"
         );
 
@@ -745,8 +744,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// and current just calls [`TryFrom`] internally, but is provided for
     /// future compatibility when we can make it const.
     #[inline(always)]
-    pub fn try_from_mut_slice(slice: &mut [T]) -> Result<&mut GenericArray<T, N>, LengthError> {
-        TryFrom::try_from(slice)
+    pub const fn try_from_mut_slice(slice: &mut [T]) -> Result<&mut GenericArray<T, N>, LengthError> {
+        match slice.len() == N::USIZE {
+            true => Ok(GenericArray::from_mut_slice(slice)),
+            false => Err(LengthError),
+        }
     }
 
     /// Converts a slice of `T` elements into a slice of `GenericArray<T, N>` chunks.
@@ -782,7 +784,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # Panics
     ///
     /// Panics if `N` is `U0` _AND_ the input slice is not empty.
-    pub fn chunks_from_slice_mut(slice: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
+    pub const fn chunks_from_slice_mut(slice: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
         if N::USIZE == 0 {
             assert!(slice.is_empty(), "GenericArray length N must be non-zero");
             return (&mut [], &mut []);
@@ -812,7 +814,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Convert a slice of `GenericArray<T, N>` into a slice of `T`, effectively flattening the arrays.
     #[inline(always)]
-    pub fn slice_from_chunks_mut(slice: &mut [GenericArray<T, N>]) -> &mut [T] {
+    pub const fn slice_from_chunks_mut(slice: &mut [GenericArray<T, N>]) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(slice.as_mut_ptr() as *mut T, slice.len() * N::USIZE) }
     }
 
@@ -849,7 +851,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Convert a mutable slice of native arrays into a mutable slice of `GenericArray`s.
     #[inline(always)]
-    pub fn from_chunks_mut<const U: usize>(chunks: &mut [[T; U]]) -> &mut [GenericArray<T, N>]
+    pub const fn from_chunks_mut<const U: usize>(chunks: &mut [[T; U]]) -> &mut [GenericArray<T, N>]
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
@@ -867,7 +869,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 
     /// Converts a mutable slice `GenericArray<T, N>` into a mutable slice of `[T; N]`
     #[inline(always)]
-    pub fn into_chunks_mut<const U: usize>(chunks: &mut [GenericArray<T, N>]) -> &mut [[T; U]]
+    pub const fn into_chunks_mut<const U: usize>(chunks: &mut [GenericArray<T, N>]) -> &mut [[T; U]]
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
@@ -943,10 +945,7 @@ impl<'a, T, N: ArrayLength> TryFrom<&'a mut [T]> for &'a mut GenericArray<T, N> 
 
     #[inline(always)]
     fn try_from(slice: &'a mut [T]) -> Result<Self, Self::Error> {
-        match slice.len() == N::USIZE {
-            true => Ok(GenericArray::from_mut_slice(slice)),
-            false => Err(LengthError),
-        }
+        GenericArray::try_from_mut_slice(slice)
     }
 }
 
