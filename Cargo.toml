@@ -1,9 +1,10 @@
 [package]
 
 name = "generic-array"
-version = "1.1.1"
+version = "1.2.0"
 authors = ["Bartłomiej Kamiński <fizyk20@gmail.com>", "Aaron Trent <novacrazy@gmail.com>"]
 edition = "2021"
+rust-version = "1.83"
 
 description = "Generic types implementing functionality of arrays"
 readme = "README.md"

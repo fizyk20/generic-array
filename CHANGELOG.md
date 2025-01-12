@@ -1,3 +1,7 @@
+* **`1.2.0`**
+    * Mark more functions as `const`
+    * Bump MSRV to 1.83.0
+
 * **`1.1.1`**
     * Add `Flatten` and `Unflatten` traits for converting between nested arrays.
 
