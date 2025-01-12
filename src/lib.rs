@@ -741,10 +741,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Converts a mutable slice to a mutable generic array reference with inferred length.
     ///
     /// This is a fallible alternative to [`from_mut_slice`](GenericArray::from_mut_slice),
-    /// and current just calls [`TryFrom`] internally, but is provided for
-    /// future compatibility when we can make it const.
+    /// and is equivalent to the [`TryFrom`] implementation with the added benefit of being `const`.
     #[inline(always)]
-    pub const fn try_from_mut_slice(slice: &mut [T]) -> Result<&mut GenericArray<T, N>, LengthError> {
+    pub const fn try_from_mut_slice(
+        slice: &mut [T],
+    ) -> Result<&mut GenericArray<T, N>, LengthError> {
         match slice.len() == N::USIZE {
             true => Ok(GenericArray::from_mut_slice(slice)),
             false => Err(LengthError),
