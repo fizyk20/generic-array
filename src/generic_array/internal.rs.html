@@ -229,7 +229,9 @@
 <a href="#228" id="228">228</a>
 <a href="#229" id="229">229</a>
 <a href="#230" id="230">230</a>
-<a href="#231" id="231">231</a></pre></div><pre class="rust"><code><span class="attr">#![allow(dead_code)] </span><span class="comment">// ArrayBuilder is soft-deprecated internally
+<a href="#231" id="231">231</a>
+<a href="#232" id="232">232</a>
+<a href="#233" id="233">233</a></pre></div><pre class="rust"><code><span class="attr">#![allow(dead_code)] </span><span class="comment">// ArrayBuilder is soft-deprecated internally
 
 </span><span class="kw">use crate</span>::<span class="kw-2">*</span>;
 
@@ -312,7 +314,7 @@
     <span class="doccomment">/// When done writing (assuming all elements have been written to),
     /// get the inner array.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub unsafe fn </span>assume_init(<span class="self">self</span>) -&gt; GenericArray&lt;T, N&gt; {
+    </span><span class="kw">pub const unsafe fn </span>assume_init(<span class="self">self</span>) -&gt; GenericArray&lt;T, N&gt; {
         <span class="macro">debug_assert!</span>(<span class="self">self</span>.is_full());
 
         <span class="kw">let </span>array = ptr::read(<span class="kw-2">&amp;</span><span class="self">self</span>.array);
@@ -343,7 +345,9 @@
 <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T, N: ArrayLength&gt; IntrusiveArrayBuilder&lt;<span class="lifetime">'a</span>, T, N&gt; {
     <span class="doccomment">/// Begin building an array
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>new(array: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>GenericArray&lt;MaybeUninit&lt;T&gt;, N&gt;) -&gt; IntrusiveArrayBuilder&lt;<span class="lifetime">'a</span>, T, N&gt; {
+    </span><span class="kw">pub const fn </span>new(
+        array: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>GenericArray&lt;MaybeUninit&lt;T&gt;, N&gt;,
+    ) -&gt; IntrusiveArrayBuilder&lt;<span class="lifetime">'a</span>, T, N&gt; {
         IntrusiveArrayBuilder { array, position: <span class="number">0 </span>}
     }
 
@@ -364,7 +368,7 @@
 
     <span class="doccomment">/// Returns true if the write position equals the array size
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub fn </span>is_full(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+    </span><span class="kw">pub const fn </span>is_full(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.position == N::USIZE
     }
 
@@ -400,7 +404,7 @@
     <span class="doccomment">/// When done writing (assuming all elements have been written to),
     /// get the inner array.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub unsafe fn </span>finish(<span class="self">self</span>) {
+    </span><span class="kw">pub const unsafe fn </span>finish(<span class="self">self</span>) {
         <span class="macro">debug_assert!</span>(<span class="self">self</span>.is_full());
         mem::forget(<span class="self">self</span>)
     }

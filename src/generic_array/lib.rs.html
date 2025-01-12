@@ -1045,7 +1045,7 @@
 <a href="#1044" id="1044">1044</a>
 <a href="#1045" id="1045">1045</a></pre></div><pre class="rust"><code><span class="doccomment">//! This crate implements a structure that can be used as a generic array type.
 //!
-//! **Requires minimum Rust version of 1.65.0
+//! **Requires minimum Rust version of 1.83.0
 //!
 //! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
 //! may be required to view certain types on foreign crates.
@@ -1125,7 +1125,6 @@
 //! ```toml
 //! [dependencies.generic-array]
 //! features = [
-//!     "more_lengths",  # Expands From/Into implementation for more array lengths
 //!     "serde",         # Serialize/Deserialize implementation
 //!     "zeroize",       # Zeroize implementation for setting array elements to zero
 //!     "const-default", # Compile-time const default value support via trait
@@ -1786,10 +1785,11 @@
     <span class="doccomment">/// Converts a mutable slice to a mutable generic array reference with inferred length.
     ///
     /// This is a fallible alternative to [`from_mut_slice`](GenericArray::from_mut_slice),
-    /// and current just calls [`TryFrom`] internally, but is provided for
-    /// future compatibility when we can make it const.
+    /// and is equivalent to the [`TryFrom`] implementation with the added benefit of being `const`.
     </span><span class="attr">#[inline(always)]
-    </span><span class="kw">pub const fn </span>try_from_mut_slice(slice: <span class="kw-2">&amp;mut </span>[T]) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span>GenericArray&lt;T, N&gt;, LengthError&gt; {
+    </span><span class="kw">pub const fn </span>try_from_mut_slice(
+        slice: <span class="kw-2">&amp;mut </span>[T],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="kw-2">&amp;mut </span>GenericArray&lt;T, N&gt;, LengthError&gt; {
         <span class="kw">match </span>slice.len() == N::USIZE {
             <span class="bool-val">true </span>=&gt; <span class="prelude-val">Ok</span>(GenericArray::from_mut_slice(slice)),
             <span class="bool-val">false </span>=&gt; <span class="prelude-val">Err</span>(LengthError),
