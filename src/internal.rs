@@ -81,7 +81,7 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// When done writing (assuming all elements have been written to),
     /// get the inner array.
     #[inline(always)]
-    pub unsafe fn assume_init(self) -> GenericArray<T, N> {
+    pub const unsafe fn assume_init(self) -> GenericArray<T, N> {
         debug_assert!(self.is_full());
 
         let array = ptr::read(&self.array);
@@ -112,7 +112,9 @@ pub struct IntrusiveArrayBuilder<'a, T, N: ArrayLength> {
 impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// Begin building an array
     #[inline(always)]
-    pub fn new(array: &'a mut GenericArray<MaybeUninit<T>, N>) -> IntrusiveArrayBuilder<'a, T, N> {
+    pub const fn new(
+        array: &'a mut GenericArray<MaybeUninit<T>, N>,
+    ) -> IntrusiveArrayBuilder<'a, T, N> {
         IntrusiveArrayBuilder { array, position: 0 }
     }
 
@@ -133,7 +135,7 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
 
     /// Returns true if the write position equals the array size
     #[inline(always)]
-    pub fn is_full(&self) -> bool {
+    pub const fn is_full(&self) -> bool {
         self.position == N::USIZE
     }
 
@@ -169,7 +171,7 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// When done writing (assuming all elements have been written to),
     /// get the inner array.
     #[inline(always)]
-    pub unsafe fn finish(self) {
+    pub const unsafe fn finish(self) {
         debug_assert!(self.is_full());
         mem::forget(self)
     }
