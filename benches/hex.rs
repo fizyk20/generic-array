@@ -9,7 +9,7 @@ use std::{fmt::UpperHex, io::Write};
 fn criterion_benchmark(c: &mut Criterion) {
     let mut hex = c.benchmark_group("hex");
 
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
 
     macro_rules! all_hex_benches {
         ($($len:ty,)*) => {
