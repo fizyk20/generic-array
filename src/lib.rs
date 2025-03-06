@@ -152,9 +152,8 @@ use self::sequence::*;
 
 pub use self::iter::GenericArrayIter;
 
-/// Trait used to define the number of elements in a [`GenericArray`].
-///
-/// `ArrayLength` is a superset of [`typenum::Unsigned`].
+/// `ArrayLength` is a type-level [`Unsigned`] integer used to
+/// define the number of elements in a [`GenericArray`].
 ///
 /// Consider `N: ArrayLength` to be equivalent to `const N: usize`
 ///
