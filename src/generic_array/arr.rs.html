@@ -19,7 +19,7 @@
 <a href=#19 id=19 data-nosnippet>19</a>/// # NOTES AND LIMITATIONS
 <a href=#20 id=20 data-nosnippet>20</a>/// * As of `generic-array 1.0`, [`From`]/[`from_array`](crate::GenericArray::from_array) can be used directly for a wide range of regular arrays.
 <a href=#21 id=21 data-nosnippet>21</a>/// * The `[T; N: ArrayLength]` and `[T; usize]` explicit forms are limited to `Copy` values. Use
-<a href=#22 id=22 data-nosnippet>22</a>///     [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
+<a href=#22 id=22 data-nosnippet>22</a>///   [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
 <a href=#23 id=23 data-nosnippet>23</a>/// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const&lt;U&gt;`](typenum::Const)
 <a href=#24 id=24 data-nosnippet>24</a></span><span class="attr">#[macro_export]
 <a href=#25 id=25 data-nosnippet>25</a></span><span class="macro">macro_rules!</span> arr {
