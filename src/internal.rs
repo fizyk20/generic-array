@@ -74,7 +74,9 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
     /// # }
     /// ```
     #[inline(always)]
-    pub unsafe fn iter_position(&mut self) -> (slice::IterMut<MaybeUninit<T>>, &mut usize) {
+    pub unsafe fn iter_position(
+        &'_ mut self,
+    ) -> (slice::IterMut<'_, MaybeUninit<T>>, &'_ mut usize) {
         (self.array.iter_mut(), &mut self.position)
     }
 
@@ -164,7 +166,9 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// # }
     /// ```
     #[inline(always)]
-    pub unsafe fn iter_position(&mut self) -> (slice::IterMut<MaybeUninit<T>>, &mut usize) {
+    pub unsafe fn iter_position(
+        &'_ mut self,
+    ) -> (slice::IterMut<'_, MaybeUninit<T>>, &'_ mut usize) {
         (self.array.iter_mut(), &mut self.position)
     }
 
@@ -219,7 +223,7 @@ impl<T, N: ArrayLength> ArrayConsumer<T, N> {
     ///
     /// You MUST increment the position as you iterate to mark off consumed elements.
     #[inline(always)]
-    pub unsafe fn iter_position(&mut self) -> (slice::Iter<T>, &mut usize) {
+    pub unsafe fn iter_position(&'_ mut self) -> (slice::Iter<'_, T>, &'_ mut usize) {
         (self.array.iter(), &mut self.position)
     }
 }

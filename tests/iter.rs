@@ -153,11 +153,11 @@ fn test_into_iter_drops() {
         }
     }
 
-    fn r(i: &Cell<usize>) -> R {
+    fn r(i: &'_ Cell<usize>) -> R<'_> {
         R { i }
     }
 
-    fn v(i: &Cell<usize>) -> GenericArray<R, U5> {
+    fn v(i: &'_ Cell<usize>) -> GenericArray<R<'_>, U5> {
         arr![r(i), r(i), r(i), r(i), r(i)]
     }
 

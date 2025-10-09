@@ -1,3 +1,6 @@
+* **`1.2.1`**
+    * Replace `doc_auto_cfg` with `doc_cfg` [#155](https://github.com/fizyk20/generic-array/pull/155)
+
 * **`1.2.0`**
     * Mark more functions as `const`
     * Bump MSRV to 1.83.0

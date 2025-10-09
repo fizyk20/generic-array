@@ -19,7 +19,7 @@
 /// # NOTES AND LIMITATIONS
 /// * As of `generic-array 1.0`, [`From`]/[`from_array`](crate::GenericArray::from_array) can be used directly for a wide range of regular arrays.
 /// * The `[T; N: ArrayLength]` and `[T; usize]` explicit forms are limited to `Copy` values. Use
-///     [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
+///   [`GenericArray::generate(|| value.clone())`](crate::GenericSequence::generate) for non-`Copy` items.
 /// * The `[T; usize]` explicit and `[0, 1, 2, 3]` implicit forms are limited to lengths supported by [`Const<U>`](typenum::Const)
 #[macro_export]
 macro_rules! arr {
