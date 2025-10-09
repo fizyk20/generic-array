@@ -268,8 +268,7 @@ pub type ConstArrayLength<const N: usize> = <Const<N> as IntoArrayLength>::Array
 #[repr(C)]
 #[doc(hidden)]
 pub struct GenericArrayImplEven<T, U> {
-    parent1: U,
-    parent2: U,
+    parents: [U; 2],
     _marker: PhantomData<T>,
 }
 
@@ -278,8 +277,7 @@ pub struct GenericArrayImplEven<T, U> {
 #[repr(C)]
 #[doc(hidden)]
 pub struct GenericArrayImplOdd<T, U> {
-    parent1: U,
-    parent2: U,
+    parents: [U; 2],
     data: T,
 }
 

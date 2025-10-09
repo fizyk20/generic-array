@@ -5,16 +5,14 @@ use const_default::ConstDefault;
 
 impl<T, U: ConstDefault> ConstDefault for GenericArrayImplEven<T, U> {
     const DEFAULT: Self = Self {
-        parent1: U::DEFAULT,
-        parent2: U::DEFAULT,
+        parents: [U::DEFAULT; 2],
         _marker: core::marker::PhantomData,
     };
 }
 
 impl<T: ConstDefault, U: ConstDefault> ConstDefault for GenericArrayImplOdd<T, U> {
     const DEFAULT: Self = Self {
-        parent1: U::DEFAULT,
-        parent2: U::DEFAULT,
+        parents: [U::DEFAULT; 2],
         data: T::DEFAULT,
     };
 }
