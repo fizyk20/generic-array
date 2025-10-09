@@ -1,1 +1,0 @@
-searchState.loadedDescShard("const_default", 0, "Implements a compilation time default value for the …\nThe constant default value.")
