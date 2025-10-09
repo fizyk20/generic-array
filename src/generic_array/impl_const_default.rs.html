@@ -5,37 +5,35 @@
 <a href=#5 id=5 data-nosnippet>5</a>
 <a href=#6 id=6 data-nosnippet>6</a><span class="kw">impl</span>&lt;T, U: ConstDefault&gt; ConstDefault <span class="kw">for </span>GenericArrayImplEven&lt;T, U&gt; {
 <a href=#7 id=7 data-nosnippet>7</a>    <span class="kw">const </span>DEFAULT: <span class="self">Self </span>= <span class="self">Self </span>{
-<a href=#8 id=8 data-nosnippet>8</a>        parent1: U::DEFAULT,
-<a href=#9 id=9 data-nosnippet>9</a>        parent2: U::DEFAULT,
-<a href=#10 id=10 data-nosnippet>10</a>        _marker: core::marker::PhantomData,
-<a href=#11 id=11 data-nosnippet>11</a>    };
-<a href=#12 id=12 data-nosnippet>12</a>}
-<a href=#13 id=13 data-nosnippet>13</a>
-<a href=#14 id=14 data-nosnippet>14</a><span class="kw">impl</span>&lt;T: ConstDefault, U: ConstDefault&gt; ConstDefault <span class="kw">for </span>GenericArrayImplOdd&lt;T, U&gt; {
-<a href=#15 id=15 data-nosnippet>15</a>    <span class="kw">const </span>DEFAULT: <span class="self">Self </span>= <span class="self">Self </span>{
-<a href=#16 id=16 data-nosnippet>16</a>        parent1: U::DEFAULT,
-<a href=#17 id=17 data-nosnippet>17</a>        parent2: U::DEFAULT,
-<a href=#18 id=18 data-nosnippet>18</a>        data: T::DEFAULT,
-<a href=#19 id=19 data-nosnippet>19</a>    };
-<a href=#20 id=20 data-nosnippet>20</a>}
-<a href=#21 id=21 data-nosnippet>21</a>
-<a href=#22 id=22 data-nosnippet>22</a><span class="kw">impl</span>&lt;T, U: ArrayLength&gt; ConstDefault <span class="kw">for </span>GenericArray&lt;T, U&gt;
-<a href=#23 id=23 data-nosnippet>23</a><span class="kw">where
-<a href=#24 id=24 data-nosnippet>24</a>    </span>U::ArrayType&lt;T&gt;: ConstDefault,
-<a href=#25 id=25 data-nosnippet>25</a>{
-<a href=#26 id=26 data-nosnippet>26</a>    <span class="kw">const </span>DEFAULT: <span class="self">Self </span>= <span class="self">Self </span>{
-<a href=#27 id=27 data-nosnippet>27</a>        data: ConstDefault::DEFAULT,
-<a href=#28 id=28 data-nosnippet>28</a>    };
-<a href=#29 id=29 data-nosnippet>29</a>}
-<a href=#30 id=30 data-nosnippet>30</a>
-<a href=#31 id=31 data-nosnippet>31</a><span class="comment">// `T: ConstDefault` is intentionally redundant to provide better hints in the docs
-<a href=#32 id=32 data-nosnippet>32</a></span><span class="kw">impl</span>&lt;T: ConstDefault, U: ArrayLength&gt; GenericArray&lt;T, U&gt;
-<a href=#33 id=33 data-nosnippet>33</a><span class="kw">where
-<a href=#34 id=34 data-nosnippet>34</a>    </span><span class="self">Self</span>: ConstDefault,
-<a href=#35 id=35 data-nosnippet>35</a>{
-<a href=#36 id=36 data-nosnippet>36</a>    <span class="doccomment">/// Returns the constant "default value" for an array using [ConstDefault]
-<a href=#37 id=37 data-nosnippet>37</a>    </span><span class="attr">#[inline(always)]
-<a href=#38 id=38 data-nosnippet>38</a>    </span><span class="kw">pub const fn </span>const_default() -&gt; <span class="self">Self </span>{
-<a href=#39 id=39 data-nosnippet>39</a>        <span class="self">Self</span>::DEFAULT
-<a href=#40 id=40 data-nosnippet>40</a>    }
-<a href=#41 id=41 data-nosnippet>41</a>}</code></pre></div></section></main></body></html>
+<a href=#8 id=8 data-nosnippet>8</a>        parents: [U::DEFAULT; <span class="number">2</span>],
+<a href=#9 id=9 data-nosnippet>9</a>        _marker: core::marker::PhantomData,
+<a href=#10 id=10 data-nosnippet>10</a>    };
+<a href=#11 id=11 data-nosnippet>11</a>}
+<a href=#12 id=12 data-nosnippet>12</a>
+<a href=#13 id=13 data-nosnippet>13</a><span class="kw">impl</span>&lt;T: ConstDefault, U: ConstDefault&gt; ConstDefault <span class="kw">for </span>GenericArrayImplOdd&lt;T, U&gt; {
+<a href=#14 id=14 data-nosnippet>14</a>    <span class="kw">const </span>DEFAULT: <span class="self">Self </span>= <span class="self">Self </span>{
+<a href=#15 id=15 data-nosnippet>15</a>        parents: [U::DEFAULT; <span class="number">2</span>],
+<a href=#16 id=16 data-nosnippet>16</a>        data: T::DEFAULT,
+<a href=#17 id=17 data-nosnippet>17</a>    };
+<a href=#18 id=18 data-nosnippet>18</a>}
+<a href=#19 id=19 data-nosnippet>19</a>
+<a href=#20 id=20 data-nosnippet>20</a><span class="kw">impl</span>&lt;T, U: ArrayLength&gt; ConstDefault <span class="kw">for </span>GenericArray&lt;T, U&gt;
+<a href=#21 id=21 data-nosnippet>21</a><span class="kw">where
+<a href=#22 id=22 data-nosnippet>22</a>    </span>U::ArrayType&lt;T&gt;: ConstDefault,
+<a href=#23 id=23 data-nosnippet>23</a>{
+<a href=#24 id=24 data-nosnippet>24</a>    <span class="kw">const </span>DEFAULT: <span class="self">Self </span>= <span class="self">Self </span>{
+<a href=#25 id=25 data-nosnippet>25</a>        data: ConstDefault::DEFAULT,
+<a href=#26 id=26 data-nosnippet>26</a>    };
+<a href=#27 id=27 data-nosnippet>27</a>}
+<a href=#28 id=28 data-nosnippet>28</a>
+<a href=#29 id=29 data-nosnippet>29</a><span class="comment">// `T: ConstDefault` is intentionally redundant to provide better hints in the docs
+<a href=#30 id=30 data-nosnippet>30</a></span><span class="kw">impl</span>&lt;T: ConstDefault, U: ArrayLength&gt; GenericArray&lt;T, U&gt;
+<a href=#31 id=31 data-nosnippet>31</a><span class="kw">where
+<a href=#32 id=32 data-nosnippet>32</a>    </span><span class="self">Self</span>: ConstDefault,
+<a href=#33 id=33 data-nosnippet>33</a>{
+<a href=#34 id=34 data-nosnippet>34</a>    <span class="doccomment">/// Returns the constant "default value" for an array using [ConstDefault]
+<a href=#35 id=35 data-nosnippet>35</a>    </span><span class="attr">#[inline(always)]
+<a href=#36 id=36 data-nosnippet>36</a>    </span><span class="kw">pub const fn </span>const_default() -&gt; <span class="self">Self </span>{
+<a href=#37 id=37 data-nosnippet>37</a>        <span class="self">Self</span>::DEFAULT
+<a href=#38 id=38 data-nosnippet>38</a>    }
+<a href=#39 id=39 data-nosnippet>39</a>}</code></pre></div></section></main></body></html>
