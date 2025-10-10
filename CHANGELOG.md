@@ -1,3 +1,8 @@
+* **`1.3.0`**
+    * Restrict `ArrayLength` to lengths representable by `usize` to fix soundness issues [#156](https://github.com/fizyk20/generic-array/issues/156) (may break invalid code)
+    * Flatten internal representation to improve miri performance [#157](https://github.com/fizyk20/generic-array/issues/157)
+    * Use `serde_core` instead of `serde`
+
 * **`1.2.1`**
     * Replace `doc_auto_cfg` with `doc_cfg` [#155](https://github.com/fizyk20/generic-array/pull/155)
 
