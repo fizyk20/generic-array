@@ -4,8 +4,8 @@ use crate::{ArrayLength, GenericArray, IntrusiveArrayBuilder};
 use core::fmt;
 use core::marker::PhantomData;
 
-use serde::de::{self, SeqAccess, Visitor};
-use serde::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
+use serde_core::de::{self, SeqAccess, Visitor};
+use serde_core::{ser::SerializeTuple, Deserialize, Deserializer, Serialize, Serializer};
 
 impl<T, N: ArrayLength> Serialize for GenericArray<T, N>
 where
