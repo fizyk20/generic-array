@@ -174,6 +174,20 @@ pub use self::iter::GenericArrayIter;
 ///
 /// This trait is effectively sealed due to only being allowed on [`Unsigned`] types,
 /// and therefore cannot be implemented in user code.
+///
+/// Furthermore, this is limited to lengths less than or equal to `usize::MAX`.
+/// ```compile_fail
+/// # #![recursion_limit = "256"]
+/// # use generic_array::{GenericArray, ArrayLength};
+/// # use generic_array::typenum::{self, Unsigned};
+/// type Empty = core::convert::Infallible; // Uninhabited ZST, size_of::<Empty>() == 0
+///
+/// // 2^64, greater than usize::MAX on 64-bit systems
+/// type TooBig = typenum::operator_aliases::Shleft<typenum::U1, typenum::U64>;
+///
+/// // Compile Error due to ArrayLength not implemented for TooBig
+/// let _ = GenericArray::<Empty, TooBig>::from_slice(&[]);
+/// ```
 pub unsafe trait ArrayLength: Unsigned + 'static {
     /// Associated type representing the underlying contiguous memory
     /// that constitutes an array with the given number of elements.
@@ -305,12 +319,30 @@ impl<T: Copy, U: Copy> Copy for GenericArrayImplOdd<T, U> {}
 impl<T, U> Sealed for GenericArrayImplEven<T, U> {}
 impl<T, U> Sealed for GenericArrayImplOdd<T, U> {}
 
-unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B0> {
+// 1 << (size_of::<usize>() << 3) == usize::MAX + 1
+type MaxArrayLengthP1 =
+    typenum::Shleft<typenum::U1, typenum::Shleft<typenum::U<{ size_of::<usize>() }>, typenum::U3>>;
+
+/// Helper trait to hide the complex bound under a simpler name
+trait IsWithinUsizeBound: typenum::IsLess<MaxArrayLengthP1, Output = typenum::consts::True> {}
+
+impl<N> IsWithinUsizeBound for N where
+    N: typenum::IsLess<MaxArrayLengthP1, Output = typenum::consts::True>
+{
+}
+
+unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B0>
+where
+    Self: IsWithinUsizeBound,
+{
     #[doc(hidden)]
     type ArrayType<T> = GenericArrayImplEven<T, N::ArrayType<T>>;
 }
 
-unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1> {
+unsafe impl<N: ArrayLength> ArrayLength for UInt<N, B1>
+where
+    Self: IsWithinUsizeBound,
+{
     #[doc(hidden)]
     type ArrayType<T> = GenericArrayImplOdd<T, N::ArrayType<T>>;
 }
