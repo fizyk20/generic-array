@@ -68,7 +68,11 @@
 #![deny(missing_docs)]
 #![deny(meta_variable_misuse)]
 #![no_std]
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
+#![cfg_attr(docsrs, feature(doc_cfg))]
+#![cfg_attr(
+    ga_is_deprecated,
+    deprecated(note = "please upgrade to generic-array 1.x")
+)]
 
 #[cfg(feature = "serde")]
 extern crate serde;
