@@ -1,3 +1,5 @@
+#![allow(deprecated)] // 0.14 is deprecated, but this is specifically for compatibility with it to allow gradual migration.
+
 use generic_array_0_14::{ArrayLength as ArrayLength_0_14, GenericArray as GenericArray_0_14};
 
 use super::{ArrayLength, GenericArray};
