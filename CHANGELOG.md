@@ -1,3 +1,8 @@
+* **`1.3.1`**
+    * Lower MSRV to 1.65.0 (minimum required for GATs)
+    * Make some functions `const` only on Rust 1.83.0 or newer, otherwise they are non-`const`.
+    * Implement `core::error::Error` for `LengthError` on Rust 1.81.0 or newer.
+
 * **`1.3.0`**
     * Restrict `ArrayLength` to lengths representable by `usize` to fix soundness issues [#156](https://github.com/fizyk20/generic-array/issues/156) (may break invalid code)
     * Flatten internal representation to improve miri performance [#157](https://github.com/fizyk20/generic-array/issues/157)
@@ -8,7 +13,7 @@
 
 * **`1.2.0`**
     * Mark more functions as `const`
-    * Bump MSRV to 1.83.0
+    * Bump MSRV to 1.83.0 (reverted in `generic-array 1.3.1`)
 
 * **`1.1.1`**
     * Add `Flatten` and `Unflatten` traits for converting between nested arrays.

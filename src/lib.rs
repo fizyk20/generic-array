@@ -1,6 +1,6 @@
 //! This crate implements a structure that can be used as a generic array type.
 //!
-//! **Requires minimum Rust version of 1.83.0
+//! **Requires minimum Rust version of 1.65.0
 //!
 //! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
 //! may be required to view certain types on foreign crates.
@@ -320,8 +320,10 @@ impl<T, U> Sealed for GenericArrayImplEven<T, U> {}
 impl<T, U> Sealed for GenericArrayImplOdd<T, U> {}
 
 // 1 << (size_of::<usize>() << 3) == usize::MAX + 1
-type MaxArrayLengthP1 =
-    typenum::Shleft<typenum::U1, typenum::Shleft<typenum::U<{ size_of::<usize>() }>, typenum::U3>>;
+type MaxArrayLengthP1 = typenum::Shleft<
+    typenum::U1,
+    typenum::Shleft<typenum::U<{ mem::size_of::<usize>() }>, typenum::U3>,
+>;
 
 /// Helper trait to hide the complex bound under a simpler name
 trait IsWithinUsizeBound: typenum::IsLess<MaxArrayLengthP1, Output = typenum::consts::True> {}
@@ -714,8 +716,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 
     /// Extracts a mutable slice containing the entire array.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn as_mut_slice(&mut self) -> &mut [T] {
+    pub fn as_mut_slice(&mut self) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(self as *mut Self as *mut T, N::USIZE) }
     }
 
@@ -756,8 +761,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// Panics if the slice is not equal to the length of the array.
     ///
     /// Consider [`TryFrom`]/[`TryInto`] for a fallible conversion.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
+    pub fn from_mut_slice(slice: &mut [T]) -> &mut GenericArray<T, N> {
         assert!(
             slice.len() == N::USIZE,
             "slice.len() != N in GenericArray::from_mut_slice"
@@ -770,10 +778,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     ///
     /// This is a fallible alternative to [`from_mut_slice`](GenericArray::from_mut_slice),
     /// and is equivalent to the [`TryFrom`] implementation with the added benefit of being `const`.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn try_from_mut_slice(
-        slice: &mut [T],
-    ) -> Result<&mut GenericArray<T, N>, LengthError> {
+    pub fn try_from_mut_slice(slice: &mut [T]) -> Result<&mut GenericArray<T, N>, LengthError> {
         match slice.len() == N::USIZE {
             true => Ok(GenericArray::from_mut_slice(slice)),
             false => Err(LengthError),
@@ -813,7 +822,10 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # Panics
     ///
     /// Panics if `N` is `U0` _AND_ the input slice is not empty.
-    pub const fn chunks_from_slice_mut(slice: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
+    pub fn chunks_from_slice_mut(slice: &mut [T]) -> (&mut [GenericArray<T, N>], &mut [T]) {
         if N::USIZE == 0 {
             assert!(slice.is_empty(), "GenericArray length N must be non-zero");
             return (&mut [], &mut []);
@@ -842,8 +854,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 
     /// Convert a slice of `GenericArray<T, N>` into a slice of `T`, effectively flattening the arrays.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn slice_from_chunks_mut(slice: &mut [GenericArray<T, N>]) -> &mut [T] {
+    pub fn slice_from_chunks_mut(slice: &mut [GenericArray<T, N>]) -> &mut [T] {
         unsafe { slice::from_raw_parts_mut(slice.as_mut_ptr() as *mut T, slice.len() * N::USIZE) }
     }
 
@@ -879,8 +894,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 
     /// Convert a mutable slice of native arrays into a mutable slice of `GenericArray`s.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn from_chunks_mut<const U: usize>(chunks: &mut [[T; U]]) -> &mut [GenericArray<T, N>]
+    pub fn from_chunks_mut<const U: usize>(chunks: &mut [[T; U]]) -> &mut [GenericArray<T, N>]
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
@@ -897,8 +915,11 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 
     /// Converts a mutable slice `GenericArray<T, N>` into a mutable slice of `[T; N]`
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn into_chunks_mut<const U: usize>(chunks: &mut [GenericArray<T, N>]) -> &mut [[T; U]]
+    pub fn into_chunks_mut<const U: usize>(chunks: &mut [GenericArray<T, N>]) -> &mut [[T; U]]
     where
         Const<U>: IntoArrayLength<ArrayLength = N>,
     {
@@ -952,7 +973,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 #[derive(Debug, Clone, Copy)]
 pub struct LengthError;
 
-// TODO: Impl core::error::Error when when https://github.com/rust-lang/rust/issues/103765 is finished
+#[rustversion::since(1.81)]
+impl core::error::Error for LengthError {}
 
 impl core::fmt::Display for LengthError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {

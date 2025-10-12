@@ -82,8 +82,11 @@ impl<T, N: ArrayLength> ArrayBuilder<T, N> {
 
     /// When done writing (assuming all elements have been written to),
     /// get the inner array.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const unsafe fn assume_init(self) -> GenericArray<T, N> {
+    pub unsafe fn assume_init(self) -> GenericArray<T, N> {
         debug_assert!(self.is_full());
 
         let array = ptr::read(&self.array);
@@ -113,10 +116,11 @@ pub struct IntrusiveArrayBuilder<'a, T, N: ArrayLength> {
 
 impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// Begin building an array
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
     #[inline(always)]
-    pub const fn new(
-        array: &'a mut GenericArray<MaybeUninit<T>, N>,
-    ) -> IntrusiveArrayBuilder<'a, T, N> {
+    pub fn new(array: &'a mut GenericArray<MaybeUninit<T>, N>) -> IntrusiveArrayBuilder<'a, T, N> {
         IntrusiveArrayBuilder { array, position: 0 }
     }
 
