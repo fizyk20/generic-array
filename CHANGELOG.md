@@ -1,3 +1,6 @@
+* **`1.3.2`**
+    * Introduce the `compat-0_14` feature to allow interop between `generic-array` 1.x and 0.14 versions.
+
 * **`1.3.1`**
     * Lower MSRV to 1.65.0 (minimum required for GATs)
     * Make some functions `const` only on Rust 1.83.0 or newer, otherwise they are non-`const`.

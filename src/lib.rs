@@ -84,7 +84,8 @@
 //!     "zeroize",       # Zeroize implementation for setting array elements to zero
 //!     "const-default", # Compile-time const default value support via trait
 //!     "alloc",         # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
-//!     "faster-hex"     # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
+//!     "faster-hex",    # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
+//!     "compat-0_14"    # Enables interoperability with `generic-array` 0.14
 //! ]
 //! ```
 
@@ -114,6 +115,9 @@ mod impl_serde;
 
 #[cfg(feature = "zeroize")]
 mod impl_zeroize;
+
+#[cfg(feature = "compat-0_14")]
+mod impl_compat;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
