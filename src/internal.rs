@@ -172,6 +172,7 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// #[cfg(feature = "internals")]
     /// # {
     /// # use generic_array::{GenericArray, internals::IntrusiveArrayBuilder, typenum::U5};
+    /// # use core::mem::MaybeUninit;
     /// # struct SomeType;
     /// fn make_some_struct() -> SomeType { SomeType }
     /// unsafe {
