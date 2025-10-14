@@ -1044,25 +1044,52 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
 }
 
 /// A const reimplementation of the [`transmute`](core::mem::transmute) function,
-/// avoiding problems when the compiler can't prove equal sizes.
+/// avoiding problems when the compiler can't prove equal sizes for some reason.
+///
+/// This will still check that the sizes of `A` and `B` are equal at compile time:
+/// ```compile_fail
+/// # use generic_array::const_transmute;
+///
+/// let _ = unsafe { const_transmute::<u32, u64>(0u32) }; // panics at compile time
+/// ```
 ///
 /// # Safety
 /// Treat this the same as [`transmute`](core::mem::transmute), or (preferably) don't use it at all.
 #[inline(always)]
 #[cfg_attr(not(feature = "internals"), doc(hidden))]
 pub const unsafe fn const_transmute<A, B>(a: A) -> B {
-    if mem::size_of::<A>() != mem::size_of::<B>() {
-        panic!("Size mismatch for generic_array::const_transmute");
+    struct SizeAsserter<A, B>(PhantomData<(A, B)>);
+
+    impl<A, B> SizeAsserter<A, B> {
+        const ASSERT_SIZE_EQUALITY: () = {
+            if mem::size_of::<A>() != mem::size_of::<B>() {
+                panic!("Size mismatch for generic_array::const_transmute");
+            }
+        };
     }
 
-    #[repr(C)]
-    union Union<A, B> {
-        a: ManuallyDrop<A>,
-        b: ManuallyDrop<B>,
+    let () = SizeAsserter::<A, B>::ASSERT_SIZE_EQUALITY;
+
+    #[rustversion::since(1.74)]
+    #[inline(always)]
+    const unsafe fn do_transmute<A, B>(a: A) -> B {
+        mem::transmute_copy(&ManuallyDrop::new(a))
     }
 
-    let a = ManuallyDrop::new(a);
-    ManuallyDrop::into_inner(Union { a }.b)
+    #[rustversion::before(1.74)]
+    #[inline(always)]
+    const unsafe fn do_transmute<A, B>(a: A) -> B {
+        #[repr(C)]
+        union Union<A, B> {
+            a: ManuallyDrop<A>,
+            b: ManuallyDrop<B>,
+        }
+
+        let a = ManuallyDrop::new(a);
+        ManuallyDrop::into_inner(Union { a }.b)
+    }
+
+    do_transmute(a)
 }
 
 #[cfg(test)]
