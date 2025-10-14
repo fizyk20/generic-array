@@ -39,7 +39,7 @@ pub trait FunctionalSequence<T>: GenericSequence<T> {
     ///
     /// If the mapping function panics, any already initialized elements in the new sequence
     /// will be dropped, AND any unused elements in the source sequence will also be dropped.
-    #[inline]
+    #[inline(always)]
     fn map<U, F>(self, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
@@ -75,7 +75,7 @@ pub trait FunctionalSequence<T>: GenericSequence<T> {
     /// # #[cfg(not(feature = "alloc"))]
     /// # compile_error!("requires alloc feature to test this properly");
     /// ```
-    #[inline]
+    #[inline(always)]
     fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,
@@ -89,7 +89,7 @@ pub trait FunctionalSequence<T>: GenericSequence<T> {
     /// Folds (or reduces) a sequence of data into a single value.
     ///
     /// If the fold function panics, any unused elements will be dropped.
-    #[inline]
+    #[inline(always)]
     fn fold<U, F>(self, init: U, f: F) -> U
     where
         F: FnMut(U, Self::Item) -> U,

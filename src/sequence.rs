@@ -46,7 +46,8 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
-            let mut left = ArrayConsumer::new(lhs);
+            let mut left = ManuallyDrop::new(lhs);
+            let mut left = IntrusiveArrayConsumer::new(&mut left);
 
             let (left_array_iter, left_position) = left.iter_position();
 

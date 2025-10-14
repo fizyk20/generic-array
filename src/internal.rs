@@ -1,4 +1,4 @@
-#![allow(dead_code)] // ArrayBuilder is soft-deprecated internally
+#![allow(dead_code)] // ArrayBuilder/ArrayConsumer are soft-deprecated internally
 
 use crate::*;
 
@@ -12,7 +12,7 @@ impl<T> Sealed for [T; 0] {}
 /// which will be dropped if `into_inner` is not called.
 ///
 /// This is soft-deprecated in favor of [`IntrusiveArrayBuilder`] due to Rust's
-/// lack of return-value optimization causing issues moving the array out of the struct.
+/// lack of return-value optimization causing issues moving the array in/out of the struct.
 /// Still works fine for smaller arrays, though.
 pub struct ArrayBuilder<T, N: ArrayLength> {
     array: GenericArray<MaybeUninit<T>, N>,
@@ -250,6 +250,9 @@ impl<T, N: ArrayLength> Drop for IntrusiveArrayBuilder<'_, T, N> {
 ///
 /// You MUST increment the position while iterating and any leftover elements
 /// will be dropped if position does not go to N
+///
+/// This is soft-deprecated in favor of [`IntrusiveArrayConsumer`] due to Rust's
+/// lack of return-value optimization causing issues moving the array in/out of the struct.
 pub struct ArrayConsumer<T, N: ArrayLength> {
     array: ManuallyDrop<GenericArray<T, N>>,
     position: usize,
@@ -276,6 +279,43 @@ impl<T, N: ArrayLength> ArrayConsumer<T, N> {
 }
 
 impl<T, N: ArrayLength> Drop for ArrayConsumer<T, N> {
+    fn drop(&mut self) {
+        unsafe {
+            ptr::drop_in_place(self.array.get_unchecked_mut(self.position..));
+        }
+    }
+}
+
+/// **UNSAFE**: Consumes an array one element at a time.
+///
+/// You MUST increment the position while iterating and any leftover elements
+/// will be dropped if position does not go to N
+pub struct IntrusiveArrayConsumer<'a, T, N: ArrayLength> {
+    array: &'a mut ManuallyDrop<GenericArray<T, N>>,
+    position: usize,
+}
+
+impl<'a, T, N: ArrayLength> IntrusiveArrayConsumer<'a, T, N> {
+    /// Give exclusive access for the array to the consumer
+    #[rustversion::attr(since(1.83), const)]
+    #[inline(always)]
+    pub fn new(
+        array: &'a mut ManuallyDrop<GenericArray<T, N>>,
+    ) -> IntrusiveArrayConsumer<'a, T, N> {
+        IntrusiveArrayConsumer { array, position: 0 }
+    }
+
+    /// Creates an iterator and mutable reference to the internal position
+    /// to keep track of consumed elements.
+    ///
+    /// You MUST increment the position as you iterate to mark off consumed elements.
+    #[inline(always)]
+    pub unsafe fn iter_position(&'_ mut self) -> (slice::Iter<'_, T>, &'_ mut usize) {
+        (self.array.iter(), &mut self.position)
+    }
+}
+
+impl<T, N: ArrayLength> Drop for IntrusiveArrayConsumer<'_, T, N> {
     fn drop(&mut self) {
         unsafe {
             ptr::drop_in_place(self.array.get_unchecked_mut(self.position..));

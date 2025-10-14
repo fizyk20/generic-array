@@ -136,7 +136,6 @@ pub mod functional;
 pub mod sequence;
 
 mod internal;
-use internal::{ArrayConsumer, IntrusiveArrayBuilder, Sealed};
 
 // re-export to allow doc_auto_cfg to handle it
 #[cfg(feature = "internals")]
@@ -148,8 +147,13 @@ pub mod internals {
     //!
     //! The API of these is not guaranteed to be stable, as they are not intended for general use.
 
-    pub use crate::internal::{ArrayBuilder, ArrayConsumer, IntrusiveArrayBuilder};
+    pub use crate::internal::{IntrusiveArrayBuilder, IntrusiveArrayConsumer};
+
+    // soft-deprecated
+    pub use crate::internal::{ArrayBuilder, ArrayConsumer};
 }
+
+use internal::{IntrusiveArrayBuilder, IntrusiveArrayConsumer, Sealed};
 
 use self::functional::*;
 use self::sequence::*;
@@ -576,8 +580,11 @@ where
     {
         unsafe {
             if mem::needs_drop::<T>() || mem::needs_drop::<B>() {
-                let mut left = ArrayConsumer::new(lhs);
-                let mut right = ArrayConsumer::new(self);
+                let mut left = ManuallyDrop::new(lhs);
+                let mut right = ManuallyDrop::new(self);
+
+                let mut left = IntrusiveArrayConsumer::new(&mut left);
+                let mut right = IntrusiveArrayConsumer::new(&mut right);
 
                 let (left_array_iter, left_position) = left.iter_position();
                 let (right_array_iter, right_position) = right.iter_position();
@@ -617,7 +624,8 @@ where
     {
         unsafe {
             if mem::needs_drop::<T>() {
-                let mut right = ArrayConsumer::new(self);
+                let mut right = ManuallyDrop::new(self);
+                let mut right = IntrusiveArrayConsumer::new(&mut right);
 
                 let (right_array_iter, right_position) = right.iter_position();
 
@@ -658,7 +666,8 @@ where
         F: FnMut(T) -> U,
     {
         unsafe {
-            let mut source = ArrayConsumer::new(self);
+            let mut array = ManuallyDrop::new(self);
+            let mut source = IntrusiveArrayConsumer::new(&mut array);
 
             let (array_iter, position) = source.iter_position();
 
@@ -689,7 +698,8 @@ where
         F: FnMut(U, T) -> U,
     {
         unsafe {
-            let mut source = ArrayConsumer::new(self);
+            let mut array = ManuallyDrop::new(self);
+            let mut source = IntrusiveArrayConsumer::new(&mut array);
 
             let (array_iter, position) = source.iter_position();
 
