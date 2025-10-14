@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/internal.rs`."><title>internal.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-ca0dd0c4.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.92.0-nightly (be0ade2b6 2025-10-11)" data-channel="nightly" data-search-js="search-8d3311b9.js" data-stringdex-js="stringdex-828709d0.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-ce535bd0.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">generic_array/</div>internal.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="attr">#![allow(dead_code)] </span><span class="comment">// ArrayBuilder is soft-deprecated internally
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/internal.rs`."><title>internal.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-ca0dd0c4.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="generic_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.92.0-nightly (4b94758d2 2025-10-13)" data-channel="nightly" data-search-js="search-8d3311b9.js" data-stringdex-js="stringdex-828709d0.js" data-settings-js="settings-c38705f0.js" ><script src="../../static.files/storage-e2aeef58.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-ce535bd0.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-263c88ec.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-eab170b8.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">generic_array/</div>internal.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="attr">#![allow(dead_code)] </span><span class="comment">// ArrayBuilder is soft-deprecated internally
 <a href=#2 id=2 data-nosnippet>2</a>
 <a href=#3 id=3 data-nosnippet>3</a></span><span class="kw">use crate</span>::<span class="kw-2">*</span>;
 <a href=#4 id=4 data-nosnippet>4</a>
@@ -124,118 +124,161 @@
 <a href=#124 id=124 data-nosnippet>124</a>        IntrusiveArrayBuilder { array, position: <span class="number">0 </span>}
 <a href=#125 id=125 data-nosnippet>125</a>    }
 <a href=#126 id=126 data-nosnippet>126</a>
-<a href=#127 id=127 data-nosnippet>127</a>    <span class="doccomment">/// Consume an iterator, `.zip`-ing it to fill some or all of the array. This does not check if the
-<a href=#128 id=128 data-nosnippet>128</a>    /// iterator had extra elements or too few elements.
+<a href=#127 id=127 data-nosnippet>127</a>    <span class="doccomment">/// Begin building an array from a `MaybeUninit&lt;GenericArray&lt;T, N&gt;&gt;`, which can potentially
+<a href=#128 id=128 data-nosnippet>128</a>    /// result in better codegen.
 <a href=#129 id=129 data-nosnippet>129</a>    ///
-<a href=#130 id=130 data-nosnippet>130</a>    /// This makes no attempt to continue where a previous `extend` leaves off. Therefore, it should
-<a href=#131 id=131 data-nosnippet>131</a>    /// only be used once per `ArrayBuilder`.
-<a href=#132 id=132 data-nosnippet>132</a>    </span><span class="attr">#[inline(always)]
-<a href=#133 id=133 data-nosnippet>133</a>    </span><span class="kw">pub unsafe fn </span>extend(<span class="kw-2">&amp;mut </span><span class="self">self</span>, source: <span class="kw">impl </span>Iterator&lt;Item = T&gt;) {
-<a href=#134 id=134 data-nosnippet>134</a>        <span class="kw">let </span>(destination, position) = (<span class="self">self</span>.array.iter_mut(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.position);
-<a href=#135 id=135 data-nosnippet>135</a>
-<a href=#136 id=136 data-nosnippet>136</a>        destination.zip(source).for_each(|(dst, src)| {
-<a href=#137 id=137 data-nosnippet>137</a>            dst.write(src);
-<a href=#138 id=138 data-nosnippet>138</a>            <span class="kw-2">*</span>position += <span class="number">1</span>;
-<a href=#139 id=139 data-nosnippet>139</a>        });
-<a href=#140 id=140 data-nosnippet>140</a>    }
-<a href=#141 id=141 data-nosnippet>141</a>
-<a href=#142 id=142 data-nosnippet>142</a>    <span class="doccomment">/// Returns true if the write position equals the array size
-<a href=#143 id=143 data-nosnippet>143</a>    </span><span class="attr">#[inline(always)]
-<a href=#144 id=144 data-nosnippet>144</a>    </span><span class="kw">pub const fn </span>is_full(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
-<a href=#145 id=145 data-nosnippet>145</a>        <span class="self">self</span>.position == N::USIZE
-<a href=#146 id=146 data-nosnippet>146</a>    }
-<a href=#147 id=147 data-nosnippet>147</a>
-<a href=#148 id=148 data-nosnippet>148</a>    <span class="doccomment">/// Creates a mutable iterator for writing to the array elements.
-<a href=#149 id=149 data-nosnippet>149</a>    ///
-<a href=#150 id=150 data-nosnippet>150</a>    /// You MUST increment the position value (given as a mutable reference) as you iterate
-<a href=#151 id=151 data-nosnippet>151</a>    /// to mark how many elements have been created.
-<a href=#152 id=152 data-nosnippet>152</a>    ///
-<a href=#153 id=153 data-nosnippet>153</a>    /// ```
-<a href=#154 id=154 data-nosnippet>154</a>    /// #[cfg(feature = "internals")]
-<a href=#155 id=155 data-nosnippet>155</a>    /// # {
-<a href=#156 id=156 data-nosnippet>156</a>    /// # use generic_array::{GenericArray, internals::IntrusiveArrayBuilder, typenum::U5};
-<a href=#157 id=157 data-nosnippet>157</a>    /// # struct SomeType;
-<a href=#158 id=158 data-nosnippet>158</a>    /// fn make_some_struct() -&gt; SomeType { SomeType }
-<a href=#159 id=159 data-nosnippet>159</a>    /// unsafe {
-<a href=#160 id=160 data-nosnippet>160</a>    ///     let mut array = GenericArray::uninit();
-<a href=#161 id=161 data-nosnippet>161</a>    ///     let mut builder = IntrusiveArrayBuilder::&lt;SomeType, U5&gt;::new(&amp;mut array);
-<a href=#162 id=162 data-nosnippet>162</a>    ///     let (dst_iter, position) = builder.iter_position();
-<a href=#163 id=163 data-nosnippet>163</a>    ///     for dst in dst_iter {
-<a href=#164 id=164 data-nosnippet>164</a>    ///         dst.write(make_some_struct());
-<a href=#165 id=165 data-nosnippet>165</a>    ///         // MUST be done AFTER ownership of the value has been given to `dst.write`
-<a href=#166 id=166 data-nosnippet>166</a>    ///         *position += 1;
-<a href=#167 id=167 data-nosnippet>167</a>    ///     }
-<a href=#168 id=168 data-nosnippet>168</a>    ///     let your_array = { builder.finish(); IntrusiveArrayBuilder::array_assume_init(array) };
-<a href=#169 id=169 data-nosnippet>169</a>    /// }
-<a href=#170 id=170 data-nosnippet>170</a>    /// # }
+<a href=#130 id=130 data-nosnippet>130</a>    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+<a href=#131 id=131 data-nosnippet>131</a>    </span><span class="attr">#[rustversion::attr(since(<span class="number">1.83</span>), <span class="kw">const</span>)]
+<a href=#132 id=132 data-nosnippet>132</a>    #[inline(always)]
+<a href=#133 id=133 data-nosnippet>133</a>    </span><span class="kw">pub fn </span>new_alt(
+<a href=#134 id=134 data-nosnippet>134</a>        array: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>MaybeUninit&lt;GenericArray&lt;T, N&gt;&gt;,
+<a href=#135 id=135 data-nosnippet>135</a>    ) -&gt; IntrusiveArrayBuilder&lt;<span class="lifetime">'a</span>, T, N&gt; {
+<a href=#136 id=136 data-nosnippet>136</a>        <span class="comment">// SAFETY: GenericArray&lt;MaybeUninit&lt;T&gt;, N&gt; has the same memory layout as MaybeUninit&lt;GenericArray&lt;T, N&gt;&gt;
+<a href=#137 id=137 data-nosnippet>137</a>        </span>IntrusiveArrayBuilder::new(<span class="kw">unsafe </span>{
+<a href=#138 id=138 data-nosnippet>138</a>            mem::transmute::&lt;
+<a href=#139 id=139 data-nosnippet>139</a>                <span class="kw-2">&amp;mut </span>MaybeUninit&lt;GenericArray&lt;T, N&gt;&gt;,
+<a href=#140 id=140 data-nosnippet>140</a>                <span class="kw-2">&amp;mut </span>GenericArray&lt;MaybeUninit&lt;T&gt;, N&gt;,
+<a href=#141 id=141 data-nosnippet>141</a>            &gt;(array)
+<a href=#142 id=142 data-nosnippet>142</a>        })
+<a href=#143 id=143 data-nosnippet>143</a>    }
+<a href=#144 id=144 data-nosnippet>144</a>
+<a href=#145 id=145 data-nosnippet>145</a>    <span class="doccomment">/// Consume an iterator, `.zip`-ing it to fill some or all of the array. This does not check if the
+<a href=#146 id=146 data-nosnippet>146</a>    /// iterator had extra elements or too few elements.
+<a href=#147 id=147 data-nosnippet>147</a>    ///
+<a href=#148 id=148 data-nosnippet>148</a>    /// This makes no attempt to continue where a previous `extend` leaves off. Therefore, it should
+<a href=#149 id=149 data-nosnippet>149</a>    /// only be used once per `ArrayBuilder`.
+<a href=#150 id=150 data-nosnippet>150</a>    </span><span class="attr">#[inline(always)]
+<a href=#151 id=151 data-nosnippet>151</a>    </span><span class="kw">pub unsafe fn </span>extend(<span class="kw-2">&amp;mut </span><span class="self">self</span>, source: <span class="kw">impl </span>Iterator&lt;Item = T&gt;) {
+<a href=#152 id=152 data-nosnippet>152</a>        <span class="kw">let </span>(destination, position) = (<span class="self">self</span>.array.iter_mut(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.position);
+<a href=#153 id=153 data-nosnippet>153</a>
+<a href=#154 id=154 data-nosnippet>154</a>        destination.zip(source).for_each(|(dst, src)| {
+<a href=#155 id=155 data-nosnippet>155</a>            dst.write(src);
+<a href=#156 id=156 data-nosnippet>156</a>            <span class="kw-2">*</span>position += <span class="number">1</span>;
+<a href=#157 id=157 data-nosnippet>157</a>        });
+<a href=#158 id=158 data-nosnippet>158</a>    }
+<a href=#159 id=159 data-nosnippet>159</a>
+<a href=#160 id=160 data-nosnippet>160</a>    <span class="doccomment">/// Returns true if the write position equals the array size
+<a href=#161 id=161 data-nosnippet>161</a>    </span><span class="attr">#[inline(always)]
+<a href=#162 id=162 data-nosnippet>162</a>    </span><span class="kw">pub const fn </span>is_full(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+<a href=#163 id=163 data-nosnippet>163</a>        <span class="self">self</span>.position == N::USIZE
+<a href=#164 id=164 data-nosnippet>164</a>    }
+<a href=#165 id=165 data-nosnippet>165</a>
+<a href=#166 id=166 data-nosnippet>166</a>    <span class="doccomment">/// Creates a mutable iterator for writing to the array elements.
+<a href=#167 id=167 data-nosnippet>167</a>    ///
+<a href=#168 id=168 data-nosnippet>168</a>    /// You MUST increment the position value (given as a mutable reference) as you iterate
+<a href=#169 id=169 data-nosnippet>169</a>    /// to mark how many elements have been created.
+<a href=#170 id=170 data-nosnippet>170</a>    ///
 <a href=#171 id=171 data-nosnippet>171</a>    /// ```
-<a href=#172 id=172 data-nosnippet>172</a>    </span><span class="attr">#[inline(always)]
-<a href=#173 id=173 data-nosnippet>173</a>    </span><span class="kw">pub unsafe fn </span>iter_position(
-<a href=#174 id=174 data-nosnippet>174</a>        <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span><span class="self">self</span>,
-<a href=#175 id=175 data-nosnippet>175</a>    ) -&gt; (slice::IterMut&lt;<span class="lifetime">'_</span>, MaybeUninit&lt;T&gt;&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span>usize) {
-<a href=#176 id=176 data-nosnippet>176</a>        (<span class="self">self</span>.array.iter_mut(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.position)
-<a href=#177 id=177 data-nosnippet>177</a>    }
-<a href=#178 id=178 data-nosnippet>178</a>
-<a href=#179 id=179 data-nosnippet>179</a>    <span class="doccomment">/// When done writing (assuming all elements have been written to),
-<a href=#180 id=180 data-nosnippet>180</a>    /// get the inner array.
-<a href=#181 id=181 data-nosnippet>181</a>    </span><span class="attr">#[inline(always)]
-<a href=#182 id=182 data-nosnippet>182</a>    </span><span class="kw">pub const unsafe fn </span>finish(<span class="self">self</span>) {
-<a href=#183 id=183 data-nosnippet>183</a>        <span class="macro">debug_assert!</span>(<span class="self">self</span>.is_full());
-<a href=#184 id=184 data-nosnippet>184</a>        mem::forget(<span class="self">self</span>)
-<a href=#185 id=185 data-nosnippet>185</a>    }
-<a href=#186 id=186 data-nosnippet>186</a>
-<a href=#187 id=187 data-nosnippet>187</a>    <span class="doccomment">/// Similar to [`GenericArray::assume_init`] but not `const` and optimizes better.
-<a href=#188 id=188 data-nosnippet>188</a>    </span><span class="attr">#[inline(always)]
-<a href=#189 id=189 data-nosnippet>189</a>    </span><span class="kw">pub unsafe fn </span>array_assume_init(array: GenericArray&lt;MaybeUninit&lt;T&gt;, N&gt;) -&gt; GenericArray&lt;T, N&gt; {
-<a href=#190 id=190 data-nosnippet>190</a>        ptr::read(<span class="kw-2">&amp;</span>array <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_ as </span><span class="kw-2">*const </span>MaybeUninit&lt;GenericArray&lt;T, N&gt;&gt;).assume_init()
-<a href=#191 id=191 data-nosnippet>191</a>    }
-<a href=#192 id=192 data-nosnippet>192</a>}
-<a href=#193 id=193 data-nosnippet>193</a>
-<a href=#194 id=194 data-nosnippet>194</a><span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Drop <span class="kw">for </span>IntrusiveArrayBuilder&lt;<span class="lifetime">'_</span>, T, N&gt; {
-<a href=#195 id=195 data-nosnippet>195</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#196 id=196 data-nosnippet>196</a>        <span class="kw">unsafe </span>{
-<a href=#197 id=197 data-nosnippet>197</a>            ptr::drop_in_place(
-<a href=#198 id=198 data-nosnippet>198</a>                <span class="comment">// Same cast as MaybeUninit::slice_assume_init_mut
-<a href=#199 id=199 data-nosnippet>199</a>                </span><span class="self">self</span>.array.get_unchecked_mut(..<span class="self">self</span>.position) <span class="kw">as </span><span class="kw-2">*mut </span>[MaybeUninit&lt;T&gt;]
-<a href=#200 id=200 data-nosnippet>200</a>                    <span class="kw">as </span><span class="kw-2">*mut </span>[T],
-<a href=#201 id=201 data-nosnippet>201</a>            );
-<a href=#202 id=202 data-nosnippet>202</a>        }
-<a href=#203 id=203 data-nosnippet>203</a>    }
-<a href=#204 id=204 data-nosnippet>204</a>}
-<a href=#205 id=205 data-nosnippet>205</a>
-<a href=#206 id=206 data-nosnippet>206</a><span class="doccomment">/// **UNSAFE**: Consumes an array one element at a time.
-<a href=#207 id=207 data-nosnippet>207</a>///
-<a href=#208 id=208 data-nosnippet>208</a>/// You MUST increment the position while iterating and any leftover elements
-<a href=#209 id=209 data-nosnippet>209</a>/// will be dropped if position does not go to N
-<a href=#210 id=210 data-nosnippet>210</a></span><span class="kw">pub struct </span>ArrayConsumer&lt;T, N: ArrayLength&gt; {
-<a href=#211 id=211 data-nosnippet>211</a>    array: ManuallyDrop&lt;GenericArray&lt;T, N&gt;&gt;,
-<a href=#212 id=212 data-nosnippet>212</a>    position: usize,
-<a href=#213 id=213 data-nosnippet>213</a>}
-<a href=#214 id=214 data-nosnippet>214</a>
-<a href=#215 id=215 data-nosnippet>215</a><span class="kw">impl</span>&lt;T, N: ArrayLength&gt; ArrayConsumer&lt;T, N&gt; {
-<a href=#216 id=216 data-nosnippet>216</a>    <span class="doccomment">/// Give ownership of the array to the consumer
-<a href=#217 id=217 data-nosnippet>217</a>    </span><span class="attr">#[inline(always)]
-<a href=#218 id=218 data-nosnippet>218</a>    </span><span class="kw">pub const fn </span>new(array: GenericArray&lt;T, N&gt;) -&gt; ArrayConsumer&lt;T, N&gt; {
-<a href=#219 id=219 data-nosnippet>219</a>        ArrayConsumer {
-<a href=#220 id=220 data-nosnippet>220</a>            array: ManuallyDrop::new(array),
-<a href=#221 id=221 data-nosnippet>221</a>            position: <span class="number">0</span>,
-<a href=#222 id=222 data-nosnippet>222</a>        }
-<a href=#223 id=223 data-nosnippet>223</a>    }
-<a href=#224 id=224 data-nosnippet>224</a>
-<a href=#225 id=225 data-nosnippet>225</a>    <span class="doccomment">/// Creates an iterator and mutable reference to the internal position
-<a href=#226 id=226 data-nosnippet>226</a>    /// to keep track of consumed elements.
-<a href=#227 id=227 data-nosnippet>227</a>    ///
-<a href=#228 id=228 data-nosnippet>228</a>    /// You MUST increment the position as you iterate to mark off consumed elements.
-<a href=#229 id=229 data-nosnippet>229</a>    </span><span class="attr">#[inline(always)]
-<a href=#230 id=230 data-nosnippet>230</a>    </span><span class="kw">pub unsafe fn </span>iter_position(<span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span><span class="self">self</span>) -&gt; (slice::Iter&lt;<span class="lifetime">'_</span>, T&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span>usize) {
-<a href=#231 id=231 data-nosnippet>231</a>        (<span class="self">self</span>.array.iter(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.position)
-<a href=#232 id=232 data-nosnippet>232</a>    }
-<a href=#233 id=233 data-nosnippet>233</a>}
-<a href=#234 id=234 data-nosnippet>234</a>
-<a href=#235 id=235 data-nosnippet>235</a><span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Drop <span class="kw">for </span>ArrayConsumer&lt;T, N&gt; {
-<a href=#236 id=236 data-nosnippet>236</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-<a href=#237 id=237 data-nosnippet>237</a>        <span class="kw">unsafe </span>{
-<a href=#238 id=238 data-nosnippet>238</a>            ptr::drop_in_place(<span class="self">self</span>.array.get_unchecked_mut(<span class="self">self</span>.position..));
-<a href=#239 id=239 data-nosnippet>239</a>        }
-<a href=#240 id=240 data-nosnippet>240</a>    }
-<a href=#241 id=241 data-nosnippet>241</a>}</code></pre></div></section></main></body></html>
+<a href=#172 id=172 data-nosnippet>172</a>    /// #[cfg(feature = "internals")]
+<a href=#173 id=173 data-nosnippet>173</a>    /// # {
+<a href=#174 id=174 data-nosnippet>174</a>    /// # use generic_array::{GenericArray, internals::IntrusiveArrayBuilder, typenum::U5};
+<a href=#175 id=175 data-nosnippet>175</a>    /// # use core::mem::MaybeUninit;
+<a href=#176 id=176 data-nosnippet>176</a>    /// # struct SomeType;
+<a href=#177 id=177 data-nosnippet>177</a>    /// fn make_some_struct() -&gt; SomeType { SomeType }
+<a href=#178 id=178 data-nosnippet>178</a>    /// unsafe {
+<a href=#179 id=179 data-nosnippet>179</a>    ///     let mut array = MaybeUninit::&lt;GenericArray&lt;SomeType, U5&gt;&gt;::uninit();
+<a href=#180 id=180 data-nosnippet>180</a>    ///     let mut builder = IntrusiveArrayBuilder::new_alt(&amp;mut array);
+<a href=#181 id=181 data-nosnippet>181</a>    ///     let (dst_iter, position) = builder.iter_position();
+<a href=#182 id=182 data-nosnippet>182</a>    ///     for dst in dst_iter {
+<a href=#183 id=183 data-nosnippet>183</a>    ///         dst.write(make_some_struct());
+<a href=#184 id=184 data-nosnippet>184</a>    ///         // MUST be done AFTER ownership of the value has been given to `dst.write`
+<a href=#185 id=185 data-nosnippet>185</a>    ///         *position += 1;
+<a href=#186 id=186 data-nosnippet>186</a>    ///     }
+<a href=#187 id=187 data-nosnippet>187</a>    ///
+<a href=#188 id=188 data-nosnippet>188</a>    ///     let your_array = builder.finish_and_assume_init();
+<a href=#189 id=189 data-nosnippet>189</a>    /// }
+<a href=#190 id=190 data-nosnippet>190</a>    /// # }
+<a href=#191 id=191 data-nosnippet>191</a>    /// ```
+<a href=#192 id=192 data-nosnippet>192</a>    </span><span class="attr">#[inline(always)]
+<a href=#193 id=193 data-nosnippet>193</a>    </span><span class="kw">pub unsafe fn </span>iter_position(
+<a href=#194 id=194 data-nosnippet>194</a>        <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span><span class="self">self</span>,
+<a href=#195 id=195 data-nosnippet>195</a>    ) -&gt; (slice::IterMut&lt;<span class="lifetime">'_</span>, MaybeUninit&lt;T&gt;&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span>usize) {
+<a href=#196 id=196 data-nosnippet>196</a>        (<span class="self">self</span>.array.iter_mut(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.position)
+<a href=#197 id=197 data-nosnippet>197</a>    }
+<a href=#198 id=198 data-nosnippet>198</a>
+<a href=#199 id=199 data-nosnippet>199</a>    <span class="doccomment">/// When done writing (assuming all elements have been written to), mark the builder
+<a href=#200 id=200 data-nosnippet>200</a>    /// as finished to avoid dropping the initialized elements.
+<a href=#201 id=201 data-nosnippet>201</a>    </span><span class="attr">#[inline(always)]
+<a href=#202 id=202 data-nosnippet>202</a>    </span><span class="kw">pub const unsafe fn </span>finish(<span class="self">self</span>) {
+<a href=#203 id=203 data-nosnippet>203</a>        <span class="macro">debug_assert!</span>(<span class="self">self</span>.is_full());
+<a href=#204 id=204 data-nosnippet>204</a>        mem::forget(<span class="self">self</span>)
+<a href=#205 id=205 data-nosnippet>205</a>    }
+<a href=#206 id=206 data-nosnippet>206</a>
+<a href=#207 id=207 data-nosnippet>207</a>    <span class="doccomment">/// When done writing (assuming all elements have been written to), mark the builder
+<a href=#208 id=208 data-nosnippet>208</a>    /// as finished to avoid dropping the initialized elements, and get the inner array.
+<a href=#209 id=209 data-nosnippet>209</a>    ///
+<a href=#210 id=210 data-nosnippet>210</a>    /// This method is `const` since Rust 1.71.0, but non-`const` before.
+<a href=#211 id=211 data-nosnippet>211</a>    </span><span class="attr">#[rustversion::attr(since(<span class="number">1.71</span>), <span class="kw">const</span>)]
+<a href=#212 id=212 data-nosnippet>212</a>    #[inline(always)]
+<a href=#213 id=213 data-nosnippet>213</a>    </span><span class="kw">pub unsafe fn </span>finish_and_assume_init(<span class="self">self</span>) -&gt; GenericArray&lt;T, N&gt; {
+<a href=#214 id=214 data-nosnippet>214</a>        <span class="macro">debug_assert!</span>(<span class="self">self</span>.is_full());
+<a href=#215 id=215 data-nosnippet>215</a>
+<a href=#216 id=216 data-nosnippet>216</a>        <span class="comment">// Same-ish as `assume_init`/`transmute_copy` but generates better codegen in Debug builds
+<a href=#217 id=217 data-nosnippet>217</a>        // SAFETY: The array is initialized, and by definition is the same size and alignment as GenericArray&lt;T, N&gt;
+<a href=#218 id=218 data-nosnippet>218</a>        </span><span class="kw">let </span>array = ptr::read(<span class="self">self</span>.array <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_ as </span><span class="kw-2">*const </span>GenericArray&lt;T, N&gt;);
+<a href=#219 id=219 data-nosnippet>219</a>
+<a href=#220 id=220 data-nosnippet>220</a>        <span class="comment">// avoid Drop logic, and since this is intrusive, doing this after reading the array is fine
+<a href=#221 id=221 data-nosnippet>221</a>        </span>mem::forget(<span class="self">self</span>);
+<a href=#222 id=222 data-nosnippet>222</a>
+<a href=#223 id=223 data-nosnippet>223</a>        array
+<a href=#224 id=224 data-nosnippet>224</a>    }
+<a href=#225 id=225 data-nosnippet>225</a>
+<a href=#226 id=226 data-nosnippet>226</a>    <span class="doccomment">/// Similar to [`GenericArray::assume_init`] but for arrays passed to `IntrusiveArrayBuilder`.
+<a href=#227 id=227 data-nosnippet>227</a>    </span><span class="attr">#[deprecated(
+<a href=#228 id=228 data-nosnippet>228</a>        since = <span class="string">"1.3.4"</span>,
+<a href=#229 id=229 data-nosnippet>229</a>        note = <span class="string">"See `iter_position` for modern usage pattern without this function"
+<a href=#230 id=230 data-nosnippet>230</a>    </span>)]
+<a href=#231 id=231 data-nosnippet>231</a>    #[inline(always)]
+<a href=#232 id=232 data-nosnippet>232</a>    </span><span class="kw">pub unsafe fn </span>array_assume_init(array: GenericArray&lt;MaybeUninit&lt;T&gt;, N&gt;) -&gt; GenericArray&lt;T, N&gt; {
+<a href=#233 id=233 data-nosnippet>233</a>        ptr::read(<span class="kw-2">&amp;</span>array <span class="kw">as </span><span class="kw-2">*const </span><span class="kw">_ as </span><span class="kw-2">*const </span>MaybeUninit&lt;GenericArray&lt;T, N&gt;&gt;).assume_init()
+<a href=#234 id=234 data-nosnippet>234</a>    }
+<a href=#235 id=235 data-nosnippet>235</a>}
+<a href=#236 id=236 data-nosnippet>236</a>
+<a href=#237 id=237 data-nosnippet>237</a><span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Drop <span class="kw">for </span>IntrusiveArrayBuilder&lt;<span class="lifetime">'_</span>, T, N&gt; {
+<a href=#238 id=238 data-nosnippet>238</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#239 id=239 data-nosnippet>239</a>        <span class="kw">unsafe </span>{
+<a href=#240 id=240 data-nosnippet>240</a>            ptr::drop_in_place(
+<a href=#241 id=241 data-nosnippet>241</a>                <span class="comment">// Same cast as MaybeUninit::slice_assume_init_mut
+<a href=#242 id=242 data-nosnippet>242</a>                </span><span class="self">self</span>.array.get_unchecked_mut(..<span class="self">self</span>.position) <span class="kw">as </span><span class="kw-2">*mut </span>[MaybeUninit&lt;T&gt;]
+<a href=#243 id=243 data-nosnippet>243</a>                    <span class="kw">as </span><span class="kw-2">*mut </span>[T],
+<a href=#244 id=244 data-nosnippet>244</a>            );
+<a href=#245 id=245 data-nosnippet>245</a>        }
+<a href=#246 id=246 data-nosnippet>246</a>    }
+<a href=#247 id=247 data-nosnippet>247</a>}
+<a href=#248 id=248 data-nosnippet>248</a>
+<a href=#249 id=249 data-nosnippet>249</a><span class="doccomment">/// **UNSAFE**: Consumes an array one element at a time.
+<a href=#250 id=250 data-nosnippet>250</a>///
+<a href=#251 id=251 data-nosnippet>251</a>/// You MUST increment the position while iterating and any leftover elements
+<a href=#252 id=252 data-nosnippet>252</a>/// will be dropped if position does not go to N
+<a href=#253 id=253 data-nosnippet>253</a></span><span class="kw">pub struct </span>ArrayConsumer&lt;T, N: ArrayLength&gt; {
+<a href=#254 id=254 data-nosnippet>254</a>    array: ManuallyDrop&lt;GenericArray&lt;T, N&gt;&gt;,
+<a href=#255 id=255 data-nosnippet>255</a>    position: usize,
+<a href=#256 id=256 data-nosnippet>256</a>}
+<a href=#257 id=257 data-nosnippet>257</a>
+<a href=#258 id=258 data-nosnippet>258</a><span class="kw">impl</span>&lt;T, N: ArrayLength&gt; ArrayConsumer&lt;T, N&gt; {
+<a href=#259 id=259 data-nosnippet>259</a>    <span class="doccomment">/// Give ownership of the array to the consumer
+<a href=#260 id=260 data-nosnippet>260</a>    </span><span class="attr">#[inline(always)]
+<a href=#261 id=261 data-nosnippet>261</a>    </span><span class="kw">pub const fn </span>new(array: GenericArray&lt;T, N&gt;) -&gt; ArrayConsumer&lt;T, N&gt; {
+<a href=#262 id=262 data-nosnippet>262</a>        ArrayConsumer {
+<a href=#263 id=263 data-nosnippet>263</a>            array: ManuallyDrop::new(array),
+<a href=#264 id=264 data-nosnippet>264</a>            position: <span class="number">0</span>,
+<a href=#265 id=265 data-nosnippet>265</a>        }
+<a href=#266 id=266 data-nosnippet>266</a>    }
+<a href=#267 id=267 data-nosnippet>267</a>
+<a href=#268 id=268 data-nosnippet>268</a>    <span class="doccomment">/// Creates an iterator and mutable reference to the internal position
+<a href=#269 id=269 data-nosnippet>269</a>    /// to keep track of consumed elements.
+<a href=#270 id=270 data-nosnippet>270</a>    ///
+<a href=#271 id=271 data-nosnippet>271</a>    /// You MUST increment the position as you iterate to mark off consumed elements.
+<a href=#272 id=272 data-nosnippet>272</a>    </span><span class="attr">#[inline(always)]
+<a href=#273 id=273 data-nosnippet>273</a>    </span><span class="kw">pub unsafe fn </span>iter_position(<span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span><span class="self">self</span>) -&gt; (slice::Iter&lt;<span class="lifetime">'_</span>, T&gt;, <span class="kw-2">&amp;</span><span class="lifetime">'_ </span><span class="kw-2">mut </span>usize) {
+<a href=#274 id=274 data-nosnippet>274</a>        (<span class="self">self</span>.array.iter(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.position)
+<a href=#275 id=275 data-nosnippet>275</a>    }
+<a href=#276 id=276 data-nosnippet>276</a>}
+<a href=#277 id=277 data-nosnippet>277</a>
+<a href=#278 id=278 data-nosnippet>278</a><span class="kw">impl</span>&lt;T, N: ArrayLength&gt; Drop <span class="kw">for </span>ArrayConsumer&lt;T, N&gt; {
+<a href=#279 id=279 data-nosnippet>279</a>    <span class="kw">fn </span>drop(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
+<a href=#280 id=280 data-nosnippet>280</a>        <span class="kw">unsafe </span>{
+<a href=#281 id=281 data-nosnippet>281</a>            ptr::drop_in_place(<span class="self">self</span>.array.get_unchecked_mut(<span class="self">self</span>.position..));
+<a href=#282 id=282 data-nosnippet>282</a>        }
+<a href=#283 id=283 data-nosnippet>283</a>    }
+<a href=#284 id=284 data-nosnippet>284</a>}</code></pre></div></section></main></body></html>
