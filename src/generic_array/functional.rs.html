@@ -39,7 +39,7 @@
 <a href=#39 id=39 data-nosnippet>39</a>    ///
 <a href=#40 id=40 data-nosnippet>40</a>    /// If the mapping function panics, any already initialized elements in the new sequence
 <a href=#41 id=41 data-nosnippet>41</a>    /// will be dropped, AND any unused elements in the source sequence will also be dropped.
-<a href=#42 id=42 data-nosnippet>42</a>    </span><span class="attr">#[inline]
+<a href=#42 id=42 data-nosnippet>42</a>    </span><span class="attr">#[inline(always)]
 <a href=#43 id=43 data-nosnippet>43</a>    </span><span class="kw">fn </span>map&lt;U, F&gt;(<span class="self">self</span>, f: F) -&gt; MappedSequence&lt;<span class="self">Self</span>, T, U&gt;
 <a href=#44 id=44 data-nosnippet>44</a>    <span class="kw">where
 <a href=#45 id=45 data-nosnippet>45</a>        </span><span class="self">Self</span>: MappedGenericSequence&lt;T, U&gt;,
@@ -75,7 +75,7 @@
 <a href=#75 id=75 data-nosnippet>75</a>    /// # #[cfg(not(feature = "alloc"))]
 <a href=#76 id=76 data-nosnippet>76</a>    /// # compile_error!("requires alloc feature to test this properly");
 <a href=#77 id=77 data-nosnippet>77</a>    /// ```
-<a href=#78 id=78 data-nosnippet>78</a>    </span><span class="attr">#[inline]
+<a href=#78 id=78 data-nosnippet>78</a>    </span><span class="attr">#[inline(always)]
 <a href=#79 id=79 data-nosnippet>79</a>    </span><span class="kw">fn </span>zip&lt;B, Rhs, U, F&gt;(<span class="self">self</span>, rhs: Rhs, f: F) -&gt; MappedSequence&lt;<span class="self">Self</span>, T, U&gt;
 <a href=#80 id=80 data-nosnippet>80</a>    <span class="kw">where
 <a href=#81 id=81 data-nosnippet>81</a>        </span><span class="self">Self</span>: MappedGenericSequence&lt;T, U&gt;,
@@ -89,7 +89,7 @@
 <a href=#89 id=89 data-nosnippet>89</a>    <span class="doccomment">/// Folds (or reduces) a sequence of data into a single value.
 <a href=#90 id=90 data-nosnippet>90</a>    ///
 <a href=#91 id=91 data-nosnippet>91</a>    /// If the fold function panics, any unused elements will be dropped.
-<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="attr">#[inline]
+<a href=#92 id=92 data-nosnippet>92</a>    </span><span class="attr">#[inline(always)]
 <a href=#93 id=93 data-nosnippet>93</a>    </span><span class="kw">fn </span>fold&lt;U, F&gt;(<span class="self">self</span>, init: U, f: F) -&gt; U
 <a href=#94 id=94 data-nosnippet>94</a>    <span class="kw">where
 <a href=#95 id=95 data-nosnippet>95</a>        </span>F: FnMut(U, <span class="self">Self</span>::Item) -&gt; U,
