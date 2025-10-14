@@ -11,15 +11,12 @@ impl<T, N: ArrayLength> TryFrom<Vec<T>> for GenericArray<T, N> {
         }
 
         unsafe {
-            let mut destination = GenericArray::uninit();
-            let mut builder = IntrusiveArrayBuilder::new(&mut destination);
+            let mut destination = core::mem::MaybeUninit::<GenericArray<T, N>>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut destination);
 
             builder.extend(v.into_iter());
 
-            Ok({
-                builder.finish();
-                IntrusiveArrayBuilder::array_assume_init(destination)
-            })
+            Ok(builder.finish_and_assume_init())
         }
     }
 }
@@ -193,7 +190,7 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
 
             builder.finish();
 
-            Box::from_raw(ptr.cast()) // IntrusiveArrayBuilder::array_assume_init
+            Box::from_raw(ptr.cast()) // assume_init
         }
     }
 }

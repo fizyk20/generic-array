@@ -63,8 +63,8 @@ where
         }
 
         unsafe {
-            let mut dst = GenericArray::uninit();
-            let mut builder = IntrusiveArrayBuilder::new(&mut dst);
+            let mut dst = core::mem::MaybeUninit::<GenericArray<T, N>>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut dst);
 
             let (build_iter, position) = builder.iter_position();
 
@@ -83,10 +83,7 @@ where
                     return Err(de::Error::invalid_length(*position + 1, &self));
                 }
 
-                return Ok({
-                    builder.finish();
-                    IntrusiveArrayBuilder::array_assume_init(dst)
-                });
+                return Ok(builder.finish_and_assume_init());
             }
 
             Err(de::Error::invalid_length(*position, &self))

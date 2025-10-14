@@ -546,8 +546,8 @@ where
         F: FnMut(usize) -> T,
     {
         unsafe {
-            let mut array = GenericArray::<T, N>::uninit();
-            let mut builder = IntrusiveArrayBuilder::new(&mut array);
+            let mut array = MaybeUninit::<GenericArray<T, N>>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
 
             {
                 let (builder_iter, position) = builder.iter_position();
@@ -558,8 +558,7 @@ where
                 });
             }
 
-            builder.finish();
-            IntrusiveArrayBuilder::array_assume_init(array)
+            builder.finish_and_assume_init()
         }
     }
 
@@ -1026,8 +1025,8 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         }
 
         unsafe {
-            let mut array = GenericArray::uninit();
-            let mut builder = IntrusiveArrayBuilder::new(&mut array);
+            let mut array = MaybeUninit::<GenericArray<T, N>>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
 
             builder.extend(&mut iter);
 
@@ -1035,10 +1034,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
                 return Err(LengthError);
             }
 
-            Ok({
-                builder.finish();
-                IntrusiveArrayBuilder::array_assume_init(array)
-            })
+            Ok(builder.finish_and_assume_init())
         }
     }
 }

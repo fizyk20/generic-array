@@ -124,6 +124,24 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
         IntrusiveArrayBuilder { array, position: 0 }
     }
 
+    /// Begin building an array from a `MaybeUninit<GenericArray<T, N>>`, which can potentially
+    /// result in better codegen.
+    ///
+    /// This method is `const` since Rust 1.83.0, but non-`const` before.
+    #[rustversion::attr(since(1.83), const)]
+    #[inline(always)]
+    pub fn new_alt(
+        array: &'a mut MaybeUninit<GenericArray<T, N>>,
+    ) -> IntrusiveArrayBuilder<'a, T, N> {
+        // SAFETY: GenericArray<MaybeUninit<T>, N> has the same memory layout as MaybeUninit<GenericArray<T, N>>
+        IntrusiveArrayBuilder::new(unsafe {
+            mem::transmute::<
+                &mut MaybeUninit<GenericArray<T, N>>,
+                &mut GenericArray<MaybeUninit<T>, N>,
+            >(array)
+        })
+    }
+
     /// Consume an iterator, `.zip`-ing it to fill some or all of the array. This does not check if the
     /// iterator had extra elements or too few elements.
     ///
@@ -157,15 +175,16 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
     /// # struct SomeType;
     /// fn make_some_struct() -> SomeType { SomeType }
     /// unsafe {
-    ///     let mut array = GenericArray::uninit();
-    ///     let mut builder = IntrusiveArrayBuilder::<SomeType, U5>::new(&mut array);
+    ///     let mut array = MaybeUninit::<GenericArray<SomeType, U5>>::uninit();
+    ///     let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
     ///     let (dst_iter, position) = builder.iter_position();
     ///     for dst in dst_iter {
     ///         dst.write(make_some_struct());
     ///         // MUST be done AFTER ownership of the value has been given to `dst.write`
     ///         *position += 1;
     ///     }
-    ///     let your_array = { builder.finish(); IntrusiveArrayBuilder::array_assume_init(array) };
+    ///
+    ///     let your_array = builder.finish_and_assume_init();
     /// }
     /// # }
     /// ```
@@ -176,15 +195,38 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
         (self.array.iter_mut(), &mut self.position)
     }
 
-    /// When done writing (assuming all elements have been written to),
-    /// get the inner array.
+    /// When done writing (assuming all elements have been written to), mark the builder
+    /// as finished to avoid dropping the initialized elements.
     #[inline(always)]
     pub const unsafe fn finish(self) {
         debug_assert!(self.is_full());
         mem::forget(self)
     }
 
-    /// Similar to [`GenericArray::assume_init`] but not `const` and optimizes better.
+    /// When done writing (assuming all elements have been written to), mark the builder
+    /// as finished to avoid dropping the initialized elements, and get the inner array.
+    ///
+    /// This method is `const` since Rust 1.71.0, but non-`const` before.
+    #[rustversion::attr(since(1.71), const)]
+    #[inline(always)]
+    pub unsafe fn finish_and_assume_init(self) -> GenericArray<T, N> {
+        debug_assert!(self.is_full());
+
+        // Same-ish as `assume_init`/`transmute_copy` but generates better codegen in Debug builds
+        // SAFETY: The array is initialized, and by definition is the same size and alignment as GenericArray<T, N>
+        let array = ptr::read(self.array as *const _ as *const GenericArray<T, N>);
+
+        // avoid Drop logic, and since this is intrusive, doing this after reading the array is fine
+        mem::forget(self);
+
+        array
+    }
+
+    /// Similar to [`GenericArray::assume_init`] but for arrays passed to `IntrusiveArrayBuilder`.
+    #[deprecated(
+        since = "1.3.4",
+        note = "See `iter_position` for modern usage pattern without this function"
+    )]
     #[inline(always)]
     pub unsafe fn array_assume_init(array: GenericArray<MaybeUninit<T>, N>) -> GenericArray<T, N> {
         ptr::read(&array as *const _ as *const MaybeUninit<GenericArray<T, N>>).assume_init()
