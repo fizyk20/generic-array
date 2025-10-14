@@ -283,7 +283,18 @@ where
 /// Associated [`ArrayLength`] for one [`Const<N>`]
 ///
 /// See [`IntoArrayLength`] for more information.
+///
+/// Note that not all `N` values are valid due to limitations inherent to `typenum` and Rust. You
+/// may need to combine [Const] with other typenum operations to get the desired length.
 pub type ConstArrayLength<const N: usize> = <Const<N> as IntoArrayLength>::ArrayLength;
+
+/// [`GenericArray`] with a const-generic `usize` length, using the [`ConstArrayLength`] type alias for `N`.
+///
+/// To construct from a literal array, use [`from_array`](GenericArray::from_array).
+///
+/// Note that not all `N` values are valid due to limitations inherent to `typenum` and Rust. You
+/// may need to combine [Const] with other typenum operations to get the desired length.
+pub type ConstGenericArray<T, const N: usize> = GenericArray<T, ConstArrayLength<N>>;
 
 /// Internal type used to generate a struct of appropriate size
 #[allow(dead_code)]
