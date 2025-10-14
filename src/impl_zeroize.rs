@@ -1,12 +1,14 @@
 use crate::{ArrayLength, GenericArray};
 
-use zeroize::Zeroize;
+use zeroize::{Zeroize, ZeroizeOnDrop};
 
-impl<T: Zeroize, N: ArrayLength> Zeroize for GenericArray<T, N> {
+impl<Z: Zeroize, N: ArrayLength> Zeroize for GenericArray<Z, N> {
     fn zeroize(&mut self) {
         self.as_mut_slice().iter_mut().zeroize()
     }
 }
+
+impl<Z: ZeroizeOnDrop, N: ArrayLength> ZeroizeOnDrop for GenericArray<Z, N> {}
 
 #[cfg(test)]
 mod tests {
