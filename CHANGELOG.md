@@ -1,3 +1,9 @@
+* **`1.3.4`**
+    * Significantly improve stack usage of `GenericArray` methods in unoptimized (`-C opt-level=0`) build modes.
+    * Introduce the `hybrid-array-0_4` feature to allow interop between `generic-array` 1.x and `hybrid-array` 0.4 versions.
+    * Add `ConstGenericArray` type alias for easier usage with literal const usizes.
+    * Implement `ZeroizeOnDrop` for `GenericArray` when `T: ZeroizeOnDrop` (when using the `zeroize` feature).
+
 * **`1.3.2`**
     * Introduce the `compat-0_14` feature to allow interop between `generic-array` 1.x and 0.14 versions.
 
