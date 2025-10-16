@@ -2,7 +2,7 @@
 
 use generic_array_0_14::{ArrayLength as ArrayLength_0_14, GenericArray as GenericArray_0_14};
 
-use super::{ArrayLength, GenericArray};
+use crate::{ArrayLength, GenericArray};
 
 impl<T, N: ArrayLength + ArrayLength_0_14<T>> From<GenericArray_0_14<T, N>> for GenericArray<T, N> {
     #[inline(always)]
@@ -55,12 +55,12 @@ impl<T, N: ArrayLength + ArrayLength_0_14<T>> GenericArray<T, N> {
     /// From `self` of this version, create the [`GenericArray`](GenericArray_0_14) type from `generic-array` 0.14.
     #[inline(always)]
     pub const fn into_0_14(self) -> GenericArray_0_14<T, N> {
-        unsafe { super::const_transmute(self) }
+        unsafe { crate::const_transmute(self) }
     }
 
     /// From the [`GenericArray`](GenericArray_0_14) type from `generic-array` 0.14, create a [`GenericArray`] of this version.
     #[inline(always)]
     pub const fn from_0_14(value: GenericArray_0_14<T, N>) -> Self {
-        unsafe { super::const_transmute(value) }
+        unsafe { crate::const_transmute(value) }
     }
 }

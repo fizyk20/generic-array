@@ -75,11 +75,12 @@ assert_eq!(array[2], 3);
 ```toml
 [dependencies.generic-array]
 features = [
-    "serde",         # Serialize/Deserialize implementation
-    "zeroize",       # Zeroize implementation for setting array elements to zero
-    "const-default", # Compile-time const default value support via trait
-    "alloc",         # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
-    "faster-hex",    # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
-    "compat-0_14"    # Enables interoperability with `generic-array` 0.14
+    "serde",            # Serialize/Deserialize implementation
+    "zeroize",          # Zeroize implementation for setting array elements to zero
+    "const-default",    # Compile-time const default value support via trait
+    "alloc",            # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
+    "faster-hex",       # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
+    "compat-0_14",      # Enables interoperability with `generic-array` 0.14
+    "hybrid-array-0_4"  # Enables interoperability with `hybrid-array` 0.4
 ]
 ```

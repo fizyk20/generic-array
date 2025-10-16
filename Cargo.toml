@@ -36,6 +36,7 @@ faster-hex = { version = "0.10", optional = true, default-features = false }
 rustversion = "1"
 
 generic_array-0_14 = { package = "generic-array", version = "0.14", optional = true, default-features = false }
+hybrid-array-0_4 = { package = "hybrid-array", version = "0.4", optional = true, default-features = false }
 
 [dev-dependencies]
 # this can't yet be made optional, see https://github.com/rust-lang/cargo/issues/1596
