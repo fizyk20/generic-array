@@ -49,13 +49,13 @@ impl<T, N: ArrayLength + ArraySize> AsMut<HybridArray<T, N>> for GenericArray<T,
 }
 
 impl<T, N: ArrayLength + ArraySize> GenericArray<T, N> {
-    /// From `&self` of this version, create a reference to a [`HybridArray`](HybridArray) from `hybrid-array` 0.4.
+    /// From `&self` of this version, create a reference to a [`Array`](hybrid_array_0_4::Array) from `hybrid-array` 0.4.
     #[inline(always)]
     pub const fn as_ha0_4(&self) -> &HybridArray<T, N> {
         unsafe { core::mem::transmute(self) }
     }
 
-    /// From `&mut self` of this version, create a mutable reference to a [`HybridArray`](HybridArray) from `hybrid-array` 0.4.
+    /// From `&mut self` of this version, create a mutable reference to a [`Array`](hybrid_array_0_4::Array) from `hybrid-array` 0.4.
     ///
     /// This method is `const` since Rust 1.83.0, but non-`const` before.
     #[rustversion::attr(since(1.83), const)]
@@ -64,13 +64,13 @@ impl<T, N: ArrayLength + ArraySize> GenericArray<T, N> {
         unsafe { core::mem::transmute(self) }
     }
 
-    /// From `self` of this version, create a [`HybridArray`](HybridArray) from `hybrid-array` 0.4.
+    /// From `self` of this version, create a [`Array`](hybrid_array_0_4::Array) from `hybrid-array` 0.4.
     #[inline(always)]
     pub const fn into_ha0_4(self) -> HybridArray<T, N> {
         unsafe { crate::const_transmute(self) }
     }
 
-    /// From a [`HybridArray`](HybridArray) from `hybrid-array` 0.4, create a [`GenericArray`] of this version.
+    /// From a [`Array`](hybrid_array_0_4::Array) from `hybrid-array` 0.4, create a [`GenericArray`] of this version.
     #[inline(always)]
     pub const fn from_ha0_4(value: HybridArray<T, N>) -> Self {
         unsafe { crate::const_transmute(value) }

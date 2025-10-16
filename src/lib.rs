@@ -5,6 +5,54 @@
 //! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
 //! may be required to view certain types on foreign crates.
 //!
+//! ## Upgrading from 0.14 or using with `hybrid-array 0.4`
+//!
+//! `generic-array 0.14` has been officially deprecated, so here's a quick guide on how to upgrade from `generic-array 0.14` to `1.x`. Note that libraries depending on `generic-array` will need to update their usage as well. Some libraries are moving to `hybrid-array 0.4` instead, which we provide interoperability with `generic-array 1.x` via the `hybrid-array-0_4` feature flag.
+//!
+//! <details>
+//! <summary>Click to expand</summary>
+//!
+//! To upgrade to `1.x`, change your `Cargo.toml` to use the new version:
+//!
+//! ```toml
+//! [dependencies]
+//! generic-array = "1"
+//! ```
+//!
+//! then in your code, go through and remove the `<T>` from `ArrayLength<T>` bounds, as the type parameter has been removed. It's now just `ArrayLength`.
+//!
+//! If you _need_ to interoperate with `generic-array 0.14`, enable the `compat-0_14` feature flag:
+//!
+//! ```toml
+//! [dependencies]
+//! generic-array = { version = "1", features = ["compat-0_14"] }
+//! ```
+//!
+//! then use the `to_0_14`/`from_0_14`/`as_0_14`/`as_0_14_mut` methods on `GenericArray` to convert between versions, or use the `From`/`AsRef`/`AsMut` implementations.
+//!
+//! The `arr!` macro has changed to no longer require a type parameter, so change:
+//!
+//! ```rust
+//! let array = arr![i32; 1, 2, 3];
+//! // to
+//! let array = arr![1, 2, 3];
+//! ```
+//!
+//! For interoperability with `hybrid-array 0.4`, enable the `hybrid-array-0_4` feature flag:
+//!
+//! ```toml
+//! [dependencies]
+//! generic-array = { version = "1", features = ["hybrid-array-0_4"] }
+//! ```
+//!
+//! then use the `to_ha0_4`/`from_ha0_4`/`as_ha0_4`/`as_ha0_4_mut` methods on `GenericArray` to convert between versions, or use the `From`/`AsRef`/`AsMut` implementations.
+//!
+//! We also implement the `AssocArraySize` and `AsArrayRef`/`AsArrayMut` traits from `hybrid-array` for `GenericArray`.
+//!
+//! </details>
+//!
+//! ## Usage
+//!
 //! Before Rust 1.51, arrays `[T; N]` were problematic in that they couldn't be
 //! generic with respect to the length `N`, so this wouldn't work:
 //!
@@ -988,7 +1036,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// ```
     #[inline(always)]
     pub const unsafe fn assume_init(array: GenericArray<MaybeUninit<T>, N>) -> Self {
-        const_transmute::<_, MaybeUninit<GenericArray<T, N>>>(array).assume_init()
+        const_transmute::<GenericArray<MaybeUninit<T>, N>, GenericArray<T, N>>(array)
     }
 }
 
