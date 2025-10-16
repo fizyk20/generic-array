@@ -32,7 +32,7 @@
 //!
 //! The `arr!` macro has changed to no longer require a type parameter, so change:
 //!
-//! ```rust
+//! ```rust,ignore
 //! let array = arr![i32; 1, 2, 3];
 //! // to
 //! let array = arr![1, 2, 3];
