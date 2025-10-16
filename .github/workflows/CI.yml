@@ -38,7 +38,7 @@ jobs:
         uses: dtolnay/rust-toolchain@nightly
 
       - name: Build documentation
-        run: cargo doc --features "serde zeroize const-default alloc"
+        run: cargo doc --features "serde zeroize const-default alloc hybrid-array-0_4"
 
       - name: Finalize documentation
         run: |

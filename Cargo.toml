@@ -57,7 +57,7 @@ codegen-units = 1
 
 [package.metadata.docs.rs]
 # all but "internals", don't show those on docs.rs
-features = ["serde", "zeroize", "const-default", "alloc"]
+features = ["serde", "zeroize", "const-default", "alloc", "hybrid-array-0_4"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.playground]
