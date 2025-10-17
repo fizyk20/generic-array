@@ -25,6 +25,8 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     ///
     /// If the generator function panics while initializing the sequence,
     /// any already initialized elements will be dropped.
+    ///
+    /// See also [`FallibleGenericSequence::try_generate`].
     fn generate<F>(f: F) -> Self::Sequence
     where
         F: FnMut(usize) -> T;
@@ -74,6 +76,23 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     }
 }
 
+/// Extension to `GenericSequence` for fallible initialization.
+///
+/// # Safety
+///
+/// Care must be taken when implementing such that methods are safe.
+///
+/// Lengths must match, and element drop on panic or error must be handled.
+pub unsafe trait FallibleGenericSequence<T>: GenericSequence<T> {
+    /// Initializes a new sequence instance using the given fallible function.
+    ///
+    /// If the generator function returns an error or panics while initializing the sequence,
+    /// any already initialized elements will be dropped and the error returned.
+    fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+    where
+        F: FnMut(usize) -> Result<T, E>;
+}
+
 /// Accessor for `GenericSequence` item type, which is really `IntoIterator::Item`
 ///
 /// For deeply nested generic mapped sequence types, like shown in `tests/generics.rs`,
@@ -96,6 +115,19 @@ where
     }
 }
 
+unsafe impl<'a, T: 'a, S: FallibleGenericSequence<T>> FallibleGenericSequence<T> for &'a S
+where
+    &'a S: IntoIterator,
+{
+    #[inline(always)]
+    fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+    where
+        F: FnMut(usize) -> Result<T, E>,
+    {
+        S::try_generate(f)
+    }
+}
+
 unsafe impl<'a, T: 'a, S: GenericSequence<T>> GenericSequence<T> for &'a mut S
 where
     &'a mut S: IntoIterator,
@@ -109,6 +141,19 @@ where
         F: FnMut(usize) -> T,
     {
         S::generate(f)
+    }
+}
+
+unsafe impl<'a, T: 'a, S: FallibleGenericSequence<T>> FallibleGenericSequence<T> for &'a mut S
+where
+    &'a mut S: IntoIterator,
+{
+    #[inline(always)]
+    fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+    where
+        F: FnMut(usize) -> Result<T, E>,
+    {
+        S::try_generate(f)
     }
 }
 

@@ -1,5 +1,7 @@
 [![Crates.io](https://img.shields.io/crates/v/generic-array.svg)](https://crates.io/crates/generic-array)
 [![Build Status](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml/badge.svg)](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml)
+![Rust Version](https://img.shields.io/badge/rustc-1.65+-blue.svg)
+
 # generic-array
 
 This crate implements a structure that can be used as a generic array type.
@@ -126,6 +128,10 @@ features = [
     "const-default",    # Compile-time const default value support via trait
     "alloc",            # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
     "faster-hex",       # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
+    "subtle",           # Enables `subtle` crate support for constant-time equality checks and conditional selection
+    "arbitrary",        # Enables `arbitrary` crate support for fuzzing
+    "bytemuck",         # Enables `bytemuck` crate support
+    "compat-0_14",      # Enables interoperability with `generic-array` 0.14
     "compat-0_14",      # Enables interoperability with `generic-array` 0.14
     "hybrid-array-0_4"  # Enables interoperability with `hybrid-array` 0.4
 ]

@@ -1,3 +1,8 @@
+* **`1.3.5`**
+    * Add `subtle`, `arbitrary`, and `bytemuck` implementations for `GenericArray` when the inner type supports them.
+    * Add `FallibleGenericSequence` with `try_generate` for fallible generation of sequences/arrays.
+    * Add `try_fold` to `FunctionalSequence` for fallible folding of sequences/arrays.
+
 * **`1.3.4`**
     * Significantly improve stack usage of `GenericArray` methods in unoptimized (`-C opt-level=0`) build modes.
     * Introduce the `hybrid-array-0_4` feature to allow interop between `generic-array` 1.x and `hybrid-array` 0.4 versions.

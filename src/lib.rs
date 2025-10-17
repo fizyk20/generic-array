@@ -133,6 +133,9 @@
 //!     "const-default",    # Compile-time const default value support via trait
 //!     "alloc",            # Enables From/TryFrom implementations between GenericArray and Vec<T>/Box<[T]>
 //!     "faster-hex",       # Enables internal use of the `faster-hex` crate for faster hex encoding via SIMD
+//!     "subtle",           # Enables `subtle` crate support for constant-time equality checks and conditional selection
+//!     "arbitrary",        # Enables `arbitrary` crate support for fuzzing
+//!     "bytemuck",         # Enables `bytemuck` crate support
 //!     "compat-0_14",      # Enables interoperability with `generic-array` 0.14
 //!     "hybrid-array-0_4"  # Enables interoperability with `hybrid-array` 0.4
 //! ]
@@ -154,17 +157,7 @@ mod hex;
 mod impls;
 mod iter;
 
-#[cfg(feature = "alloc")]
-mod impl_alloc;
-
-#[cfg(feature = "const-default")]
-mod impl_const_default;
-
-#[cfg(feature = "serde")]
-mod impl_serde;
-
-#[cfg(feature = "zeroize")]
-mod impl_zeroize;
+mod ext_impls;
 
 use core::iter::FromIterator;
 use core::marker::PhantomData;
@@ -557,6 +550,7 @@ impl<'a, T: 'a, N: ArrayLength> IntoIterator for &'a GenericArray<T, N> {
     type IntoIter = slice::Iter<'a, T>;
     type Item = &'a T;
 
+    #[inline]
     fn into_iter(self: &'a GenericArray<T, N>) -> Self::IntoIter {
         self.as_slice().iter()
     }
@@ -566,6 +560,7 @@ impl<'a, T: 'a, N: ArrayLength> IntoIterator for &'a mut GenericArray<T, N> {
     type IntoIter = slice::IterMut<'a, T>;
     type Item = &'a mut T;
 
+    #[inline]
     fn into_iter(self: &'a mut GenericArray<T, N>) -> Self::IntoIter {
         self.as_mut_slice().iter_mut()
     }
@@ -611,14 +606,12 @@ where
             let mut array = MaybeUninit::<GenericArray<T, N>>::uninit();
             let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
 
-            {
-                let (builder_iter, position) = builder.iter_position();
+            let (builder_iter, position) = builder.iter_position();
 
-                builder_iter.enumerate().for_each(|(i, dst)| {
-                    dst.write(f(i));
-                    *position += 1;
-                });
-            }
+            builder_iter.enumerate().for_each(|(i, dst)| {
+                dst.write(f(i));
+                *position += 1;
+            });
 
             builder.finish_and_assume_init()
         }
@@ -637,10 +630,10 @@ where
         F: FnMut(B, Self::Item) -> U,
     {
         unsafe {
-            if mem::needs_drop::<T>() || mem::needs_drop::<B>() {
-                let mut left = ManuallyDrop::new(lhs);
-                let mut right = ManuallyDrop::new(self);
+            let mut left = ManuallyDrop::new(lhs);
+            let mut right = ManuallyDrop::new(self);
 
+            if mem::needs_drop::<T>() || mem::needs_drop::<B>() {
                 let mut left = IntrusiveArrayConsumer::new(&mut left);
                 let mut right = IntrusiveArrayConsumer::new(&mut right);
 
@@ -657,12 +650,8 @@ where
                     f(left_value, right_value)
                 }))
             } else {
-                // Despite neither needing `Drop`, they may not be `Copy`, so be paranoid
-                // and avoid anything related to drop anyway. Assume it's moved out on each read.
-                let left = ManuallyDrop::new(lhs);
-                let right = ManuallyDrop::new(self);
-
-                // Neither right nor left require `Drop` be called, so choose an iterator that's easily optimized
+                // Neither right nor left require `Drop` be called, so choose an iterator that's easily optimized,
+                // though we still keep them in `ManuallyDrop` out of paranoia.
                 //
                 // Note that because ArrayConsumer checks for `needs_drop` itself, if `f` panics then nothing
                 // would have been done about it anyway. Only the other branch needs `ArrayConsumer`
@@ -702,6 +691,43 @@ where
                     f(left_value, ptr::read(r)) //
                 }))
             }
+        }
+    }
+}
+
+unsafe impl<T, N: ArrayLength> FallibleGenericSequence<T> for GenericArray<T, N>
+where
+    Self: IntoIterator<Item = T>,
+{
+    #[inline(always)]
+    fn try_generate<F, E>(mut f: F) -> Result<Self::Sequence, E>
+    where
+        F: FnMut(usize) -> Result<T, E>,
+    {
+        unsafe {
+            let mut array = MaybeUninit::<GenericArray<T, N>>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
+
+            let (builder_iter, position) = builder.iter_position();
+
+            if let Err(e) = builder_iter
+                .enumerate()
+                .try_for_each(|(i, dst)| match f(i) {
+                    // NOTE: Using a match here instead of ? results in better codegen
+                    Ok(value) => {
+                        dst.write(value);
+                        *position += 1;
+                        Ok(())
+                    }
+                    Err(e) => Err(e),
+                })
+            {
+                drop(builder); // explicitly drop to run the destructor and drop any initialized elements
+
+                return Err(e);
+            }
+
+            Ok(builder.finish_and_assume_init())
         }
     }
 }
@@ -762,6 +788,25 @@ where
             let (array_iter, position) = source.iter_position();
 
             array_iter.fold(init, |acc, src| {
+                let value = ptr::read(src);
+                *position += 1;
+                f(acc, value)
+            })
+        }
+    }
+
+    #[inline(always)]
+    fn try_fold<U, E, F>(self, init: U, mut f: F) -> Result<U, E>
+    where
+        F: FnMut(U, Self::Item) -> Result<U, E>,
+    {
+        unsafe {
+            let mut array = ManuallyDrop::new(self);
+            let mut source = IntrusiveArrayConsumer::new(&mut array);
+
+            let (mut array_iter, position) = source.iter_position();
+
+            array_iter.try_fold(init, |acc, src| {
                 let value = ptr::read(src);
                 *position += 1;
                 f(acc, value)

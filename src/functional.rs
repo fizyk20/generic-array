@@ -96,6 +96,17 @@ pub trait FunctionalSequence<T>: GenericSequence<T> {
     {
         self.into_iter().fold(init, f)
     }
+
+    /// Folds (or reduces) a sequence of data into a single value, returning a `Result`.
+    ///
+    /// If the fold function errors or panics, any unused elements will be dropped.
+    #[inline(always)]
+    fn try_fold<U, E, F>(self, init: U, f: F) -> Result<U, E>
+    where
+        F: FnMut(U, Self::Item) -> Result<U, E>,
+    {
+        self.into_iter().try_fold(init, f)
+    }
 }
 
 impl<'a, T, S: GenericSequence<T>> FunctionalSequence<T> for &'a S where &'a S: GenericSequence<T> {}
