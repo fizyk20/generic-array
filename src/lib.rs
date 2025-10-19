@@ -939,6 +939,66 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         }
     }
 
+    /// Borrows each element and returns a `GenericArray` of references
+    /// with the same length as `self`.
+    ///
+    /// This method is const since Rust 1.83.0, but non-const before.
+    ///
+    /// See also [`each_mut`](GenericArray::each_mut) for mutable references.
+    #[rustversion::attr(since(1.83), const)] // needed for `as_mut_slice` to be const
+    pub fn each_ref(&self) -> GenericArray<&T, N> {
+        let mut out: GenericArray<MaybeUninit<*const T>, N> = GenericArray::uninit();
+
+        {
+            // only slices allow `const` indexing
+            let (this, out) = (self.as_slice(), out.as_mut_slice());
+
+            let mut i = 0;
+            while i < N::USIZE {
+                out[i].write(ptr::addr_of!(this[i]));
+                i += 1;
+            }
+        }
+
+        // SAFETY: `*const T` has the same layout as `&T`, and we've also initialized each pointer as a valid reference.
+        unsafe { const_transmute(out) }
+    }
+
+    /// Borrows each element mutably and returns a `GenericArray` of mutable references
+    /// with the same length as `self`.
+    ///
+    /// This method is const since Rust 1.83.0, but non-const before.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use generic_array::{arr, GenericArray};
+    /// let mut ga = arr![1, 2, 3];
+    /// let mut_refs: GenericArray<&mut i32, _> = ga.each_mut();
+    /// for r in mut_refs.iter_mut() {
+    ///     *r *= 2;
+    /// }
+    /// assert_eq!(ga, arr![2, 4, 6]);
+    /// ```
+    #[rustversion::attr(since(1.83), const)]
+    pub fn each_mut(&mut self) -> GenericArray<&mut T, N> {
+        let mut out: GenericArray<MaybeUninit<*mut T>, N> = GenericArray::uninit();
+
+        {
+            // only slices allow `const` indexing
+            let (this, out) = (self.as_mut_slice(), out.as_mut_slice());
+
+            let mut i = 0;
+            while i < N::USIZE {
+                out[i].write(ptr::addr_of_mut!(this[i]));
+                i += 1;
+            }
+        }
+
+        // SAFETY: `*mut T` has the same layout as `&mut T`, and we've also initialized each pointer as a valid reference.
+        unsafe { const_transmute(out) }
+    }
+
     /// Converts a slice of `T` elements into a slice of `GenericArray<T, N>` chunks.
     ///
     /// Any remaining elements that do not fill the array will be returned as a second slice.
