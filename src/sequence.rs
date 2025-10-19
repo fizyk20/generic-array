@@ -31,6 +31,30 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     where
         F: FnMut(usize) -> T;
 
+    /// Initializes a new sequence instance by repeating the given value.
+    ///
+    /// This will only clone the value `Length - 1` times, taking ownership for the last element.
+    #[inline(always)]
+    fn repeat(value: T) -> Self::Sequence
+    where
+        T: Clone,
+    {
+        let mut value = Some(value);
+
+        Self::generate(move |i| unsafe {
+            if i + 1 == Self::Length::USIZE {
+                // for the last element, take the value
+                value.take().unwrap_unchecked()
+            } else if let Some(ref v) = value {
+                // otherwise, clone it
+                v.clone()
+            } else {
+                // SAFETY: this should never be reached
+                core::hint::unreachable_unchecked()
+            }
+        })
+    }
+
     /// Treats `self` as the right-hand operand in a zip operation
     ///
     /// This is optimized for stack-allocated `GenericArray`s
