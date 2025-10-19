@@ -1,4 +1,4 @@
-#![allow(dead_code)] // ArrayBuilder/ArrayConsumer are soft-deprecated internally
+#![allow(dead_code, clippy::new_without_default)] // ArrayBuilder/ArrayConsumer are soft-deprecated internally
 
 use crate::*;
 
@@ -155,6 +155,30 @@ impl<'a, T, N: ArrayLength> IntrusiveArrayBuilder<'a, T, N> {
             dst.write(src);
             *position += 1;
         });
+    }
+
+    /// Consume a fallible iterator, `.zip`-ing it to fill some or all of the array. This does not check if the
+    /// iterator had extra elements or too few elements.
+    ///
+    /// This makes no attempt to continue where a previous `extend` leaves off. Therefore, it should
+    /// only be used once per `ArrayBuilder`.
+    #[inline(always)]
+    pub unsafe fn try_extend<E>(
+        &mut self,
+        source: impl Iterator<Item = Result<T, E>>,
+    ) -> Result<(), E> {
+        let (destination, position) = (self.array.iter_mut(), &mut self.position);
+
+        destination
+            .zip(source)
+            .try_for_each(|(dst, src)| match src {
+                Ok(value) => {
+                    dst.write(value);
+                    *position += 1;
+                    Ok(())
+                }
+                Err(e) => Err(e),
+            })
     }
 
     /// Returns true if the write position equals the array size

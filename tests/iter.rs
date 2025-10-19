@@ -1,4 +1,5 @@
 use generic_array::arr;
+use generic_array::sequence::FallibleGenericSequence;
 
 use std::cell::Cell;
 use std::ops::Drop;
@@ -208,6 +209,15 @@ fn test_into_iter_drops() {
         assert_eq!(i.get(), index);
     }
     assert_eq!(i.get(), 5);
+}
+
+#[test]
+fn test_from_failing_iter() {
+    let res: Result<GenericArray<_, U5>, ()> = GenericArray::from_fallible_iter(
+        (2..).map(|x| if x == 5 { Err(()) } else { Ok(x) }).take(5),
+    );
+
+    assert!(res.is_err());
 }
 
 /*

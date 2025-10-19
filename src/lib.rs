@@ -730,6 +730,17 @@ where
             Ok(builder.finish_and_assume_init())
         }
     }
+
+    #[inline(always)]
+    fn from_fallible_iter<I, E>(iter: I) -> Result<Self::Sequence, E>
+    where
+        I: IntoIterator<Item = Result<T, E>>,
+    {
+        match Self::try_from_fallible_iter(iter) {
+            Ok(res) => res,
+            Err(_) => from_iter_length_fail(N::USIZE),
+        }
+    }
 }
 
 impl<T, U, N: ArrayLength> MappedGenericSequence<T, U> for GenericArray<T, N>
@@ -1148,6 +1159,47 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
             }
 
             Ok(builder.finish_and_assume_init())
+        }
+    }
+
+    /// Fallible equivalent of [`FallibleGenericSequence::from_fallible_iter`].
+    ///
+    /// Unlike `.collect::<Result<GenericArray<T, N>, E>>()`, this method will not panic
+    /// on length mismatch, instead returning a `LengthError`.
+    ///
+    /// Given iterator must yield exactly `N` elements or an error will be returned. Using [`.take(N)`](Iterator::take)
+    /// with an iterator longer than the array may be helpful.
+    #[inline]
+    pub fn try_from_fallible_iter<I, E>(iter: I) -> Result<Result<Self, E>, LengthError>
+    where
+        I: IntoIterator<Item = Result<T, E>>,
+    {
+        let mut iter = iter.into_iter();
+
+        // pre-checks
+        match iter.size_hint() {
+            // if the lower bound is greater than N, array will overflow
+            (n, _) if n > N::USIZE => return Err(LengthError),
+            // if the upper bound is smaller than N, array cannot be filled
+            (_, Some(n)) if n < N::USIZE => return Err(LengthError),
+            _ => {}
+        }
+
+        unsafe {
+            let mut array = MaybeUninit::<GenericArray<T, N>>::uninit();
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
+
+            if let Err(e) = builder.try_extend(&mut iter) {
+                drop(builder); // explicitly drop to run the destructor and drop any initialized elements
+
+                return Ok(Err(e));
+            }
+
+            if !builder.is_full() || iter.next().is_some() {
+                return Err(LengthError);
+            }
+
+            Ok(Ok(builder.finish_and_assume_init()))
         }
     }
 }
