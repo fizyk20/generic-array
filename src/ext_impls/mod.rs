@@ -18,3 +18,6 @@ mod impl_arbitrary;
 
 #[cfg(feature = "bytemuck")]
 mod impl_bytemuck;
+
+#[cfg(feature = "as_slice")]
+mod impl_as_slice;
