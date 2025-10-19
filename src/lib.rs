@@ -777,6 +777,29 @@ where
     }
 
     #[inline(always)]
+    fn try_map<U, F, E>(self, mut f: F) -> Result<MappedSequence<Self, T, U>, E>
+    where
+        Self: MappedGenericSequence<T, U>,
+        Mapped<Self, T, U>: FallibleGenericSequence<U>,
+        F: FnMut(Self::Item) -> Result<U, E>,
+    {
+        unsafe {
+            let mut array = ManuallyDrop::new(self);
+            let mut source = IntrusiveArrayConsumer::new(&mut array);
+
+            let (array_iter, position) = source.iter_position();
+
+            <Mapped<Self, T, U> as FallibleGenericSequence<U>>::from_fallible_iter(array_iter.map(
+                |src| {
+                    let value = ptr::read(src);
+                    *position += 1;
+                    f(value)
+                },
+            ))
+        }
+    }
+
+    #[inline(always)]
     fn zip<B, Rhs, U, F>(self, rhs: Rhs, f: F) -> MappedSequence<Self, T, U>
     where
         Self: MappedGenericSequence<T, U>,

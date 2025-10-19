@@ -29,9 +29,11 @@ where
     type Mapped = <S as MappedGenericSequence<T, U>>::Mapped;
 }
 
+/// Mapped type for a generic sequence
+pub type Mapped<S, T, U> = <S as MappedGenericSequence<T, U>>::Mapped;
+
 /// Accessor type for a mapped generic sequence
-pub type MappedSequence<S, T, U> =
-    <<S as MappedGenericSequence<T, U>>::Mapped as GenericSequence<U>>::Sequence;
+pub type MappedSequence<S, T, U> = <Mapped<S, T, U> as GenericSequence<U>>::Sequence;
 
 /// Defines functional programming methods for generic sequences
 pub trait FunctionalSequence<T>: GenericSequence<T> {
@@ -46,6 +48,22 @@ pub trait FunctionalSequence<T>: GenericSequence<T> {
         F: FnMut(Self::Item) -> U,
     {
         FromIterator::from_iter(self.into_iter().map(f))
+    }
+
+    /// Tries to map a `GenericSequence` to another `GenericSequence`, returning a `Result`.
+    ///
+    /// If the mapping function errors or panics, any already initialized elements in the new sequence
+    /// will be dropped, AND any unused elements in the source sequence will also be dropped.
+    #[inline(always)]
+    fn try_map<U, F, E>(self, f: F) -> Result<MappedSequence<Self, T, U>, E>
+    where
+        Self: MappedGenericSequence<T, U>,
+        Mapped<Self, T, U>: FallibleGenericSequence<U>,
+        F: FnMut(Self::Item) -> Result<U, E>,
+    {
+        <Mapped<Self, T, U> as FallibleGenericSequence<U>>::from_fallible_iter(
+            self.into_iter().map(f),
+        )
     }
 
     /// Combines two `GenericSequence` instances and iterates through both of them,
