@@ -975,7 +975,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// # use generic_array::{arr, GenericArray};
     /// let mut ga = arr![1, 2, 3];
     /// let mut_refs: GenericArray<&mut i32, _> = ga.each_mut();
-    /// for r in mut_refs.iter_mut() {
+    /// for r in mut_refs {
     ///     *r *= 2;
     /// }
     /// assert_eq!(ga, arr![2, 4, 6]);
