@@ -1,7 +1,10 @@
-* **`1.3.5`**
-    * Add `subtle`, `arbitrary`, and `bytemuck` implementations for `GenericArray` when the inner type supports them.
-    * Add `FallibleGenericSequence` with `try_generate` for fallible generation of sequences/arrays.
-    * Add `try_fold` to `FunctionalSequence` for fallible folding of sequences/arrays.
+* **`1.3.5` (unreleased)**
+    * Add `subtle`, `arbitrary`, `bytemuck`, and `as-slice` implementations for `GenericArray`.
+    * Add `GenericSequence::repeat` for creating sequences/arrays with repeated elements.
+    * Add `FallibleGenericSequence` with `try_generate` and `from_fallible_iter` for fallible generation of sequences/arrays.
+    * Add `try_fold` and `try_map` to `FunctionalSequence` for fallible folding/mapping of sequences/arrays.
+    * Add `try_from_fallible_iter` to `GenericArray` for fallible construction from fallible iterators.
+    * Add `each_ref`/`each_mut` methods to `GenericArray` for creating arrays of references to the elements.
 
 * **`1.3.4`**
     * Significantly improve stack usage of `GenericArray` methods in unoptimized (`-C opt-level=0`) build modes.

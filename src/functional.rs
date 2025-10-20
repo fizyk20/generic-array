@@ -33,6 +33,11 @@ where
 pub type Mapped<S, T, U> = <S as MappedGenericSequence<T, U>>::Mapped;
 
 /// Accessor type for a mapped generic sequence
+///
+/// NOTE: The choice to use the `Sequence` associated type here instead of `Mapped`
+/// is due to only the `Sequence` type being guaranteed to implement `FromIterator`.
+/// However, this does lead to some oddity where `FallibleGenericSequence::from_fallible_iter`
+/// is implemented on `Mapped`, but returns the `Sequence`/`MappedSequence` type. Same difference, though.
 pub type MappedSequence<S, T, U> = <Mapped<S, T, U> as GenericSequence<U>>::Sequence;
 
 /// Defines functional programming methods for generic sequences
