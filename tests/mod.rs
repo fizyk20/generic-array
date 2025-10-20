@@ -508,3 +508,18 @@ fn test_chunks_fail() {
     assert!(chunks.is_empty());
     assert!(rem.is_empty());
 }
+
+#[test]
+fn test_try_map() {
+    let a = arr![1, 2, 3, 4];
+
+    let b = a.try_map(|x| {
+        if x % 2 == 0 {
+            Ok(x * 2)
+        } else {
+            Err("odd number")
+        }
+    });
+
+    assert!(b.is_err());
+}
