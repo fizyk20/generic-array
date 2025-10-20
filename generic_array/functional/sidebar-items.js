@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["FunctionalSequence","MappedGenericSequence"],"type":["MappedSequence"]};
+window.SIDEBAR_ITEMS = {"trait":["FunctionalSequence","MappedGenericSequence"],"type":["Mapped","MappedSequence"]};
