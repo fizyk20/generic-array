@@ -1314,13 +1314,13 @@
 <a href=#1314 id=1314 data-nosnippet>1314</a>
 <a href=#1315 id=1315 data-nosnippet>1315</a>    <span class="kw">let </span>() = SizeAsserter::&lt;A, B&gt;::ASSERT_SIZE_EQUALITY;
 <a href=#1316 id=1316 data-nosnippet>1316</a>
-<a href=#1317 id=1317 data-nosnippet>1317</a>    <span class="attr">#[rustversion::since(<span class="number">1.74</span>)]
+<a href=#1317 id=1317 data-nosnippet>1317</a>    <span class="attr">#[rustversion::since(<span class="number">1.83</span>)]
 <a href=#1318 id=1318 data-nosnippet>1318</a>    #[inline(always)]
 <a href=#1319 id=1319 data-nosnippet>1319</a>    </span><span class="kw">const unsafe fn </span>do_transmute&lt;A, B&gt;(a: A) -&gt; B {
 <a href=#1320 id=1320 data-nosnippet>1320</a>        mem::transmute_copy(<span class="kw-2">&amp;</span>ManuallyDrop::new(a))
 <a href=#1321 id=1321 data-nosnippet>1321</a>    }
 <a href=#1322 id=1322 data-nosnippet>1322</a>
-<a href=#1323 id=1323 data-nosnippet>1323</a>    <span class="attr">#[rustversion::before(<span class="number">1.74</span>)]
+<a href=#1323 id=1323 data-nosnippet>1323</a>    <span class="attr">#[rustversion::before(<span class="number">1.83</span>)]
 <a href=#1324 id=1324 data-nosnippet>1324</a>    #[inline(always)]
 <a href=#1325 id=1325 data-nosnippet>1325</a>    </span><span class="kw">const unsafe fn </span>do_transmute&lt;A, B&gt;(a: A) -&gt; B {
 <a href=#1326 id=1326 data-nosnippet>1326</a>        <span class="attr">#[repr(C)]
