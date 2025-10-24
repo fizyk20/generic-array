@@ -571,7 +571,7 @@ impl<T, N: ArrayLength> FromIterator<T> for GenericArray<T, N> {
     ///
     /// Will panic if the number of elements is not exactly the array length.
     ///
-    /// See [`GenericArray::try_from_iter]` for a fallible alternative.
+    /// See [`GenericArray::try_from_iter`] for a fallible alternative.
     #[inline]
     fn from_iter<I>(iter: I) -> GenericArray<T, N>
     where
@@ -1179,7 +1179,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     }
 }
 
-/// Error for [`TryFrom`] and [`try_from_iter`](GenericArray::try_from_iter)
+/// Error type for [`TryFrom`] and [`try_from_iter`](GenericArray::try_from_iter) implementations.
 #[derive(Debug, Clone, Copy)]
 pub struct LengthError;
 
