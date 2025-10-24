@@ -1314,13 +1314,13 @@ pub const unsafe fn const_transmute<A, B>(a: A) -> B {
 
     let () = SizeAsserter::<A, B>::ASSERT_SIZE_EQUALITY;
 
-    #[rustversion::since(1.74)]
+    #[rustversion::since(1.83)]
     #[inline(always)]
     const unsafe fn do_transmute<A, B>(a: A) -> B {
         mem::transmute_copy(&ManuallyDrop::new(a))
     }
 
-    #[rustversion::before(1.74)]
+    #[rustversion::before(1.83)]
     #[inline(always)]
     const unsafe fn do_transmute<A, B>(a: A) -> B {
         #[repr(C)]
