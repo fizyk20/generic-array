@@ -3,7 +3,7 @@ use bitvec::{
     ptr::BitSpanError,
     slice::BitSlice,
     store::BitStore,
-    view::{AsBits, BitView, BitViewSized},
+    view::{BitView, BitViewSized},
 };
 
 use crate::{ArrayLength, GenericArray};

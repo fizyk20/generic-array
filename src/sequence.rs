@@ -34,6 +34,9 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
     /// Initializes a new sequence instance by repeating the given value.
     ///
     /// This will only clone the value `Length - 1` times, taking ownership for the last element.
+    ///
+    /// This is semantically equivalent to `FromIterator::from_iter(core::iter::repeat_n(value, N::USIZE))`
+    /// but available on older Rust versions. `repeat_n` was stabilized in Rust 1.82.0
     #[inline(always)]
     fn repeat(value: T) -> Self::Sequence
     where
@@ -124,6 +127,7 @@ pub trait FromFallibleIterator<T>: Sized {
 /// Lengths must match, and element drop on panic or error must be handled.
 pub unsafe trait FallibleGenericSequence<T>: GenericSequence<T>
 where
+    // TODO: Maybe use associated type bounds in the future?
     Self::Sequence: FromFallibleIterator<T>,
 {
     /// Initializes a new sequence instance using the given fallible function.
