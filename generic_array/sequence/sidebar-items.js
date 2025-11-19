@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"trait":["Concat","FallibleGenericSequence","Flatten","GenericSequence","Lengthen","Remove","Shorten","Split","Unflatten"],"type":["SequenceItem"]};
+window.SIDEBAR_ITEMS = {"trait":["Concat","FallibleGenericSequence","Flatten","FromFallibleIterator","GenericSequence","Lengthen","Remove","Shorten","Split","Unflatten"],"type":["SequenceItem"]};
