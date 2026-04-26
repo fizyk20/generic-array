@@ -164,17 +164,15 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
         F: FnMut(usize) -> T,
     {
         unsafe {
-            use core::{
-                alloc::Layout,
-                mem::{size_of, MaybeUninit},
-                ptr,
-            };
+            use core::{alloc::Layout, mem::MaybeUninit, ptr};
+
+            let layout = Layout::new::<GenericArray<MaybeUninit<T>, N>>();
 
             // Box::new_uninit() is nightly-only
-            let ptr: *mut GenericArray<MaybeUninit<T>, N> = if size_of::<T>() == 0 {
+            let ptr: *mut GenericArray<MaybeUninit<T>, N> = if layout.size() == 0 {
                 ptr::NonNull::dangling().as_ptr()
             } else {
-                alloc::alloc::alloc(Layout::new::<GenericArray<MaybeUninit<T>, N>>()).cast()
+                alloc::alloc::alloc(layout).cast()
             };
 
             let mut builder = IntrusiveArrayBuilder::new(&mut *ptr);

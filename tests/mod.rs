@@ -465,6 +465,8 @@ fn test_alloc() {
 
     let _ = box_arr!(1, 2, 3, 4, 5);
 
+    let _: Box<GenericArray<u32, U0>> = GenericArray::default_boxed();
+
     #[cfg(not(miri))]
     {
         // 128-bit * 10^6 = 16MB, large enough to overflow the stack, but not this
