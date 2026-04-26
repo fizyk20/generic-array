@@ -1,2 +1,2 @@
-window.ALL_CRATES = ["arbitrary","bytemuck","const_default","generic_array","hybrid_array","rustversion","serde_core","subtle","typenum","zeroize"];
-//{"start":21,"fragment_lengths":[11,11,16,16,15,14,13,9,10,10]}
+window.ALL_CRATES = ["arbitrary","as_slice","bitvec","bytemuck","const_default","funty","generic_array","hybrid_array","radium","rustversion","serde_core","stable_deref_trait","subtle","tap","typenum","wyz","zeroize"];
+//{"start":21,"fragment_lengths":[11,11,9,11,16,8,16,15,9,14,13,21,9,6,10,6,10]}
