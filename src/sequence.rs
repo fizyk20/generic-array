@@ -118,25 +118,58 @@ pub trait FromFallibleIterator<T>: Sized {
         I: IntoIterator<Item = Result<T, E>>;
 }
 
-/// Extension to `GenericSequence` for fallible initialization.
-///
-/// # Safety
-///
-/// Care must be taken when implementing such that methods are safe.
-///
-/// Lengths must match, and element drop on panic or error must be handled.
-pub unsafe trait FallibleGenericSequence<T>: GenericSequence<T>
-where
-    // TODO: Maybe use associated type bounds in the future?
-    Self::Sequence: FromFallibleIterator<T>,
-{
-    /// Initializes a new sequence instance using the given fallible function.
+macro_rules! decl_fallible_sequence_inner {
+    () => {
+        /// Initializes a new sequence instance using the given fallible function.
+        ///
+        /// If the generator function returns an error or panics while initializing the sequence,
+        /// any already initialized elements will be dropped and the error returned.
+        fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+        where
+            F: FnMut(usize) -> Result<T, E>;
+    };
+}
+
+#[rustversion::before(1.79)]
+macro_rules! decl_fallible_sequence {
+    ($(#[$meta:meta])*) => {
+        $(#[$meta])*
+        pub unsafe trait FallibleGenericSequence<T>: GenericSequence<T>
+        where
+            Self::Sequence: FromFallibleIterator<T>,
+        {
+            decl_fallible_sequence_inner!();
+        }
+    };
+}
+
+#[rustversion::since(1.79)]
+macro_rules! decl_fallible_sequence {
+    ($(#[$meta:meta])*) => {
+        $(#[$meta])*
+        pub unsafe trait FallibleGenericSequence<T>:
+            GenericSequence<T, Sequence: FromFallibleIterator<T>>
+        {
+            decl_fallible_sequence_inner!();
+        }
+    };
+}
+
+decl_fallible_sequence! {
+    /// Extension to `GenericSequence` for fallible initialization.
     ///
-    /// If the generator function returns an error or panics while initializing the sequence,
-    /// any already initialized elements will be dropped and the error returned.
-    fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
-    where
-        F: FnMut(usize) -> Result<T, E>;
+    /// # Safety
+    ///
+    /// Care must be taken when implementing such that methods are safe.
+    ///
+    /// Lengths must match, and element drop on panic or error must be handled.
+    ///
+    /// # Compatibility
+    ///
+    /// Associated type bounds were only introduced in Rust 1.79, and to ensure easy usage
+    /// on newer versions of Rust this trait uses that. However, on pre-1.79 Rust, the
+    /// `Sequence: FromFallibleIterator<T>` trait is not implied, and must be manually
+    /// specified when `FallibleGenericSequence` is used.
 }
 
 /// Accessor for `GenericSequence` item type, which is really `IntoIterator::Item`

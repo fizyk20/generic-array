@@ -5,6 +5,7 @@
     * Add `try_fold` and `try_map` to `FunctionalSequence` for fallible folding/mapping of sequences/arrays.
     * Add `try_from_fallible_iter` to `GenericArray` for fallible construction from fallible iterators.
     * Add `each_ref`/`each_mut` methods to `GenericArray` for creating arrays of references to the elements.
+    * Fixed some resource leakages and potential UB in degenerate cases.
 
 * **`1.3.5`**
     * Fixed `const_transmute` not compiling between Rust versions 1.74.0 and 1.83.0. Yanked `1.3.4`.
