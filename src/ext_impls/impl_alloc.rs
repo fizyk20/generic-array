@@ -166,16 +166,61 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
         unsafe {
             use core::{alloc::Layout, mem::MaybeUninit, ptr};
 
+            struct IntrusiveBoxedArrayBuilder<T, N: ArrayLength> {
+                layout: Layout,
+                ptr: *mut GenericArray<MaybeUninit<T>, N>,
+                position: usize,
+            }
+
+            impl<T, N: ArrayLength> IntrusiveBoxedArrayBuilder<T, N> {
+                #[inline(always)]
+                pub unsafe fn iter_position(
+                    &'_ mut self,
+                ) -> (core::slice::IterMut<'_, MaybeUninit<T>>, &'_ mut usize) {
+                    ((&mut *self.ptr).iter_mut(), &mut self.position)
+                }
+
+                #[inline(always)]
+                pub unsafe fn finish(self) -> Box<GenericArray<T, N>> {
+                    debug_assert!(self.position == N::USIZE);
+                    let ptr = self.ptr;
+                    core::mem::forget(self);
+                    Box::from_raw(ptr.cast()) // assume_init
+                }
+            }
+
+            impl<T, N: ArrayLength> Drop for IntrusiveBoxedArrayBuilder<T, N> {
+                fn drop(&mut self) {
+                    unsafe {
+                        ptr::drop_in_place(
+                            // Same cast as MaybeUninit::slice_assume_init_mut
+                            (&mut *self.ptr).get_unchecked_mut(..self.position)
+                                as *mut [MaybeUninit<T>] as *mut [T],
+                        );
+
+                        alloc::alloc::dealloc(self.ptr.cast(), self.layout);
+                    }
+                }
+            }
+
             let layout = Layout::new::<GenericArray<MaybeUninit<T>, N>>();
 
-            // Box::new_uninit() is nightly-only
-            let ptr: *mut GenericArray<MaybeUninit<T>, N> = if layout.size() == 0 {
-                ptr::NonNull::dangling().as_ptr()
-            } else {
-                alloc::alloc::alloc(layout).cast()
-            };
+            if layout.size() == 0 {
+                return Box::from_raw(ptr::NonNull::dangling().as_ptr());
+            }
 
-            let mut builder = IntrusiveArrayBuilder::new(&mut *ptr);
+            let ptr = alloc::alloc::alloc(layout);
+
+            if ptr.is_null() {
+                // signal memory allocation error, does not return.
+                alloc::alloc::handle_alloc_error(layout);
+            }
+
+            let mut builder = IntrusiveBoxedArrayBuilder {
+                layout,
+                ptr: ptr.cast(),
+                position: 0,
+            };
 
             {
                 let (builder_iter, position) = builder.iter_position();
@@ -186,9 +231,7 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
                 });
             }
 
-            builder.finish();
-
-            Box::from_raw(ptr.cast()) // assume_init
+            builder.finish()
         }
     }
 }
