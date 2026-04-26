@@ -33,7 +33,7 @@ pub unsafe trait GenericSequence<T>: Sized + IntoIterator {
 
     /// Initializes a new sequence instance by repeating the given value.
     ///
-    /// This will only clone the value `Length - 1` times, taking ownership for the last element.
+    /// Clones the value for all but the last element, taking ownership of the original value for the last.
     ///
     /// This is semantically equivalent to `FromIterator::from_iter(core::iter::repeat_n(value, N::USIZE))`
     /// but available on older Rust versions. `repeat_n` was stabilized in Rust 1.82.0
@@ -110,9 +110,10 @@ pub trait FromFallibleIterator<T>: Sized {
     /// If the iterator returns an error or panics while initializing the sequence,
     /// any already initialized elements will be dropped and the error returned.
     ///
-    /// This is equivalent to `iter.collect::<Result<GenericArray<T, N>, E>>()` _except_
-    /// it won't panic due to `Result::from_iter` truncating the underlying iterator
-    /// if an error occurs, leading to a length mismatch.
+    /// Unlike `.collect::<Result<Self, E>>()`, which short-circuits the source iterator
+    /// on the first error before the collection's `FromIterator` impl can verify the
+    /// correct number of elements — causing a length-mismatch panic — this method
+    /// handles the error and length check correctly.
     fn from_fallible_iter<I, E>(iter: I) -> Result<Self, E>
     where
         I: IntoIterator<Item = Result<T, E>>;
@@ -120,11 +121,20 @@ pub trait FromFallibleIterator<T>: Sized {
 
 macro_rules! decl_fallible_sequence_inner {
     () => {
+        /// Error type for sequence creation failures, independent of the element generator.
+        ///
+        /// For infallible sequence types such as [`GenericArray`](crate::GenericArray),
+        /// this is [`Infallible`](core::convert::Infallible).
+        type Error;
+
         /// Initializes a new sequence instance using the given fallible function.
         ///
         /// If the generator function returns an error or panics while initializing the sequence,
-        /// any already initialized elements will be dropped and the error returned.
-        fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+        /// any already initialized elements will be dropped.
+        ///
+        /// Returns `Ok(Ok(sequence))` on success, `Ok(Err(e))` if the generator fails,
+        /// or `Err(Self::Error)` if the sequence itself cannot be created (e.g., allocation failure).
+        fn try_generate<F, E>(f: F) -> Result<Result<Self::Sequence, E>, Self::Error>
         where
             F: FnMut(usize) -> Result<T, E>;
     };
@@ -199,8 +209,10 @@ where
     &'a S: IntoIterator,
     Self::Sequence: FromFallibleIterator<T>,
 {
+    type Error = S::Error;
+
     #[inline(always)]
-    fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+    fn try_generate<F, E>(f: F) -> Result<Result<Self::Sequence, E>, Self::Error>
     where
         F: FnMut(usize) -> Result<T, E>,
     {
@@ -229,8 +241,10 @@ where
     &'a mut S: IntoIterator,
     Self::Sequence: FromFallibleIterator<T>,
 {
+    type Error = S::Error;
+
     #[inline(always)]
-    fn try_generate<F, E>(f: F) -> Result<Self::Sequence, E>
+    fn try_generate<F, E>(f: F) -> Result<Result<Self::Sequence, E>, Self::Error>
     where
         F: FnMut(usize) -> Result<T, E>,
     {

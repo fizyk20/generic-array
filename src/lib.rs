@@ -1,6 +1,6 @@
 //! This crate implements a structure that can be used as a generic array type.
 //!
-//! **Requires minimum Rust version of 1.65.0
+//! **Requires minimum Rust version of 1.65.0**
 //!
 //! [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/)
 //! may be required to view certain types on foreign crates.
@@ -137,6 +137,7 @@
 //!     "arbitrary",        # Enables `arbitrary` crate support for fuzzing
 //!     "bytemuck",         # Enables `bytemuck` crate support
 //!     "bitvec",           # Enables `bitvec` crate support to use GenericArray as a storage backend for bit arrays
+//!     "as_slice",         # Enables `as-slice` crate trait impls
 //!     "compat-0_14",      # Enables interoperability with `generic-array` 0.14
 //!     "hybrid-array-0_4"  # Enables interoperability with `hybrid-array` 0.4
 //! ]
@@ -718,8 +719,10 @@ unsafe impl<T, N: ArrayLength> FallibleGenericSequence<T> for GenericArray<T, N>
 where
     Self: IntoIterator<Item = T>,
 {
+    type Error = core::convert::Infallible;
+
     #[inline(always)]
-    fn try_generate<F, E>(mut f: F) -> Result<Self::Sequence, E>
+    fn try_generate<F, E>(mut f: F) -> Result<Result<Self::Sequence, E>, Self::Error>
     where
         F: FnMut(usize) -> Result<T, E>,
     {
@@ -743,10 +746,10 @@ where
             {
                 drop(builder); // explicitly drop to run the destructor and drop any initialized elements
 
-                return Err(e);
+                return Ok(Err(e));
             }
 
-            Ok(builder.finish_and_assume_init())
+            Ok(Ok(builder.finish_and_assume_init()))
         }
     }
 }
@@ -951,6 +954,17 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
     /// This method is const since Rust 1.83.0, but non-const before.
     ///
     /// See also [`each_mut`](GenericArray::each_mut) for mutable references.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// # use generic_array::{arr, GenericArray};
+    /// let ga = arr![1, 2, 3];
+    /// let refs: GenericArray<&i32, _> = ga.each_ref();
+    /// assert_eq!(*refs[0], 1);
+    /// assert_eq!(*refs[1], 2);
+    /// assert_eq!(*refs[2], 3);
+    /// ```
     #[rustversion::attr(since(1.83), const)] // needed for `as_mut_slice` to be const
     pub fn each_ref(&self) -> GenericArray<&T, N> {
         let mut out: GenericArray<MaybeUninit<*const T>, N> = GenericArray::uninit();
@@ -1202,6 +1216,25 @@ impl core::error::Error for LengthError {}
 impl core::fmt::Display for LengthError {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
         f.write_str("LengthError: Slice or iterator does not match GenericArray length")
+    }
+}
+
+/// Error type for heap allocation failures.
+///
+/// Returned by [`FallibleGenericSequence::try_generate`](sequence::FallibleGenericSequence::try_generate)
+/// on `Box<GenericArray<T, N>>` when the underlying allocation fails.
+#[cfg(feature = "alloc")]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct AllocError;
+
+#[cfg(feature = "alloc")]
+#[rustversion::since(1.81)]
+impl core::error::Error for AllocError {}
+
+#[cfg(feature = "alloc")]
+impl core::fmt::Display for AllocError {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.write_str("memory allocation failed")
     }
 }
 

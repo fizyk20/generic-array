@@ -525,3 +525,319 @@ fn test_try_map() {
 
     assert!(b.is_err());
 }
+
+#[test]
+fn test_try_generate_success() {
+    use generic_array::typenum::U0;
+
+    let a: GenericArray<i32, U4> = GenericArray::try_generate(|i| Ok::<_, ()>(i as i32 * 2))
+        .unwrap()
+        .unwrap();
+    assert_eq!(a, arr![0, 2, 4, 6]);
+
+    // zero-length always succeeds
+    let _: GenericArray<i32, U0> = GenericArray::try_generate(|_| Ok::<_, ()>(0))
+        .unwrap()
+        .unwrap();
+}
+
+#[test]
+fn test_try_generate_error() {
+    // generator fails on the 3rd element (index 2)
+    let result: Result<Result<GenericArray<i32, U4>, &str>, _> =
+        GenericArray::try_generate(|i| if i == 2 { Err("bad") } else { Ok(i as i32) });
+
+    assert!(
+        result.is_ok(),
+        "outer Result should be Ok (no alloc failure)"
+    );
+    assert_eq!(result.unwrap(), Err("bad"));
+}
+
+#[test]
+fn test_try_generate_drops_on_error() {
+    #[derive(Clone)]
+    struct Tracked<'a>(&'a Cell<u32>);
+
+    impl<'a> Drop for Tracked<'a> {
+        fn drop(&mut self) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let counter = Cell::new(0u32);
+    // generator succeeds for indices 0..3 then fails at index 3; the 3 initialized
+    // elements must be dropped, the partially-init slot at index 3 must NOT be dropped
+    let result: Result<Result<GenericArray<Tracked<'_>, U4>, &str>, _> =
+        GenericArray::try_generate(|i| {
+            if i == 3 {
+                Err("fail")
+            } else {
+                Ok(Tracked(&counter))
+            }
+        });
+    assert!(result.unwrap().is_err());
+    assert_eq!(
+        counter.get(),
+        3,
+        "exactly 3 initialized elements should be dropped"
+    );
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_success() {
+    use alloc::boxed::Box;
+    use generic_array::sequence::FallibleGenericSequence as _;
+
+    let a: Box<GenericArray<i32, U4>> =
+        <Box<GenericArray<i32, U4>>>::try_generate(|i| Ok::<_, ()>(i as i32 + 1))
+            .unwrap()
+            .unwrap();
+    assert_eq!(&*a, &arr![1, 2, 3, 4]);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_error() {
+    use alloc::boxed::Box;
+    use generic_array::sequence::FallibleGenericSequence as _;
+
+    let result: Result<Result<Box<GenericArray<i32, U4>>, &str>, _> =
+        <Box<GenericArray<i32, U4>>>::try_generate(
+            |i| {
+                if i == 1 {
+                    Err("stop")
+                } else {
+                    Ok(i as i32)
+                }
+            },
+        );
+    assert_eq!(result.unwrap(), Err("stop"));
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_drops_on_error() {
+    use alloc::boxed::Box;
+    use generic_array::sequence::FallibleGenericSequence as _;
+
+    #[derive(Clone)]
+    struct Tracked<'a>(&'a Cell<u32>);
+
+    impl<'a> Drop for Tracked<'a> {
+        fn drop(&mut self) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let counter = Cell::new(0u32);
+    let result: Result<Result<Box<GenericArray<Tracked<'_>, U4>>, &str>, _> =
+        <Box<GenericArray<Tracked<'_>, U4>>>::try_generate(|i| {
+            if i == 2 {
+                Err("stop")
+            } else {
+                Ok(Tracked(&counter))
+            }
+        });
+    assert!(result.unwrap().is_err());
+    assert_eq!(
+        counter.get(),
+        2,
+        "exactly 2 initialized elements should be dropped"
+    );
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_zero_length() {
+    use alloc::boxed::Box;
+    use generic_array::sequence::FallibleGenericSequence as _;
+    use generic_array::typenum::U0;
+
+    let _: Box<GenericArray<i32, U0>> =
+        <Box<GenericArray<i32, U0>>>::try_generate(|_| Ok::<_, ()>(0))
+            .unwrap()
+            .unwrap();
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_from_fallible_iter() {
+    use alloc::{boxed::Box, vec};
+    use generic_array::sequence::FromFallibleIterator as _;
+
+    // success
+    let a: Box<GenericArray<i32, U4>> =
+        Box::from_fallible_iter(vec![Ok::<_, ()>(1), Ok(2), Ok(3), Ok(4)]).unwrap();
+    assert_eq!(&*a, &arr![1, 2, 3, 4]);
+
+    // error in iterator
+    let e: Result<Box<GenericArray<i32, U4>>, &str> =
+        Box::from_fallible_iter(vec![Ok(1), Ok(2), Err("bad"), Ok(4)]);
+    assert_eq!(e, Err("bad"));
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+#[should_panic]
+fn test_box_from_fallible_iter_too_short() {
+    use alloc::{boxed::Box, vec};
+    use generic_array::sequence::FromFallibleIterator as _;
+
+    let _: Box<GenericArray<i32, U4>> =
+        Box::from_fallible_iter(vec![Ok::<_, ()>(1), Ok(2), Ok(3)]).unwrap();
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+#[should_panic]
+fn test_box_from_fallible_iter_too_long() {
+    use alloc::{boxed::Box, vec};
+    use generic_array::sequence::FromFallibleIterator as _;
+
+    let _: Box<GenericArray<i32, U4>> =
+        Box::from_fallible_iter(vec![Ok::<_, ()>(1), Ok(2), Ok(3), Ok(4), Ok(5)]).unwrap();
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_alloc_error_display() {
+    use generic_array::AllocError;
+
+    assert_eq!(alloc::format!("{}", AllocError), "memory allocation failed");
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_length_error_display() {
+    use generic_array::LengthError;
+
+    let msg = alloc::format!("{}", LengthError);
+    assert!(msg.contains("LengthError"));
+}
+
+// Exercises the partial-init drop path in GenericArray::try_generate.
+// Miri verifies that drop_in_place is called on exactly the initialized prefix
+// and that no uninitialized memory is read.
+#[test]
+fn miri_try_generate_drop_on_error() {
+    use core::cell::Cell;
+
+    struct Tracked<'a>(&'a Cell<u32>);
+    impl Drop for Tracked<'_> {
+        fn drop(&mut self) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let counter = Cell::new(0u32);
+
+    // error at index 0: no elements initialized, builder drop is a no-op slice
+    let r: Result<Result<GenericArray<Tracked<'_>, U4>, ()>, _> =
+        GenericArray::try_generate(|_| Err(()));
+    assert!(r.unwrap().is_err());
+    assert_eq!(counter.get(), 0);
+
+    // error at index 2: two elements were initialized and must be dropped
+    let r: Result<Result<GenericArray<Tracked<'_>, U4>, &str>, _> =
+        GenericArray::try_generate(|i| {
+            if i == 2 {
+                Err("stop")
+            } else {
+                Ok(Tracked(&counter))
+            }
+        });
+    assert!(r.unwrap().is_err());
+    assert_eq!(counter.get(), 2);
+}
+
+// Exercises the ZST (U0) path in GenericArray::try_generate.
+// The builder uses a dangling pointer for zero-sized arrays; Miri verifies
+// no invalid pointer operations occur.
+#[test]
+fn miri_try_generate_zero_length() {
+    let r: Result<Result<GenericArray<u32, U0>, ()>, _> = GenericArray::try_generate(|_| Err(()));
+    // generator is never called for N=0, so the result is Ok(Ok(...))
+    assert!(r.unwrap().is_ok());
+
+    let arr: GenericArray<u32, U0> = GenericArray::try_generate(|_| Ok::<_, ()>(0))
+        .unwrap()
+        .unwrap();
+    assert_eq!(arr.len(), 0);
+}
+
+// Exercises Box<GenericArray>::try_generate through IntrusiveBoxedArrayBuilder:
+// - the iter_position split borrow (ptr field + position field simultaneously)
+// - drop_in_place on the initialized prefix on error
+// - dealloc after a partial fill
+#[cfg(feature = "alloc")]
+#[test]
+fn miri_box_try_generate_drop_on_error() {
+    use alloc::boxed::Box;
+    use core::cell::Cell;
+
+    struct Tracked<'a>(&'a Cell<u32>);
+    impl Drop for Tracked<'_> {
+        fn drop(&mut self) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let counter = Cell::new(0u32);
+
+    // error on first element: alloc happened but drop path must free it cleanly
+    let r: Result<Result<Box<GenericArray<Tracked<'_>, U4>>, ()>, _> =
+        <Box<GenericArray<Tracked<'_>, U4>>>::try_generate(|_| Err(()));
+    assert!(r.unwrap().is_err());
+    assert_eq!(counter.get(), 0);
+
+    // error at index 3: three elements initialized, all three dropped, memory freed
+    let r: Result<Result<Box<GenericArray<Tracked<'_>, U4>>, &str>, _> =
+        <Box<GenericArray<Tracked<'_>, U4>>>::try_generate(|i| {
+            if i == 3 {
+                Err("stop")
+            } else {
+                Ok(Tracked(&counter))
+            }
+        });
+    assert!(r.unwrap().is_err());
+    assert_eq!(counter.get(), 3);
+}
+
+// Exercises Box<GenericArray> ZST allocation path (dangling NonNull pointer).
+// Also exercises generate (not try_generate) to ensure the non-fallible heap path is clean.
+#[cfg(feature = "alloc")]
+#[test]
+fn miri_box_zst_array() {
+    use alloc::boxed::Box;
+
+    let _: Box<GenericArray<u32, U0>> = <Box<GenericArray<u32, U0>>>::generate(|_| 0);
+
+    let r: Result<Result<Box<GenericArray<u32, U0>>, ()>, _> =
+        <Box<GenericArray<u32, U0>>>::try_generate(|_| Err(()));
+    // generator never called for N=0
+    assert!(r.unwrap().is_ok());
+}
+
+// Exercises the into_boxed_slice / try_from_boxed_slice raw pointer round-trips.
+// Miri validates that pointer casts and provenance are correct.
+#[cfg(feature = "alloc")]
+#[test]
+fn miri_boxed_slice_round_trip() {
+    use alloc::boxed::Box;
+    use generic_array::{arr, LengthError};
+
+    let arr: Box<GenericArray<u32, U4>> = Box::new(arr![1, 2, 3, 4]);
+    let slice: Box<[u32]> = arr.into_boxed_slice();
+    assert_eq!(&*slice, &[1, 2, 3, 4]);
+
+    let back: Box<GenericArray<u32, U4>> = GenericArray::try_from_boxed_slice(slice).unwrap();
+    assert_eq!(&*back, &arr![1, 2, 3, 4]);
+
+    // wrong length must return Err without freeing the box
+    let wrong: Box<[u32]> = alloc::vec![1u32, 2, 3].into_boxed_slice();
+    let err: Result<Box<GenericArray<u32, U4>>, LengthError> =
+        GenericArray::try_from_boxed_slice(wrong);
+    assert!(err.is_err());
+}

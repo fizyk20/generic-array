@@ -8,7 +8,7 @@ where
 {
     #[inline]
     fn arbitrary(u: &mut arbitrary::Unstructured<'a>) -> arbitrary::Result<Self> {
-        GenericArray::try_generate(|_| T::arbitrary(u))
+        GenericArray::try_generate(|_| T::arbitrary(u)).unwrap_or_else(|e| match e {})
     }
 
     #[inline]
