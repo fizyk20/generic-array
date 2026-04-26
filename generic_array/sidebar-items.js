@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"externcrate":["typenum"],"macro":["arr","box_arr"],"mod":["functional","sequence"],"struct":["GenericArray","GenericArrayIter","LengthError"],"trait":["ArrayLength","IntoArrayLength"],"type":["ConstArrayLength","ConstGenericArray","GenericBitArray"]};
+window.SIDEBAR_ITEMS = {"externcrate":["typenum"],"macro":["arr","box_arr"],"mod":["functional","sequence"],"struct":["AllocError","GenericArray","GenericArrayIter","LengthError"],"trait":["ArrayLength","IntoArrayLength"],"type":["ConstArrayLength","ConstGenericArray","GenericBitArray"]};
