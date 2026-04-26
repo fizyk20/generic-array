@@ -1258,7 +1258,7 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         }
     }
 
-    /// Fallible equivalent of [`FallibleGenericSequence::from_fallible_iter`].
+    /// Fallible equivalent of [`FromFallibleIterator::from_fallible_iter`].
     ///
     /// Unlike `.collect::<Result<GenericArray<T, N>, E>>()`, this method will not panic
     /// on length mismatch, instead returning a `LengthError`.
