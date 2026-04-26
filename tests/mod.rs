@@ -472,6 +472,8 @@ fn test_alloc() {
 
         let _ = GenericArray::<i128, typenum::Exp<typenum::U10, typenum::U6>>::default_boxed();
     }
+
+    let _: Box<GenericArray<u32, U0>> = GenericArray::default_boxed();
 }
 
 #[test]
