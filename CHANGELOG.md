@@ -1,7 +1,8 @@
-* **(unreleased)**
+* **`1.4.0`**
     * Add `subtle`, `arbitrary`, `bytemuck`, `bitvec` and `as-slice` implementations for `GenericArray`.
     * Add `GenericSequence::repeat` for creating sequences/arrays with repeated elements.
     * Add `FallibleGenericSequence` with `try_generate` and `from_fallible_iter` for fallible generation of sequences/arrays.
+        * Added `AllocError` type (requires `alloc` feature) for heap allocation failures with `try_generate`.
     * Add `try_fold` and `try_map` to `FunctionalSequence` for fallible folding/mapping of sequences/arrays.
     * Add `try_from_fallible_iter` to `GenericArray` for fallible construction from fallible iterators.
     * Add `each_ref`/`each_mut` methods to `GenericArray` for creating arrays of references to the elements.
