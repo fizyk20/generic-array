@@ -1,3 +1,6 @@
+* **`1.4.1`**
+    * Fix some issues with using ZSTs with `Box<GenericArray<ZST, N>>`. Partial credit to [#166](https://github.com/fizyk20/generic-array/pull/166).
+
 * **`1.4.0`**
     * Add `subtle`, `arbitrary`, `bytemuck`, `bitvec` and `as-slice` implementations for `GenericArray`.
     * Add `GenericSequence::repeat` for creating sequences/arrays with repeated elements.
