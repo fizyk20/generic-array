@@ -32,7 +32,9 @@ impl<T, N: ArrayLength> Drop for IntrusiveBoxedArrayBuilder<T, N> {
         unsafe {
             ptr::drop_in_place((&mut *self.ptr).get_unchecked_mut(..self.position)
                 as *mut [MaybeUninit<T>] as *mut [T]);
-            alloc::alloc::dealloc(self.ptr.cast(), self.layout);
+            if self.layout.size() != 0 {
+                alloc::alloc::dealloc(self.ptr.cast(), self.layout);
+            }
         }
     }
 }
