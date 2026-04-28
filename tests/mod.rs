@@ -663,6 +663,111 @@ fn test_box_try_generate_zero_length() {
 
 #[cfg(feature = "alloc")]
 #[test]
+fn test_box_generate_zst_runs_closure_per_index() {
+    use alloc::boxed::Box;
+
+    let counter = Cell::new(0u32);
+    let _: Box<GenericArray<(), U4>> = <Box<GenericArray<(), U4>>>::generate(|_| {
+        counter.set(counter.get() + 1);
+    });
+    assert_eq!(counter.get(), 4);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_zst_runs_closure_per_index() {
+    use alloc::boxed::Box;
+
+    let counter = Cell::new(0u32);
+    let r: Result<Result<Box<GenericArray<(), U4>>, ()>, _> =
+        <Box<GenericArray<(), U4>>>::try_generate(|_| {
+            counter.set(counter.get() + 1);
+            Ok(())
+        });
+    assert!(r.unwrap().is_ok());
+    assert_eq!(counter.get(), 4);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_generate_zst_drops_each_element_on_box_drop() {
+    use alloc::boxed::Box;
+
+    struct ZstDrop<'a>(&'a Cell<u32>);
+    impl Drop for ZstDrop<'_> {
+        fn drop(&mut self) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let drops = Cell::new(0u32);
+    let b: Box<GenericArray<ZstDrop<'_>, U4>> =
+        <Box<GenericArray<ZstDrop<'_>, U4>>>::generate(|_| ZstDrop(&drops));
+    assert_eq!(drops.get(), 0);
+    drop(b);
+    assert_eq!(drops.get(), 4);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_zst_drops_initialized_on_error() {
+    use alloc::boxed::Box;
+
+    struct ZstDrop<'a>(&'a Cell<u32>);
+    impl Drop for ZstDrop<'_> {
+        fn drop(&mut self) {
+            self.0.set(self.0.get() + 1);
+        }
+    }
+
+    let drops = Cell::new(0u32);
+    let r: Result<Result<Box<GenericArray<ZstDrop<'_>, U4>>, &str>, _> =
+        <Box<GenericArray<ZstDrop<'_>, U4>>>::try_generate(|i| {
+            if i == 2 {
+                Err("stop")
+            } else {
+                Ok(ZstDrop(&drops))
+            }
+        });
+    assert!(r.unwrap().is_err());
+    assert_eq!(drops.get(), 2);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_try_generate_uninhabited_returns_user_error() {
+    use alloc::boxed::Box;
+    use core::convert::Infallible;
+    use generic_array::typenum::U2;
+
+    let calls = Cell::new(0u32);
+    let r: Result<Result<Box<GenericArray<Infallible, U2>>, &str>, _> =
+        <Box<GenericArray<Infallible, U2>>>::try_generate(|_| {
+            calls.set(calls.get() + 1);
+            Err("never produced")
+        });
+    assert_eq!(r.unwrap(), Err("never produced"));
+    assert_eq!(calls.get(), 1);
+}
+
+#[cfg(feature = "alloc")]
+#[test]
+fn test_box_generate_uninhabited_invokes_closure() {
+    extern crate std;
+    use alloc::boxed::Box;
+    use core::convert::Infallible;
+    use core::panic::AssertUnwindSafe;
+    use generic_array::typenum::U2;
+
+    let observed = std::panic::catch_unwind(AssertUnwindSafe(|| {
+        let _: Box<GenericArray<Infallible, U2>> =
+            <Box<GenericArray<Infallible, U2>>>::generate(|_| panic!("closure ran"));
+    }));
+    assert!(observed.is_err());
+}
+
+#[cfg(feature = "alloc")]
+#[test]
 fn test_box_from_fallible_iter() {
     use alloc::{boxed::Box, vec};
     use generic_array::sequence::FromFallibleIterator as _;

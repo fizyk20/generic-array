@@ -30,10 +30,8 @@ impl<T, N: ArrayLength> IntrusiveBoxedArrayBuilder<T, N> {
 impl<T, N: ArrayLength> Drop for IntrusiveBoxedArrayBuilder<T, N> {
     fn drop(&mut self) {
         unsafe {
-            ptr::drop_in_place(
-                (&mut *self.ptr).get_unchecked_mut(..self.position)
-                    as *mut [MaybeUninit<T>] as *mut [T],
-            );
+            ptr::drop_in_place((&mut *self.ptr).get_unchecked_mut(..self.position)
+                as *mut [MaybeUninit<T>] as *mut [T]);
             alloc::alloc::dealloc(self.ptr.cast(), self.layout);
         }
     }
@@ -203,19 +201,19 @@ unsafe impl<T, N: ArrayLength> GenericSequence<T> for Box<GenericArray<T, N>> {
         unsafe {
             let layout = Layout::new::<GenericArray<MaybeUninit<T>, N>>();
 
-            if layout.size() == 0 {
-                return Box::from_raw(ptr::NonNull::dangling().as_ptr());
-            }
-
-            let raw_ptr = alloc::alloc::alloc(layout);
-
-            if raw_ptr.is_null() {
-                alloc::alloc::handle_alloc_error(layout);
-            }
+            let raw_ptr: *mut GenericArray<MaybeUninit<T>, N> = if layout.size() == 0 {
+                ptr::NonNull::dangling().as_ptr()
+            } else {
+                let p = alloc::alloc::alloc(layout);
+                if p.is_null() {
+                    alloc::alloc::handle_alloc_error(layout);
+                }
+                p.cast()
+            };
 
             let mut builder = IntrusiveBoxedArrayBuilder {
                 layout,
-                ptr: raw_ptr.cast(),
+                ptr: raw_ptr,
                 position: 0,
             };
 
@@ -272,19 +270,19 @@ unsafe impl<T, N: ArrayLength> FallibleGenericSequence<T> for Box<GenericArray<T
         unsafe {
             let layout = Layout::new::<GenericArray<MaybeUninit<T>, N>>();
 
-            if layout.size() == 0 {
-                return Ok(Ok(Box::from_raw(ptr::NonNull::dangling().as_ptr())));
-            }
-
-            let raw_ptr = alloc::alloc::alloc(layout);
-
-            if raw_ptr.is_null() {
-                return Err(crate::AllocError);
-            }
+            let raw_ptr: *mut GenericArray<MaybeUninit<T>, N> = if layout.size() == 0 {
+                ptr::NonNull::dangling().as_ptr()
+            } else {
+                let p = alloc::alloc::alloc(layout);
+                if p.is_null() {
+                    return Err(crate::AllocError);
+                }
+                p.cast()
+            };
 
             let mut builder = IntrusiveBoxedArrayBuilder {
                 layout,
-                ptr: raw_ptr.cast(),
+                ptr: raw_ptr,
                 position: 0,
             };
 
