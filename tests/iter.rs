@@ -38,7 +38,9 @@ fn test_into_iter_as_slice() {
     assert_eq!(into_iter.as_slice(), &['b', 'c']);
     let _ = into_iter.next().unwrap();
     let _ = into_iter.next().unwrap();
-    assert_eq!(into_iter.as_slice(), &[]);
+    // Explicit type annotation needed because `rend` (pulled in by the `rkyv` feature) adds
+    // additional `PartialEq` impls for `char`, leaving `&[]`'s element type ambiguous.
+    assert_eq!(into_iter.as_slice(), &[] as &[char]);
 }
 
 #[test]
