@@ -6,7 +6,7 @@
 
 This crate implements a structure that can be used as a generic array type.
 
-**Requires minimum Rust version of 1.65.0
+\*\*Requires minimum Rust version of 1.65.0
 
 [Documentation on GH Pages](https://fizyk20.github.io/generic-array/generic_array/) may be required to view certain types on foreign crates.
 
@@ -133,6 +133,9 @@ features = [
     "bytemuck",         # Enables `bytemuck` crate support
     "bitvec",           # Enables `bitvec` crate support to use GenericArray as a storage backend for bit arrays
     "compat-0_14",      # Enables interoperability with `generic-array` 0.14
-    "hybrid-array-0_4"  # Enables interoperability with `hybrid-array` 0.4
+    "hybrid-array-0_4", # Enables interoperability with `hybrid-array` 0.4
+    "rkyv-0_8",             # Zero copy Serialize/Deserialize implementation using `rkyv` 0.8 crate
+    "bytecheck-0_8",        # Enables interoperability with `bytecheck` 0.8 crate
+    "rkyv-0_8-full"         # Combined feature for `rkyv` and `bytecheck` allowing validation of rkyv deserialized types
 ]
 ```
