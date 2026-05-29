@@ -1,6 +1,6 @@
 use core::fmt;
 
-use bytecheck::{
+use bytecheck_0_8::{
     rancor::{Fallible, ResultExt, Trace},
     CheckBytes,
 };
@@ -48,6 +48,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use bytecheck_0_8 as bytecheck;
+
     use crate::typenum::{U0, U4};
     use crate::{arr, GenericArray};
     use bytecheck::check_bytes;

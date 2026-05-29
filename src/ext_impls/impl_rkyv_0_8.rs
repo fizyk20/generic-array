@@ -7,7 +7,7 @@
 
 use core::mem;
 
-use rkyv::{
+use rkyv_0_8::{
     rancor::Fallible,
     traits::{CopyOptimization, NoUndef},
     Archive, Deserialize, Place, Portable, Serialize,
@@ -29,6 +29,7 @@ unsafe impl<T: NoUndef, N: ArrayLength> NoUndef for GenericArray<T, N> {}
 /// `i` must be in-bounds for the array pointed to by this place.
 ///
 /// This is a 1:1 copy of [`Place<[T; N]>::index`]
+#[inline]
 unsafe fn index_for_place_generic_array<T, N: ArrayLength>(
     place: Place<GenericArray<T, N>>,
     i: usize,
@@ -45,9 +46,13 @@ impl<T: Archive, N: ArrayLength> Archive for GenericArray<T, N> {
     const COPY_OPTIMIZATION: CopyOptimization<Self> =
         unsafe { CopyOptimization::enable_if(T::COPY_OPTIMIZATION.is_enabled()) };
 
+    // NOTE: Because these are also GenericArray, methods should be
+    // #[inline(always)] to try to avoid extra stack allocations on
+    // input/output.
     type Archived = GenericArray<T::Archived, N>;
     type Resolver = GenericArray<T::Resolver, N>;
 
+    #[inline(always)]
     fn resolve(&self, resolver: Self::Resolver, out: Place<Self::Archived>) {
         for (i, (value, resolver)) in self.iter().zip(resolver).enumerate() {
             let out_i = unsafe { index_for_place_generic_array(out, i) };
@@ -61,6 +66,7 @@ where
     T: Serialize<S>,
     S: Fallible + ?Sized,
 {
+    #[inline(always)]
     fn serialize(&self, serializer: &mut S) -> Result<Self::Resolver, S::Error> {
         let mut result = core::mem::MaybeUninit::<Self::Resolver>::uninit();
         let result_ptr = result.as_mut_ptr().cast::<T::Resolver>();
@@ -79,6 +85,7 @@ where
     T::Archived: Deserialize<T, D>,
     D: Fallible + ?Sized,
 {
+    #[inline(always)]
     fn deserialize(&self, deserializer: &mut D) -> Result<GenericArray<T, N>, D::Error> {
         let mut result = core::mem::MaybeUninit::<GenericArray<T, N>>::uninit();
         let result_ptr = result.as_mut_ptr().cast::<T>();
@@ -93,6 +100,8 @@ where
 
 #[cfg(test)]
 mod tests {
+    use rkyv_0_8 as rkyv;
+
     use crate::typenum::{U0, U32, U6};
     use crate::{arr, GenericArray};
     use rkyv::rancor::Error;
@@ -145,6 +154,8 @@ mod tests {
 
 #[cfg(all(test, feature = "bytecheck-0_8"))]
 mod tests_full {
+    use rkyv_0_8 as rkyv;
+
     use crate::typenum::U6;
     use crate::{arr, GenericArray};
     use rkyv::rancor::Error;

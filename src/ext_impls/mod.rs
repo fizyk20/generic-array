@@ -26,7 +26,7 @@ mod impl_as_slice;
 mod impl_bitvec;
 
 #[cfg(feature = "rkyv-0_8")]
-mod impl_rkyv;
+mod impl_rkyv_0_8;
 
 #[cfg(feature = "bytecheck-0_8")]
-mod impl_bytecheck;
+mod impl_bytecheck_0_8;

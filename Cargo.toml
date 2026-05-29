@@ -28,8 +28,8 @@ serde = ["dep:serde_core"]
 compat-0_14 = ["dep:generic_array-0_14"]
 as_slice = ["dep:as-slice"]
 bitvec = ["dep:bitvec", "const-default"]
-rkyv-0_8 = ["dep:rkyv"]
-bytecheck-0_8 = ["dep:bytecheck"]
+rkyv-0_8 = ["dep:rkyv-0_8"]
+bytecheck-0_8 = ["dep:bytecheck-0_8"]
 rkyv-0_8-full = ["rkyv-0_8", "bytecheck-0_8"]
 
 [dependencies]
@@ -45,8 +45,8 @@ arbitrary = { version = "1", optional = true, default-features = false }
 bytemuck = { version = "1", optional = true, default-features = false }
 as-slice = { version = "0.2", optional = true, default-features = false }
 bitvec = { version = "1", optional = true, default-features = false }
-rkyv = { version = "0.8", optional = true, default-features = false }
-bytecheck = { version = "0.8", optional = true, default-features = false }
+rkyv-0_8 = { package = "rkyv", version = "0.8", optional = true, default-features = false }
+bytecheck-0_8 = { package = "bytecheck", version = "0.8", optional = true, default-features = false }
 
 generic_array-0_14 = { package = "generic-array", version = "0.14", optional = true, default-features = false }
 hybrid-array-0_4 = { package = "hybrid-array", version = "0.4", optional = true, default-features = false }
@@ -58,11 +58,8 @@ bincode = "1.0"
 criterion = { version = "0.5", features = ["html_reports"] }
 rand = "0.9"
 aes = { version = "0.8.4", default-features = false }
-rkyv = { version = "0.8", default-features = false, features = [
-    "alloc",
-    "bytecheck",
-] }
-bytecheck = { version = "0.8", default-features = false }
+rkyv-0_8 = { package = "rkyv", version = "0.8", default-features = false, features = ["alloc", "bytecheck"] }
+bytecheck-0_8 = { package = "bytecheck", version = "0.8", default-features = false }
 
 [[bench]]
 name = "hex"
@@ -76,21 +73,7 @@ codegen-units = 1
 
 [package.metadata.docs.rs]
 # all but "internals", don't show those on docs.rs
-features = [
-    "serde",
-    "zeroize",
-    "const-default",
-    "alloc",
-    "hybrid-array-0_4",
-    "subtle",
-    "arbitrary",
-    "bytemuck",
-    "bitvec",
-    "as_slice",
-    "rkyv-0_8",
-    "bytecheck-0_8",
-    "rkyv-0_8-full",
-]
+features = ["serde", "zeroize", "const-default", "alloc", "hybrid-array-0_4", "subtle", "arbitrary", "bytemuck", "bitvec", "as_slice", "rkyv-0_8", "bytecheck-0_8", "rkyv-0_8-full"]
 rustdoc-args = ["--cfg", "docsrs"]
 
 [package.metadata.playground]
