@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.11/src/sizes.rs`."><title>sizes.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hybrid_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.97.0-nightly (52b6e2c20 2026-04-27)" data-channel="nightly" data-search-js="search-b5634cc7.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-aa4d37ac.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="icon" href="https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hybrid_array/</div>sizes.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-4"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Supported array sizes: [`typenum::Unsigned`] types with an [`ArraySize`] impl.
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hybrid-array-0.4.12/src/sizes.rs`."><title>sizes.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2"href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../static.files/rustdoc-17e0aaed.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="hybrid_array" data-themes="" data-resource-suffix="" data-rustdoc-version="1.98.0-nightly (cced03bfd 2026-05-28)" data-channel="nightly" data-search-js="search-fd9372ac.js" data-stringdex-js="stringdex-2da4960a.js" data-settings-js="settings-170eb4bf.js" ><script src="../../static.files/storage-41dd4d93.js"></script><script defer src="../../static.files/src-script-813739b1.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-fcd733ba.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-f7c3ffd8.css"></noscript><link rel="icon" href="https://raw.githubusercontent.com/RustCrypto/meta/master/logo.svg"></head><body class="rustdoc src"><a class="skip-main-content" href="#main-content">Skip to main content</a><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><section id="main-content" class="content" tabindex="-1"><div class="main-heading"><h1><div class="sub-heading">hybrid_array/</div>sizes.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-4"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="doccomment">//! Supported array sizes: [`typenum::Unsigned`] types with an [`ArraySize`] impl.
 <a href=#2 id=2 data-nosnippet>2</a>//!
 <a href=#3 id=3 data-nosnippet>3</a>//! We support the following array sizes by default:
 <a href=#4 id=4 data-nosnippet>4</a>//!
@@ -8,7 +8,7 @@
 <a href=#8 id=8 data-nosnippet>8</a>//!
 <a href=#9 id=9 data-nosnippet>9</a>//! When the `extra-sizes` feature is enabled: 1040-4064 (multiples of 32)
 <a href=#10 id=10 data-nosnippet>10</a>
-<a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">use </span>super::{ArraySize, AssocArraySize};
+<a href=#11 id=11 data-nosnippet>11</a></span><span class="kw">use super</span>::{ArraySize, AssocArraySize};
 <a href=#12 id=12 data-nosnippet>12</a>
 <a href=#13 id=13 data-nosnippet>13</a><span class="attr">#[cfg(feature = <span class="string">"extra-sizes"</span>)]
 <a href=#14 id=14 data-nosnippet>14</a></span><span class="kw">pub use </span>extra_sizes::<span class="kw-2">*</span>;
@@ -612,7 +612,7 @@
 <a href=#612 id=612 data-nosnippet>612</a></span><span class="attr">#[cfg(feature = <span class="string">"extra-sizes"</span>)]
 <a href=#613 id=613 data-nosnippet>613</a>#[allow(missing_docs)]
 <a href=#614 id=614 data-nosnippet>614</a></span><span class="kw">mod </span>extra_sizes {
-<a href=#615 id=615 data-nosnippet>615</a>    <span class="kw">use </span>super::{ArraySize, AssocArraySize};
+<a href=#615 id=615 data-nosnippet>615</a>    <span class="kw">use super</span>::{ArraySize, AssocArraySize};
 <a href=#616 id=616 data-nosnippet>616</a>    <span class="kw">use </span>typenum::{
 <a href=#617 id=617 data-nosnippet>617</a>        UInt, UTerm,
 <a href=#618 id=618 data-nosnippet>618</a>        consts::{B0, B1},
@@ -1176,5 +1176,31 @@
 <a href=#1176 id=1176 data-nosnippet>1176</a>        <span class="number">8978 </span>=&gt; U8978,
 <a href=#1177 id=1177 data-nosnippet>1177</a>        <span class="number">14421 </span>=&gt; U14421,
 <a href=#1178 id=1178 data-nosnippet>1178</a>    }
-<a href=#1179 id=1179 data-nosnippet>1179</a>}
+<a href=#1179 id=1179 data-nosnippet>1179</a>
+<a href=#1180 id=1180 data-nosnippet>1180</a>    <span class="comment">// Classic McEliece sizes
+<a href=#1181 id=1181 data-nosnippet>1181</a>    </span><span class="kw">pub type </span>U6492 = <span class="macro">uint!</span>(<span class="number">0 0 1 1 1 0 1 0 1 0 0 1 1</span>);
+<a href=#1182 id=1182 data-nosnippet>1182</a>    <span class="kw">pub type </span>U13608 = <span class="macro">uint!</span>(<span class="number">0 0 0 1 0 1 0 0 1 0 1 0 1 1</span>);
+<a href=#1183 id=1183 data-nosnippet>1183</a>    <span class="kw">pub type </span>U13932 = <span class="macro">uint!</span>(<span class="number">0 0 1 1 0 1 1 0 0 1 1 0 1 1</span>);
+<a href=#1184 id=1184 data-nosnippet>1184</a>    <span class="kw">pub type </span>U13948 = <span class="macro">uint!</span>(<span class="number">0 0 1 1 1 1 1 0 0 1 1 0 1 1</span>);
+<a href=#1185 id=1185 data-nosnippet>1185</a>    <span class="kw">pub type </span>U14120 = <span class="macro">uint!</span>(<span class="number">0 0 0 1 0 1 0 0 1 1 1 0 1 1</span>);
+<a href=#1186 id=1186 data-nosnippet>1186</a>    <span class="kw">pub type </span>U261120 = <span class="macro">uint!</span>(<span class="number">0 0 0 0 0 0 0 0 0 0 1 1 1 1 1 1 1 1</span>);
+<a href=#1187 id=1187 data-nosnippet>1187</a>    <span class="kw">pub type </span>U524160 = <span class="macro">uint!</span>(<span class="number">0 0 0 0 0 0 0 1 1 1 1 1 1 1 1 1 1 1 1</span>);
+<a href=#1188 id=1188 data-nosnippet>1188</a>    <span class="kw">pub type </span>U1044992 = <span class="macro">uint!</span>(<span class="number">0 0 0 0 0 0 0 0 0 1 0 0 1 1 1 1 1 1 1 1</span>);
+<a href=#1189 id=1189 data-nosnippet>1189</a>    <span class="kw">pub type </span>U1047319 = <span class="macro">uint!</span>(<span class="number">1 1 1 0 1 0 0 0 1 1 0 1 1 1 1 1 1 1 1 1</span>);
+<a href=#1190 id=1190 data-nosnippet>1190</a>    <span class="kw">pub type </span>U1357824 = <span class="macro">uint!</span>(<span class="number">0 0 0 0 0 0 0 0 0 0 0 1 1 1 0 1 0 0 1 0 1</span>);
+<a href=#1191 id=1191 data-nosnippet>1191</a>
+<a href=#1192 id=1192 data-nosnippet>1192</a>    <span class="macro">impl_array_sizes!</span> {
+<a href=#1193 id=1193 data-nosnippet>1193</a>        classic_mceliece,
+<a href=#1194 id=1194 data-nosnippet>1194</a>        <span class="number">6492 </span>=&gt; U6492,
+<a href=#1195 id=1195 data-nosnippet>1195</a>        <span class="number">13608 </span>=&gt; U13608,
+<a href=#1196 id=1196 data-nosnippet>1196</a>        <span class="number">13932 </span>=&gt; U13932,
+<a href=#1197 id=1197 data-nosnippet>1197</a>        <span class="number">13948 </span>=&gt; U13948,
+<a href=#1198 id=1198 data-nosnippet>1198</a>        <span class="number">14120 </span>=&gt; U14120,
+<a href=#1199 id=1199 data-nosnippet>1199</a>        <span class="number">261120 </span>=&gt; U261120,
+<a href=#1200 id=1200 data-nosnippet>1200</a>        <span class="number">524160 </span>=&gt; U524160,
+<a href=#1201 id=1201 data-nosnippet>1201</a>        <span class="number">1044992 </span>=&gt; U1044992,
+<a href=#1202 id=1202 data-nosnippet>1202</a>        <span class="number">1047319 </span>=&gt; U1047319,
+<a href=#1203 id=1203 data-nosnippet>1203</a>        <span class="number">1357824 </span>=&gt; U1357824,
+<a href=#1204 id=1204 data-nosnippet>1204</a>    }
+<a href=#1205 id=1205 data-nosnippet>1205</a>}
 </code></pre></div></section></main></body></html>

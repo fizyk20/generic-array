@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["if_atomic"],"mod":["marker","types"],"trait":["Radium"]};
+window.SIDEBAR_ITEMS = {"macro":[["if_atomic",1]],"mod":["marker","types"],"trait":["Radium"]};

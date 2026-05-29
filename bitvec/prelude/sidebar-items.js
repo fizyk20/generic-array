@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"macro":["BitArr","bitarr","bits"]};
+window.SIDEBAR_ITEMS = {"macro":[["BitArr",1],["bitarr",1],["bits",1]]};
