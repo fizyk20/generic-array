@@ -33,7 +33,7 @@ bytecheck-0_8 = ["dep:bytecheck-0_8"]
 rkyv-0_8-full = ["rkyv-0_8", "bytecheck-0_8"]
 
 [dependencies]
-typenum = { version = "1.19", features = ["const-generics"] }
+typenum = { version = "1.20.1", features = ["const-generics"] }
 rustversion = "1"
 
 const-default = { version = "1", optional = true, default-features = false }
