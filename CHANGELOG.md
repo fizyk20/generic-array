@@ -1,3 +1,8 @@
+* **`1.4.2`**
+    * `bytecheck 0.8` support via the `bytecheck-0_8`/`rkyv-0_8-full` crate features [#168](https://github.com/fizyk20/generic-array/pull/168)
+    * `rkyv 0.8` support via the `rkyv-0_8`/`rkyv-0_8-full` crate features [#168](https://github.com/fizyk20/generic-array/pull/168)
+        * Parity with `[T; N]` implementations from `rkyv`, including copy optimizations.
+
 * **`1.4.1`**
     * Fix some issues with using ZSTs with `Box<GenericArray<ZST, N>>`. Partial credit to [#166](https://github.com/fizyk20/generic-array/pull/166).
 
