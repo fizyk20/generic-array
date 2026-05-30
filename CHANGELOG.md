@@ -1,3 +1,8 @@
+* **`1.4.3`**
+    * Bump `typenum` to `1.20.1`, which improves `tarr!` ergonomics [#169](https://github.com/fizyk20/generic-array/pull/169)
+    * Add code coverage metrics and tests (96.2% as of this version)
+    * Fix small soundness bug in `chunks_from_slice_mut`
+
 * **`1.4.2`**
     * `bytecheck 0.8` support via the `bytecheck-0_8`/`rkyv-0_8-full` crate features [#168](https://github.com/fizyk20/generic-array/pull/168)
     * `rkyv 0.8` support via the `rkyv-0_8`/`rkyv-0_8-full` crate features [#168](https://github.com/fizyk20/generic-array/pull/168)
