@@ -580,3 +580,638 @@ fn miri_try_generate_zero_length() {
         .unwrap();
     assert_eq!(arr.len(), 0);
 }
+
+/// A `Drop`-counting element used to verify that the `mem::needs_drop` branches
+/// in `zip`/`fold`/`inverted_zip` actually run their destructors exactly once
+/// per element. `i32`-based tests only ever hit the no-drop fast paths.
+#[derive(Clone, PartialEq, Eq, Debug)]
+struct Tracked<'a>(i32, &'a Cell<u32>);
+
+impl Drop for Tracked<'_> {
+    fn drop(&mut self) {
+        self.1.set(self.1.get() + 1);
+    }
+}
+
+#[test]
+fn test_partial_ord_and_borrow() {
+    use core::borrow::{Borrow, BorrowMut};
+
+    let a = arr![1, 2, 3, 4];
+    let b = arr![1, 2, 4, 4];
+
+    // PartialOrd / Ord
+    assert!(a < b);
+    assert_eq!(a.partial_cmp(&b), Some(core::cmp::Ordering::Less));
+    assert_eq!(a.cmp(&a), core::cmp::Ordering::Equal);
+
+    // Borrow / BorrowMut to [T]
+    let borrowed: &[i32] = a.borrow();
+    assert_eq!(borrowed, &[1, 2, 3, 4]);
+
+    let mut c = arr![1, 2, 3, 4];
+    let borrowed_mut: &mut [i32] = c.borrow_mut();
+    borrowed_mut[0] = 9;
+    assert_eq!(c, arr![9, 2, 3, 4]);
+
+    // AsRef / AsMut to [T] (slice, not [T; N])
+    let as_ref: &[i32] = AsRef::<[i32]>::as_ref(&a);
+    assert_eq!(as_ref, &[1, 2, 3, 4]);
+    let mut d = arr![1, 2, 3, 4];
+    AsMut::<[i32]>::as_mut(&mut d)[1] = 0;
+    assert_eq!(d, arr![1, 0, 3, 4]);
+}
+
+#[test]
+fn test_tuple_conversions() {
+    use generic_array::typenum::U3;
+
+    let from_tuple: GenericArray<i32, U3> = (1, 2, 3).into();
+    assert_eq!(from_tuple, arr![1, 2, 3]);
+
+    let back: (i32, i32, i32) = from_tuple.into();
+    assert_eq!(back, (1, 2, 3));
+}
+
+#[test]
+fn test_each_ref_mut() {
+    let a = arr![1, 2, 3, 4];
+
+    let refs: GenericArray<&i32, _> = a.each_ref();
+    assert_eq!(refs, arr![&1, &2, &3, &4]);
+
+    let mut b = arr![1, 2, 3, 4];
+    for r in b.each_mut() {
+        *r *= 10;
+    }
+    assert_eq!(b, arr![10, 20, 30, 40]);
+}
+
+#[test]
+fn test_chunks_from_slice_mut() {
+    use generic_array::typenum::U3;
+
+    let mut data = [1u8, 2, 3, 4, 5, 6, 7];
+    let (chunks, rem) = GenericArray::<u8, U3>::chunks_from_slice_mut(&mut data);
+
+    assert_eq!(chunks.len(), 2);
+    chunks[0][0] = 100;
+    chunks[1][2] = 200;
+    assert_eq!(rem, &mut [7]);
+    rem[0] = 0;
+
+    assert_eq!(data, [100, 2, 3, 4, 5, 200, 0]);
+}
+
+#[test]
+fn test_slice_from_chunks() {
+    use generic_array::typenum::U3;
+
+    let mut chunks = [arr![1u8, 2, 3], arr![4, 5, 6]];
+
+    let flat = GenericArray::<u8, U3>::slice_from_chunks(&chunks);
+    assert_eq!(flat, &[1, 2, 3, 4, 5, 6]);
+
+    let flat_mut = GenericArray::<u8, U3>::slice_from_chunks_mut(&mut chunks);
+    flat_mut[0] = 9;
+    assert_eq!(chunks[0], arr![9, 2, 3]);
+}
+
+#[test]
+fn test_from_into_chunks() {
+    use generic_array::typenum::U3;
+
+    let mut native = [[1u8, 2, 3], [4, 5, 6]];
+
+    let as_ga = GenericArray::<u8, U3>::from_chunks(&native);
+    assert_eq!(as_ga, &[arr![1, 2, 3], arr![4, 5, 6]]);
+
+    let as_ga_mut = GenericArray::<u8, U3>::from_chunks_mut(&mut native);
+    as_ga_mut[0][0] = 7;
+    assert_eq!(native[0], [7, 2, 3]);
+
+    let ga_chunks = [arr![1u8, 2, 3], arr![4, 5, 6]];
+    let back: &[[u8; 3]] = GenericArray::<u8, U3>::into_chunks(&ga_chunks);
+    assert_eq!(back, &[[1, 2, 3], [4, 5, 6]]);
+
+    let mut ga_chunks_mut = [arr![1u8, 2, 3], arr![4, 5, 6]];
+    let back_mut: &mut [[u8; 3]] = GenericArray::<u8, U3>::into_chunks_mut(&mut ga_chunks_mut);
+    back_mut[1][0] = 0;
+    assert_eq!(ga_chunks_mut[1], arr![0, 5, 6]);
+}
+
+#[test]
+fn test_as_array_of_cells() {
+    let cell = Cell::new(arr![1, 2, 3, 4]);
+
+    let cells = GenericArray::as_array_of_cells(&cell);
+    cells[2].set(30);
+
+    assert_eq!(cell.into_inner(), arr![1, 2, 30, 4]);
+}
+
+#[test]
+fn test_try_from_slice_variants() {
+    use core::convert::TryFrom;
+    use generic_array::typenum::U3;
+
+    // try_from_slice: Ok and Err
+    let ok = GenericArray::<i32, U3>::try_from_slice(&[1, 2, 3]);
+    assert_eq!(ok.unwrap(), &arr![1, 2, 3]);
+    assert!(GenericArray::<i32, U3>::try_from_slice(&[1, 2]).is_err());
+
+    // try_from_mut_slice: Ok and Err
+    let mut data = [1, 2, 3];
+    {
+        let ga = GenericArray::<i32, U3>::try_from_mut_slice(&mut data).unwrap();
+        ga[0] = 9;
+    }
+    assert_eq!(data, [9, 2, 3]);
+    let mut short = [1, 2];
+    assert!(GenericArray::<i32, U3>::try_from_mut_slice(&mut short).is_err());
+
+    // TryFrom impls for the reference types
+    let r: Result<&GenericArray<i32, U3>, _> = <&GenericArray<i32, U3>>::try_from(&[1, 2, 3][..]);
+    assert_eq!(r.unwrap(), &arr![1, 2, 3]);
+    let mut data2 = [1, 2, 3];
+    let rm: Result<&mut GenericArray<i32, U3>, _> =
+        <&mut GenericArray<i32, U3>>::try_from(&mut data2[..]);
+    assert!(rm.is_ok());
+    assert!(<&GenericArray<i32, U3>>::try_from(&[1, 2][..]).is_err());
+}
+
+#[test]
+fn test_flatten_unflatten() {
+    use generic_array::sequence::{Flatten, Unflatten};
+
+    // owned
+    let nested = arr![arr![1, 2], arr![3, 4], arr![5, 6]];
+    assert_eq!(nested.flatten(), arr![1, 2, 3, 4, 5, 6]);
+
+    let flat = arr![1, 2, 3, 4, 5, 6];
+    assert_eq!(flat.unflatten(), arr![arr![1, 2], arr![3, 4], arr![5, 6]]);
+
+    // by shared reference (UFCS to select the &T impl rather than the owned one)
+    assert_eq!(Flatten::flatten(&nested), &arr![1, 2, 3, 4, 5, 6]);
+    assert_eq!(
+        Unflatten::unflatten(&flat),
+        &arr![arr![1, 2], arr![3, 4], arr![5, 6]]
+    );
+
+    // by mutable reference
+    let mut nested_mut = arr![arr![1, 2], arr![3, 4], arr![5, 6]];
+    Flatten::flatten(&mut nested_mut)[0] = 100;
+    assert_eq!(nested_mut[0], arr![100, 2]);
+
+    let mut flat_mut = arr![1, 2, 3, 4, 5, 6];
+    Unflatten::unflatten(&mut flat_mut)[0] = arr![7, 8];
+    assert_eq!(flat_mut, arr![7, 8, 3, 4, 5, 6]);
+}
+
+#[test]
+fn test_sequence_repeat() {
+    use generic_array::typenum::U4;
+
+    let a: GenericArray<i32, U4> = GenericArray::repeat(7);
+    assert_eq!(a, arr![7, 7, 7, 7]);
+
+    // The last element takes ownership; earlier elements are clones.
+    let counter = Cell::new(0);
+    {
+        let repeated: GenericArray<Tracked, U4> = GenericArray::repeat(Tracked(1, &counter));
+        assert_eq!(repeated, arr![Tracked(1, &counter), Tracked(1, &counter), Tracked(1, &counter), Tracked(1, &counter)]);
+    }
+}
+
+#[test]
+fn test_into_iter_mut() {
+    let mut a = arr![1, 2, 3, 4];
+    for x in &mut a {
+        *x += 1;
+    }
+    assert_eq!(a, arr![2, 3, 4, 5]);
+}
+
+#[test]
+fn test_zip_drop_path() {
+    use generic_array::typenum::U4;
+
+    // zip -> inverted_zip2, drop branch (rhs element needs Drop)
+    let counter = Cell::new(0);
+    {
+        let a: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let b: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32 * 10, &counter));
+
+        let summed: GenericArray<i32, U4> = a.zip(b, |x, y| x.0 + y.0);
+        assert_eq!(summed, arr![0, 11, 22, 33]);
+    }
+    // 8 source elements consumed by the closure and dropped there.
+    assert_eq!(counter.get(), 8);
+}
+
+#[test]
+fn test_inverted_zip_drop_and_copy() {
+    use generic_array::sequence::GenericSequence;
+    use generic_array::typenum::U4;
+
+    // Copy path (no drop)
+    let lhs = arr![1, 2, 3, 4];
+    let rhs = arr![10, 20, 30, 40];
+    let c: GenericArray<i32, U4> = rhs.inverted_zip(lhs, |l, r| l + r);
+    assert_eq!(c, arr![11, 22, 33, 44]);
+
+    // Drop path
+    let counter = Cell::new(0);
+    {
+        let lhs: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let rhs: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let _: GenericArray<i32, U4> = rhs.inverted_zip(lhs, |l, r| l.0 + r.0);
+    }
+    assert_eq!(counter.get(), 8);
+}
+
+#[test]
+fn test_fold_and_try_fold_drop() {
+    use generic_array::typenum::U4;
+
+    // owned fold consuming Drop elements
+    let counter = Cell::new(0);
+    {
+        let a: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let sum = a.fold(0, |acc, x| acc + x.0);
+        assert_eq!(sum, 6);
+    }
+    assert_eq!(counter.get(), 4);
+
+    // owned try_fold, success
+    let counter = Cell::new(0);
+    {
+        let a: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let sum: Result<i32, ()> = a.try_fold(0, |acc, x| Ok(acc + x.0));
+        assert_eq!(sum, Ok(6));
+    }
+    assert_eq!(counter.get(), 4);
+
+    // owned try_fold, error mid-way still drops remaining source elements
+    let counter = Cell::new(0);
+    {
+        let a: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let res: Result<i32, &str> = a.try_fold(0, |acc, x| {
+            if x.0 == 2 {
+                Err("stop")
+            } else {
+                Ok(acc + x.0)
+            }
+        });
+        assert_eq!(res, Err("stop"));
+    }
+    assert_eq!(counter.get(), 4);
+}
+
+#[test]
+fn test_functional_on_references() {
+    use generic_array::typenum::U4;
+
+    let a = arr![1, 2, 3, 4];
+
+    // map on &GenericArray
+    let doubled: GenericArray<i32, U4> = (&a).map(|x| x * 2);
+    assert_eq!(doubled, arr![2, 4, 6, 8]);
+
+    // fold on &GenericArray
+    let sum = (&a).fold(0, |acc, x| acc + x);
+    assert_eq!(sum, 10);
+
+    // zip with a reference rhs -> trait-default inverted_zip2
+    let b = arr![10, 20, 30, 40];
+    let c: GenericArray<i32, U4> = a.zip(&b, |x, y| x + y);
+    assert_eq!(c, arr![11, 22, 33, 44]);
+
+    // map / fold on &mut GenericArray
+    let mut d = arr![1, 2, 3, 4];
+    let mapped: GenericArray<i32, U4> = (&mut d).map(|x| *x + 1);
+    assert_eq!(mapped, arr![2, 3, 4, 5]);
+    let s = (&mut d).fold(0, |acc, x| acc + *x);
+    assert_eq!(s, 10);
+}
+
+#[test]
+fn test_try_map_success() {
+    let a = arr![2, 4, 6, 8];
+    let b: Result<GenericArray<i32, _>, &str> = a.try_map(|x| {
+        if x % 2 == 0 {
+            Ok(x * 2)
+        } else {
+            Err("odd")
+        }
+    });
+    assert_eq!(b.unwrap(), arr![4, 8, 12, 16]);
+}
+
+#[test]
+fn test_try_from_fallible_iter() {
+    use generic_array::typenum::U4;
+
+    // success
+    let ok: Result<GenericArray<i32, U4>, ()> =
+        GenericArray::try_from_fallible_iter((0..4).map(Ok)).unwrap();
+    assert_eq!(ok.unwrap(), arr![0, 1, 2, 3]);
+
+    // length too short
+    let short = GenericArray::<i32, U4>::try_from_fallible_iter((0..2).map(Ok::<_, ()>));
+    assert!(short.is_err());
+
+    // length too long
+    let long = GenericArray::<i32, U4>::try_from_fallible_iter((0..6).map(Ok::<_, ()>));
+    assert!(long.is_err());
+
+    // inner error mid-way drops the already-initialized elements
+    let counter = Cell::new(0);
+    {
+        let res: Result<Result<GenericArray<Tracked, U4>, &str>, _> =
+            GenericArray::try_from_fallible_iter((0..4).map(|i| {
+                if i == 2 {
+                    Err("boom")
+                } else {
+                    Ok(Tracked(i, &counter))
+                }
+            }));
+        assert_eq!(res.unwrap(), Err("boom"));
+    }
+    assert_eq!(counter.get(), 2);
+}
+
+#[test]
+fn test_len_and_from_slice_panic_paths() {
+    use generic_array::typenum::U4;
+    assert_eq!(GenericArray::<i32, U4>::len(), 4);
+}
+
+#[test]
+#[should_panic]
+fn test_from_slice_wrong_length_panics() {
+    use generic_array::typenum::U3;
+    let _ = GenericArray::<i32, U3>::from_slice(&[1, 2]);
+}
+
+#[test]
+fn test_chunks_from_slice_mut_zero_length() {
+    let mut empty: [u8; 0] = [];
+    let (chunks, rem) = GenericArray::<u8, U0>::chunks_from_slice_mut(&mut empty);
+    assert!(chunks.is_empty());
+    assert!(rem.is_empty());
+}
+
+#[test]
+fn test_hash() {
+    use core::hash::{Hash, Hasher};
+
+    // A tiny additive hasher keeps this `no_std`-friendly and deterministic.
+    struct SumHasher(u64);
+    impl Hasher for SumHasher {
+        fn finish(&self) -> u64 {
+            self.0
+        }
+        fn write(&mut self, bytes: &[u8]) {
+            for b in bytes {
+                self.0 = self.0.wrapping_add(*b as u64);
+            }
+        }
+    }
+
+    fn hash_of(a: &GenericArray<u8, generic_array::typenum::U4>) -> u64 {
+        let mut h = SumHasher(0);
+        a.hash(&mut h);
+        h.finish()
+    }
+
+    let a = arr![1u8, 2, 3, 4];
+    let b = arr![1u8, 2, 3, 4];
+    let c = arr![9u8, 2, 3, 4];
+
+    assert_eq!(hash_of(&a), hash_of(&b));
+    assert_ne!(hash_of(&a), hash_of(&c));
+}
+
+#[test]
+fn test_functional_defaults_via_reference() {
+    use generic_array::typenum::U4;
+
+    let a = arr![2, 4, 6, 8];
+
+    // try_map / try_fold trait defaults (owned GenericArray overrides these,
+    // so they're only reached through the &S / Box impls)
+    let mapped: Result<GenericArray<i32, U4>, ()> = (&a).try_map(|x| Ok(x * 2));
+    assert_eq!(mapped.unwrap(), arr![4, 8, 12, 16]);
+
+    let folded: Result<i32, ()> = (&a).try_fold(0, |acc, x| Ok(acc + x));
+    assert_eq!(folded.unwrap(), 20);
+
+    let err: Result<i32, &str> = (&a).try_fold(0, |_, _| Err("nope"));
+    assert_eq!(err, Err("nope"));
+}
+
+#[test]
+fn test_reference_zip_drop_path() {
+    use generic_array::typenum::U4;
+
+    // `(&lhs).zip(rhs, ..)` uses the &S `zip` default -> `rhs.inverted_zip2(&lhs, ..)`,
+    // exercising the owned `inverted_zip2` Drop branch (owned `.zip` uses `inverted_zip`).
+    let lhs = arr![1, 2, 3, 4];
+    let counter = Cell::new(0);
+    {
+        let rhs: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let summed: GenericArray<i32, U4> = (&lhs).zip(rhs, |l, r| l + r.0);
+        assert_eq!(summed, arr![1, 3, 5, 7]);
+    }
+    assert_eq!(counter.get(), 4);
+}
+
+#[test]
+fn test_reference_generate() {
+    use generic_array::sequence::{FallibleGenericSequence, GenericSequence};
+    use generic_array::typenum::U4;
+
+    // GenericSequence::generate for &S and &mut S forward to S::generate.
+    let g = <&GenericArray<i32, U4> as GenericSequence<i32>>::generate(|i| i as i32);
+    assert_eq!(g, arr![0, 1, 2, 3]);
+
+    let gm = <&mut GenericArray<i32, U4> as GenericSequence<i32>>::generate(|i| i as i32 + 1);
+    assert_eq!(gm, arr![1, 2, 3, 4]);
+
+    // FallibleGenericSequence::try_generate for &S and &mut S.
+    let tg: Result<Result<GenericArray<i32, U4>, ()>, _> =
+        <&GenericArray<i32, U4> as FallibleGenericSequence<i32>>::try_generate(|i| Ok(i as i32));
+    assert_eq!(tg.unwrap().unwrap(), arr![0, 1, 2, 3]);
+
+    let tgm: Result<Result<GenericArray<i32, U4>, ()>, _> =
+        <&mut GenericArray<i32, U4> as FallibleGenericSequence<i32>>::try_generate(|i| {
+            Ok(i as i32)
+        });
+    assert_eq!(tgm.unwrap().unwrap(), arr![0, 1, 2, 3]);
+}
+
+#[test]
+fn test_try_from_fallible_iter_length_after_fill() {
+    use generic_array::typenum::U4;
+
+    // A `filter` iter has a loose size_hint, so it passes the pre-checks and the
+    // post-fill length check (`iter.next().is_some()`) catches the overflow instead.
+    let loose = (0..10).filter(|x| *x < 6).map(Ok::<_, ()>);
+    let r = GenericArray::<i32, U4>::try_from_fallible_iter(loose);
+    assert!(r.is_err());
+}
+
+#[test]
+#[should_panic]
+fn test_from_mut_slice_wrong_length_panics() {
+    use generic_array::typenum::U3;
+    let mut data = [1, 2];
+    let _ = GenericArray::<i32, U3>::from_mut_slice(&mut data);
+}
+
+#[test]
+#[should_panic]
+fn test_chunks_from_slice_mut_zero_length_nonempty_panics() {
+    let mut data = [1u8, 2, 3];
+    let _ = GenericArray::<u8, U0>::chunks_from_slice_mut(&mut data);
+}
+
+#[test]
+#[should_panic]
+fn test_remove_out_of_bounds_panics() {
+    let a = arr![1, 2, 3, 4];
+    let _ = a.remove(4);
+}
+
+#[test]
+#[should_panic]
+fn test_swap_remove_out_of_bounds_panics() {
+    let a = arr![1, 2, 3, 4];
+    let _ = a.swap_remove(10);
+}
+
+#[test]
+#[should_panic]
+fn test_from_fallible_iter_length_fail_panics() {
+    use generic_array::typenum::U4;
+
+    // `FromFallibleIterator::from_fallible_iter` panics (not `Err`) on a length
+    // mismatch with no inner error, mirroring `FromIterator`'s contract.
+    let _: Result<GenericArray<i32, U4>, ()> =
+        FromFallibleIterator::from_fallible_iter((0..2).map(Ok::<i32, ()>));
+}
+
+#[cfg(feature = "internals")]
+mod internals {
+    use super::Cell;
+    use core::mem::MaybeUninit;
+    use generic_array::arr;
+    use generic_array::internals::{ArrayBuilder, ArrayConsumer, IntrusiveArrayBuilder};
+    use generic_array::sequence::GenericSequence;
+    use generic_array::typenum::U4;
+    use generic_array::GenericArray;
+
+    #[test]
+    fn test_intrusive_builder_finish() {
+        // Exercises the `finish` (mem::forget) path, distinct from `finish_and_assume_init`.
+        let mut array = MaybeUninit::<GenericArray<i32, U4>>::uninit();
+        let result;
+        {
+            let mut builder = IntrusiveArrayBuilder::new_alt(&mut array);
+            unsafe {
+                let (dst_iter, position) = builder.iter_position();
+                for (i, dst) in dst_iter.enumerate() {
+                    dst.write(i as i32);
+                    *position += 1;
+                }
+                builder.finish();
+            }
+        }
+        result = unsafe { array.assume_init() };
+        assert_eq!(result, arr![0, 1, 2, 3]);
+    }
+
+    #[test]
+    #[allow(deprecated)]
+    fn test_array_assume_init_deprecated() {
+        let mut uninit = GenericArray::<i32, U4>::uninit();
+        for (i, slot) in uninit.iter_mut().enumerate() {
+            slot.write(i as i32);
+        }
+        let array = unsafe { IntrusiveArrayBuilder::array_assume_init(uninit) };
+        assert_eq!(array, arr![0, 1, 2, 3]);
+    }
+
+    #[test]
+    fn test_array_builder() {
+        let mut builder = ArrayBuilder::<i32, U4>::new();
+        assert!(!builder.is_full());
+
+        unsafe {
+            let (dst_iter, position) = builder.iter_position();
+            for (i, dst) in dst_iter.enumerate() {
+                dst.write(i as i32 * 2);
+                *position += 1;
+            }
+            assert!(builder.is_full());
+            let array = builder.assume_init();
+            assert_eq!(array, arr![0, 2, 4, 6]);
+        }
+    }
+
+    #[test]
+    fn test_array_builder_extend() {
+        let mut builder = ArrayBuilder::<i32, U4>::new();
+        unsafe {
+            builder.extend([10, 20, 30, 40].into_iter());
+            assert_eq!(builder.assume_init(), arr![10, 20, 30, 40]);
+        }
+    }
+
+    #[test]
+    fn test_array_builder_drops_partial() {
+        // Drop the builder without filling it: the initialized prefix must drop.
+        let counter = Cell::new(0u32);
+        {
+            let mut builder = ArrayBuilder::<super::Tracked, U4>::new();
+            unsafe {
+                let (dst_iter, position) = builder.iter_position();
+                for (i, dst) in dst_iter.enumerate().take(2) {
+                    dst.write(super::Tracked(i as i32, &counter));
+                    *position += 1;
+                }
+            }
+            // builder dropped here with only 2 of 4 initialized
+        }
+        assert_eq!(counter.get(), 2);
+    }
+
+    #[test]
+    fn test_array_consumer() {
+        let counter = Cell::new(0u32);
+        {
+            let array: GenericArray<super::Tracked, U4> =
+                GenericArray::generate(|i| super::Tracked(i as i32, &counter));
+            let mut consumer = ArrayConsumer::new(array);
+            unsafe {
+                let (iter, position) = consumer.iter_position();
+                // consume only the first two; the rest drop with the consumer
+                for src in iter.take(2) {
+                    let _value = core::ptr::read(src);
+                    *position += 1;
+                }
+            }
+            // consumer dropped: 2 consumed values dropped here + 2 leftovers dropped by Drop impl
+        }
+        assert_eq!(counter.get(), 4);
+    }
+}

@@ -37,3 +37,23 @@ where
         Self::DEFAULT
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::{arr, typenum::U4, GenericArray};
+    use const_default::ConstDefault;
+
+    #[test]
+    fn const_default_works() {
+        // Use runtime (non-`const`) bindings: a `const` context is evaluated at
+        // compile time and so is invisible to runtime coverage instrumentation.
+
+        // exercises the recursive `GenericArrayImplEven`/`Odd` and `GenericArray` DEFAULT consts
+        let a: GenericArray<i32, U4> = <GenericArray<i32, U4> as ConstDefault>::DEFAULT;
+        assert_eq!(a, arr![0, 0, 0, 0]);
+
+        // and the `const_default()` convenience accessor
+        let b: GenericArray<i32, U4> = GenericArray::const_default();
+        assert_eq!(b, arr![0, 0, 0, 0]);
+    }
+}

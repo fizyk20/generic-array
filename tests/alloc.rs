@@ -18,6 +18,49 @@ fn test_try_from_vec() {
 }
 
 #[test]
+fn test_try_from_vec_wrong_length() {
+    // length mismatch should return Err rather than panic
+    let too_short = alloc::vec![1, 2, 3];
+    assert!(GenericArray::<i32, U4>::try_from(too_short).is_err());
+    let too_long = alloc::vec![1, 2, 3, 4, 5];
+    assert!(GenericArray::<i32, U4>::try_from(too_long).is_err());
+}
+
+#[test]
+fn test_try_boxed_from_iter_wrong_length() {
+    assert!(GenericArray::<i32, U4>::try_boxed_from_iter(0..2).is_err());
+    assert!(GenericArray::<i32, U4>::try_boxed_from_iter(0..6).is_err());
+
+    // A `filter` iterator reports a loose size_hint of (0, Some(10)), so it passes
+    // the pre-checks and the actual-length mismatch is caught after filling N.
+    let loose = (0..10).filter(|x| *x < 6);
+    assert!(GenericArray::<i32, U4>::try_boxed_from_iter(loose).is_err());
+
+    let ok = GenericArray::<i32, U4>::try_boxed_from_iter(0..4).unwrap();
+    assert_eq!(&ok[..], &[0, 1, 2, 3]);
+}
+
+#[test]
+#[should_panic]
+fn test_boxed_from_iter_wrong_length() {
+    use alloc::boxed::Box;
+    use core::iter::FromIterator;
+
+    let _ = Box::<GenericArray<i32, U4>>::from_iter(0..2);
+}
+
+#[test]
+#[should_panic]
+fn test_boxed_from_fallible_iter_length_fail_panics() {
+    use alloc::boxed::Box;
+
+    // `FromFallibleIterator` for `Box<GenericArray>` panics on a length mismatch
+    // (no inner error), like the stack-allocated version.
+    let _: Result<Box<GenericArray<i32, U4>>, ()> =
+        FromFallibleIterator::from_fallible_iter((0..2).map(Ok::<i32, ()>));
+}
+
+#[test]
 fn test_alloc() {
     use alloc::{boxed::Box, vec::Vec};
     use generic_array::box_arr;

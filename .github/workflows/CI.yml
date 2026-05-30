@@ -25,6 +25,46 @@ jobs:
       - name: Test with Miri
         run: cargo miri test --all-features
 
+  coverage:
+    name: Coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@nightly
+        with:
+          components: llvm-tools-preview
+
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
+
+      # Runs on every push/PR so a coverage regression that fails to build is
+      # caught early. `jq` is preinstalled on the ubuntu runners.
+      - name: Measure coverage
+        run: |
+          cargo llvm-cov --all-features --json --summary-only > coverage.json
+          COVERAGE=$(jq '.data[0].totals.lines.percent' coverage.json)
+          COVERAGE=$(printf '%.1f' "$COVERAGE")
+          echo "COVERAGE=$COVERAGE" >> "$GITHUB_ENV"
+          echo "Line coverage: $COVERAGE%"
+
+      # Only publish the badge from pushes to master. PRs (especially from forks)
+      # cannot read GIST_SECRET, so this step is skipped there rather than failing.
+      - name: Publish coverage badge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: schneegans/dynamic-badges-action@v1.8.0
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: 90a80c3c5ed11247c03a2012955f4f2e
+          filename: generic-array-coverage.json
+          label: coverage
+          message: ${{ env.COVERAGE }}%
+          valColorRange: ${{ env.COVERAGE }}
+          minColorRange: 50
+          maxColorRange: 95
+
   deploy_docs:
     name: Deploy documentation
     runs-on: ubuntu-latest

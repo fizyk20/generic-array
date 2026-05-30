@@ -1,5 +1,6 @@
 [![Crates.io](https://img.shields.io/crates/v/generic-array.svg)](https://crates.io/crates/generic-array)
 [![Build Status](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml/badge.svg)](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/novacrazy/90a80c3c5ed11247c03a2012955f4f2e/raw/generic-array-coverage.json)](https://github.com/fizyk20/generic-array/actions/workflows/CI.yml)
 ![Rust Version](https://img.shields.io/badge/rustc-1.65+-blue.svg)
 
 # generic-array

@@ -76,3 +76,42 @@ impl<T, N: ArrayLength + ArraySize> GenericArray<T, N> {
         unsafe { crate::const_transmute(value) }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::HybridArray;
+    use crate::{arr, typenum::U4, GenericArray};
+    use hybrid_array_0_4::{AsArrayMut, AsArrayRef};
+
+    #[test]
+    fn owned_round_trip() {
+        let ga = arr![1u8, 2, 3, 4];
+
+        let ha: HybridArray<u8, U4> = ga.into_ha0_4();
+        assert_eq!(ha.as_slice(), &[1, 2, 3, 4]);
+
+        let back = GenericArray::from_ha0_4(ha);
+        assert_eq!(back, arr![1u8, 2, 3, 4]);
+
+        // via From impls
+        let ha2: HybridArray<u8, U4> = arr![5u8, 6, 7, 8].into();
+        let ga2: GenericArray<u8, U4> = ha2.into();
+        assert_eq!(ga2, arr![5u8, 6, 7, 8]);
+    }
+
+    #[test]
+    fn reference_conversions() {
+        let ga = arr![1u8, 2, 3, 4];
+
+        assert_eq!(ga.as_ha0_4().as_slice(), &[1, 2, 3, 4]);
+        let r: &HybridArray<u8, U4> = ga.as_ref();
+        assert_eq!(r.as_slice(), &[1, 2, 3, 4]);
+        assert_eq!(ga.as_array_ref().as_slice(), &[1, 2, 3, 4]);
+
+        let mut ga = arr![1u8, 2, 3, 4];
+        ga.as_ha0_4_mut()[0] = 9;
+        AsMut::<HybridArray<u8, U4>>::as_mut(&mut ga)[1] = 8;
+        ga.as_array_mut()[2] = 7;
+        assert_eq!(ga, arr![9u8, 8, 7, 4]);
+    }
+}

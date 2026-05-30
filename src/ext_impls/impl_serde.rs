@@ -144,4 +144,26 @@ mod tests {
         let serialized = "[1, 2, 3, 4, 5]";
         let _ = serde_json::from_str::<GenericArray<u8, typenum::U4>>(serialized).unwrap();
     }
+
+    #[test]
+    fn test_too_few() {
+        // Fewer elements than `N`: the visitor loop hits `next_element() == None`
+        // (the `break`) and then returns an `invalid_length` error.
+        let serialized = "[1, 2]";
+        let result = serde_json::from_str::<GenericArray<u8, typenum::U4>>(serialized);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_size_hint_mismatch() {
+        // A `SeqDeserializer` built from an `ExactSizeIterator` reports a concrete
+        // `size_hint`, exercising the early `Some(n) if n != N` length check that
+        // self-describing formats like JSON (which report `None`) never trigger.
+        use serde_core::de::value::{Error, SeqDeserializer};
+        use serde_core::de::IntoDeserializer;
+
+        let de = SeqDeserializer::<_, Error>::new((0u8..5).map(IntoDeserializer::into_deserializer));
+        let result = GenericArray::<u8, typenum::U4>::deserialize(de);
+        assert!(result.is_err());
+    }
 }
