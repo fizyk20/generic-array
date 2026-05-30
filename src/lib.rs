@@ -1066,13 +1066,16 @@ impl<T, N: ArrayLength> GenericArray<T, N> {
         let num_in_chunks = num_chunks * N::USIZE;
         let num_remainder = slice.len() - num_in_chunks;
 
+        // Derive both halves from a single `as_mut_ptr()`. Calling it twice would
+        // reborrow the whole `&mut [T]` for the second pointer, invalidating the
+        // first chunk's provenance under Stacked Borrows even though the regions
+        // are disjoint. This mirrors how `slice::split_at_mut` is implemented.
+        let base = slice.as_mut_ptr();
+
         unsafe {
             (
-                slice::from_raw_parts_mut(
-                    slice.as_mut_ptr() as *mut GenericArray<T, N>,
-                    num_chunks,
-                ),
-                slice::from_raw_parts_mut(slice.as_mut_ptr().add(num_in_chunks), num_remainder),
+                slice::from_raw_parts_mut(base as *mut GenericArray<T, N>, num_chunks),
+                slice::from_raw_parts_mut(base.add(num_in_chunks), num_remainder),
             )
         }
     }
