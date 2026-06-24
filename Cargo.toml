@@ -44,7 +44,7 @@ subtle = { version = "2", optional = true, default-features = false }
 arbitrary = { version = "1", optional = true, default-features = false }
 bytemuck = { version = "1", optional = true, default-features = false }
 as-slice = { version = "0.2", optional = true, default-features = false }
-bitvec = { version = "1", optional = true, default-features = false }
+bitvec = { version = "=1.0.1", optional = true, default-features = false }
 rkyv-0_8 = { package = "rkyv", version = "0.8", optional = true, default-features = false }
 bytecheck-0_8 = { package = "bytecheck", version = "0.8", optional = true, default-features = false }
 
