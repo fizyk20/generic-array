@@ -779,7 +779,15 @@ fn test_sequence_repeat() {
     let counter = Cell::new(0);
     {
         let repeated: GenericArray<Tracked, U4> = GenericArray::repeat(Tracked(1, &counter));
-        assert_eq!(repeated, arr![Tracked(1, &counter), Tracked(1, &counter), Tracked(1, &counter), Tracked(1, &counter)]);
+        assert_eq!(
+            repeated,
+            arr![
+                Tracked(1, &counter),
+                Tracked(1, &counter),
+                Tracked(1, &counter),
+                Tracked(1, &counter)
+            ]
+        );
     }
 }
 
@@ -799,8 +807,7 @@ fn test_zip_drop_path() {
     // zip -> inverted_zip2, drop branch (rhs element needs Drop)
     let counter = Cell::new(0);
     {
-        let a: GenericArray<Tracked, U4> =
-            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let a: GenericArray<Tracked, U4> = GenericArray::generate(|i| Tracked(i as i32, &counter));
         let b: GenericArray<Tracked, U4> =
             GenericArray::generate(|i| Tracked(i as i32 * 10, &counter));
 
@@ -841,8 +848,7 @@ fn test_fold_and_try_fold_drop() {
     // owned fold consuming Drop elements
     let counter = Cell::new(0);
     {
-        let a: GenericArray<Tracked, U4> =
-            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let a: GenericArray<Tracked, U4> = GenericArray::generate(|i| Tracked(i as i32, &counter));
         let sum = a.fold(0, |acc, x| acc + x.0);
         assert_eq!(sum, 6);
     }
@@ -851,8 +857,7 @@ fn test_fold_and_try_fold_drop() {
     // owned try_fold, success
     let counter = Cell::new(0);
     {
-        let a: GenericArray<Tracked, U4> =
-            GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let a: GenericArray<Tracked, U4> = GenericArray::generate(|i| Tracked(i as i32, &counter));
         let sum: Result<i32, ()> = a.try_fold(0, |acc, x| Ok(acc + x.0));
         assert_eq!(sum, Ok(6));
     }
@@ -861,15 +866,18 @@ fn test_fold_and_try_fold_drop() {
     // owned try_fold, error mid-way still drops remaining source elements
     let counter = Cell::new(0);
     {
-        let a: GenericArray<Tracked, U4> =
-            GenericArray::generate(|i| Tracked(i as i32, &counter));
-        let res: Result<i32, &str> = a.try_fold(0, |acc, x| {
-            if x.0 == 2 {
-                Err("stop")
-            } else {
-                Ok(acc + x.0)
-            }
-        });
+        let a: GenericArray<Tracked, U4> = GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let res: Result<i32, &str> =
+            a.try_fold(
+                0,
+                |acc, x| {
+                    if x.0 == 2 {
+                        Err("stop")
+                    } else {
+                        Ok(acc + x.0)
+                    }
+                },
+            );
         assert_eq!(res, Err("stop"));
     }
     assert_eq!(counter.get(), 4);
@@ -905,13 +913,8 @@ fn test_functional_on_references() {
 #[test]
 fn test_try_map_success() {
     let a = arr![2, 4, 6, 8];
-    let b: Result<GenericArray<i32, _>, &str> = a.try_map(|x| {
-        if x % 2 == 0 {
-            Ok(x * 2)
-        } else {
-            Err("odd")
-        }
-    });
+    let b: Result<GenericArray<i32, _>, &str> =
+        a.try_map(|x| if x % 2 == 0 { Ok(x * 2) } else { Err("odd") });
     assert_eq!(b.unwrap(), arr![4, 8, 12, 16]);
 }
 
@@ -1053,9 +1056,9 @@ fn test_reference_generate() {
     assert_eq!(tg.unwrap().unwrap(), arr![0, 1, 2, 3]);
 
     let tgm: Result<Result<GenericArray<i32, U4>, ()>, _> =
-        <&mut GenericArray<i32, U4> as FallibleGenericSequence<i32>>::try_generate(|i| {
-            Ok(i as i32)
-        });
+        <&mut GenericArray<i32, U4> as FallibleGenericSequence<i32>>::try_generate(
+            |i| Ok(i as i32),
+        );
     assert_eq!(tgm.unwrap().unwrap(), arr![0, 1, 2, 3]);
 }
 

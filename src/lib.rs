@@ -361,20 +361,31 @@ pub struct GenericArrayImplOdd<T, U> {
     data: T,
 }
 
+// NOTE: These `Clone` impls are intentionally never reached in normal use:
+// `GenericArray<T, N>::clone` delegates to `self.map(Clone::clone)`, so the recursive
+// container's own `Clone` is never invoked. Bodied as `unreachable!()` (rather than the
+// recursive clone) to avoid emitting the recursive-clone codegen that would otherwise be
+// dead. The `GenericArrayImpl*` types are `#[doc(hidden)]` internals; they must remain
+// nameable via `<N as ArrayLength>::ArrayType<T>` for `typenum` reasons, so a caller can
+// technically construct one and call `.clone()` on it. That misuse now panics
+// deterministically instead of hitting `unreachable_unchecked()` (UB).
 impl<T: Clone, U: Clone> Clone for GenericArrayImplEven<T, U> {
     #[inline(always)]
     fn clone(&self) -> GenericArrayImplEven<T, U> {
-        // Clone is never called on the GenericArrayImpl types,
-        // as we use `self.map(clone)` elsewhere. This helps avoid
-        // extra codegen for recursive clones when they are never used.
-        unsafe { core::hint::unreachable_unchecked() }
+        unreachable!(
+            "GenericArrayImplEven::clone should never be called; \
+             clone a GenericArray<T, N> instead of its internal ArrayType<T>"
+        )
     }
 }
 
 impl<T: Clone, U: Clone> Clone for GenericArrayImplOdd<T, U> {
     #[inline(always)]
     fn clone(&self) -> GenericArrayImplOdd<T, U> {
-        unsafe { core::hint::unreachable_unchecked() }
+        unreachable!(
+            "GenericArrayImplOdd::clone should never be called; \
+             clone a GenericArray<T, N> instead of its internal ArrayType<T>"
+        )
     }
 }
 

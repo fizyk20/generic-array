@@ -213,6 +213,151 @@ fn test_into_iter_drops() {
     assert_eq!(i.get(), 5);
 }
 
+// Targeted reproduction attempt for the Gemini audit's "slice fabrication over
+// partially-moved arrays" finding. The claim: every `get_unchecked(index..index_back)`
+// in the iterator auto-derefs through the whole-array `slice::from_raw_parts` over
+// `0..N`, and once leading/trailing elements have been moved out, forming that
+// whole-array reference is claimed to be UB.
+//
+// To give that claim the strongest possible chance to fire under Miri, the element
+// type is `Niche(NonZeroU32)`: a moved-out slot left as a zeroed bit pattern would be
+// a *validity-invalid* `NonZeroU32`, not merely uninitialized - so a reference spanning
+// it would be UB that Tree Borrows + validity checking must catch. A `Cell`-backed Drop
+// counter additionally proves exactly-once drop accounting through each path.
+//
+// The helpers below exercise *every* slice-forming call site the report named
+// (`as_slice`, `as_mut_slice`, `next`, `nth`, `next_back`, `nth_back`, `fold`, `rfold`,
+// `Drop`, and `Clone`) while the backing array is in a partially-moved state.
+//
+// Run under both aliasing models to adjudicate:
+//   cargo +nightly miri test --test iter partial_move
+//   MIRIFLAGS="-Zmiri-tree-borrows" cargo +nightly miri test --test iter partial_move
+
+use std::num::NonZeroU32;
+
+struct Niche<'a>(NonZeroU32, &'a Cell<u32>);
+
+impl Clone for Niche<'_> {
+    fn clone(&self) -> Self {
+        Niche(self.0, self.1)
+    }
+}
+
+impl Drop for Niche<'_> {
+    fn drop(&mut self) {
+        // Touch the value so a moved-out/zeroed slot is observable as a validity bug,
+        // and count the drop so callers can assert exactly-once semantics.
+        assert!(self.0.get() != 0, "dropped a moved-out / invalid Niche");
+        self.1.set(self.1.get() + 1);
+    }
+}
+
+// Build a fresh 5-element iterator whose elements all count drops into `c`.
+fn mk_iter(c: &Cell<u32>) -> generic_array::GenericArrayIter<Niche<'_>, U5> {
+    GenericArray::<Niche, U5>::from_iter(
+        (1..=5).map(|n| Niche(NonZeroU32::new(n).unwrap(), c)),
+    )
+    .into_iter()
+}
+
+#[test]
+fn test_partial_move_as_slice_both_ends() {
+    let c = Cell::new(0);
+    {
+        let mut iter = mk_iter(&c);
+        let _front = iter.next().unwrap(); // index advances; slot 0 moved out
+        let _back = iter.next_back().unwrap(); // index_back retreats; slot 4 moved out
+        // as_slice / as_mut_slice now form the whole-array ref with slots 0 and 4 dead.
+        assert_eq!(iter.as_slice().len(), 3);
+        for n in iter.as_mut_slice() {
+            assert!(n.0.get() != 0);
+        }
+        // Debug also routes through as_slice().
+        let _ = format!("{:?} {:?}", iter.as_slice().len(), c.get());
+        drop(iter); // Drop forms the remaining [1..4] slice and drop_in_place's it.
+    }
+    assert_eq!(c.get(), 5, "all 5 elements dropped exactly once");
+}
+
+#[test]
+fn test_partial_move_drain_to_empty() {
+    // Every slot moved out before Drop: Drop must form a zero-length slice, not touch
+    // any of the (now invalid) backing memory.
+    let c = Cell::new(0);
+    {
+        let mut iter = mk_iter(&c);
+        while iter.next().is_some() {}
+        assert_eq!(iter.as_slice().len(), 0);
+        drop(iter);
+    }
+    assert_eq!(c.get(), 5);
+}
+
+#[test]
+fn test_partial_move_nth_and_nth_back() {
+    // nth() drop_in_place's the skipped prefix slice, then next() reads through the
+    // whole-array deref; nth_back() does the mirror on the suffix.
+    let c = Cell::new(0);
+    {
+        let mut iter = mk_iter(&c);
+        let _ = iter.nth(1).unwrap(); // drops slots [0..1], returns slot 1
+        let _ = iter.nth_back(1).unwrap(); // drops slots [4..5)->[3..4], returns slot 3
+        assert_eq!(iter.as_slice().len(), 1); // only slot 2 remains live
+        drop(iter);
+    }
+    assert_eq!(c.get(), 5);
+}
+
+#[test]
+fn test_partial_move_fold_after_consume() {
+    // fold() forms get_unchecked(index..index_back) and ptr::reads through it while
+    // mutating the index, with both outer ends already moved out.
+    let c = Cell::new(0);
+    {
+        let mut iter = mk_iter(&c);
+        let _ = iter.next().unwrap();
+        let _ = iter.next_back().unwrap();
+        let sum = iter.fold(0u32, |acc, n| acc + n.0.get());
+        assert_eq!(sum, 2 + 3 + 4);
+    }
+    assert_eq!(c.get(), 5);
+}
+
+#[test]
+fn test_partial_move_rfold_after_consume() {
+    let c = Cell::new(0);
+    {
+        let mut iter = mk_iter(&c);
+        let _ = iter.next().unwrap();
+        let _ = iter.next_back().unwrap();
+        let sum = iter.rfold(0u32, |acc, n| acc + n.0.get());
+        assert_eq!(sum, 2 + 3 + 4);
+    }
+    assert_eq!(c.get(), 5);
+}
+
+#[test]
+fn test_partial_move_clone_after_consume() {
+    // Clone is the spiciest path: it ptr::read's the *entire* partially-moved backing
+    // array (bitwise) into a new iter, then writes clones into the live prefix via
+    // as_mut_slice(). If forming a ref over moved-out slots were UB, this is where it
+    // would bite hardest.
+    let c = Cell::new(0);
+    {
+        let mut iter = mk_iter(&c);
+        let _ = iter.next().unwrap(); // slot 0 dead
+        let _ = iter.next_back().unwrap(); // slot 4 dead
+        let cloned = iter.clone(); // bitwise-copies [_, 2, 3, 4, _], clones live 2,3,4
+        assert_eq!(cloned.as_slice().len(), 3);
+        // Iterator::map (lazy) over the cloned by-value iter, consuming the 3 clones.
+        let s: u32 = cloned.map(|n| n.0.get()).sum();
+        assert_eq!(s, 2 + 3 + 4);
+        drop(iter);
+    }
+    // 5 originals + 3 clones = 8 drops.
+    assert_eq!(c.get(), 8);
+}
+
 #[test]
 fn test_from_failing_iter() {
     let res: Result<GenericArray<_, U5>, ()> = GenericArray::from_fallible_iter(

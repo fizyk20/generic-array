@@ -430,3 +430,96 @@ fn test_length_error_display() {
     let msg = alloc::format!("{}", LengthError);
     assert!(msg.contains("LengthError"));
 }
+
+// Drop-counting element for the panic-unwind tests below.
+#[derive(Clone)]
+struct Tracked<'a>(i32, &'a Cell<u32>);
+
+impl Drop for Tracked<'_> {
+    fn drop(&mut self) {
+        self.1.set(self.1.get() + 1);
+    }
+}
+
+// The Gemini audit's finding #2 worries that the by-value consumer paths
+// (`ArrayConsumer` / `IntrusiveArrayConsumer`, used by `map`/`zip`) leave moved-out
+// memory in a state that is unsound to touch. The real soundness contract those Drop
+// impls uphold is *unwind safety*: if the user closure panics partway through, every
+// element created is dropped exactly once - the elements already moved into the closure
+// are dropped there, and the still-unconsumed tail is dropped by the consumer's Drop.
+// Never zero, never twice. These tests assert "drops == elements created" after catching
+// a mid-iteration panic. Living in `alloc.rs` (rather than the `#![no_std]` `mod.rs`)
+// because `catch_unwind` needs `std`.
+//
+// Worth running under Miri, both aliasing models, to also rule out a double-free or
+// aliasing violation on the unwind path:
+//   cargo +nightly miri test --test alloc panic_unwind
+//   MIRIFLAGS="-Zmiri-tree-borrows" cargo +nightly miri test --test alloc panic_unwind
+#[test]
+fn panic_unwind_map_drops_all_once() {
+    extern crate std;
+    use core::panic::AssertUnwindSafe;
+
+    // `map` consumes `self` via the consumer. Panicking while handling element 2 means
+    // elements 0 and 1 were moved into (and dropped by) the closure, while 2 and 3 remain
+    // for the consumer's Drop. All 4 must be dropped, none twice.
+    let counter = Cell::new(0u32);
+    let result = std::panic::catch_unwind(AssertUnwindSafe(|| {
+        let a: GenericArray<Tracked, U4> = GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let _mapped: GenericArray<i32, U4> = a.map(|x| {
+            if x.0 == 2 {
+                panic!("boom in map");
+            }
+            x.0
+        });
+    }));
+    assert!(result.is_err(), "closure should have panicked");
+    assert_eq!(counter.get(), 4, "every created element dropped exactly once");
+}
+
+#[test]
+fn panic_unwind_zip_drops_all_once() {
+    extern crate std;
+    use core::panic::AssertUnwindSafe;
+
+    // `zip` drives the two-array consumer path (inverted_zip / inverted_zip2). Panicking
+    // mid-iteration must still account for all 8 created elements (4 per array) exactly once.
+    let counter = Cell::new(0u32);
+    let result = std::panic::catch_unwind(AssertUnwindSafe(|| {
+        let a: GenericArray<Tracked, U4> = GenericArray::generate(|i| Tracked(i as i32, &counter));
+        let b: GenericArray<Tracked, U4> =
+            GenericArray::generate(|i| Tracked(i as i32 * 10, &counter));
+        let _summed: GenericArray<i32, U4> = a.zip(b, |x, y| {
+            if x.0 == 2 {
+                panic!("boom in zip");
+            }
+            x.0 + y.0
+        });
+    }));
+    assert!(result.is_err(), "closure should have panicked");
+    assert_eq!(counter.get(), 8, "every created element dropped exactly once");
+}
+
+#[test]
+fn panic_unwind_from_iter_drops_all_once() {
+    extern crate std;
+    use core::panic::AssertUnwindSafe;
+
+    // `FromIterator` uses the builder (not the consumer), but the same exactly-once
+    // accounting must hold if the *source iterator* panics partway: the initialized prefix
+    // is dropped, the not-yet-written slots are not. The panic fires before element 3 is
+    // created, so exactly 3 drops occur.
+    let counter = Cell::new(0u32);
+    let result = std::panic::catch_unwind(AssertUnwindSafe(|| {
+        let _: GenericArray<Tracked, U4> = (0..4)
+            .map(|i| {
+                if i == 3 {
+                    panic!("boom in source iterator");
+                }
+                Tracked(i, &counter)
+            })
+            .collect();
+    }));
+    assert!(result.is_err(), "iterator should have panicked");
+    assert_eq!(counter.get(), 3, "initialized prefix dropped exactly once");
+}
