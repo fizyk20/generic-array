@@ -203,16 +203,16 @@ impl<T, N: ArrayLength> Iterator for GenericArrayIter<T, N> {
 
     fn nth(&mut self, n: usize) -> Option<T> {
         // First consume values prior to the nth.
-        let next_index = self.index + cmp::min(n, self.len());
+        let start_index = self.index;
+        self.index += cmp::min(n, self.len());
 
-        // SAFETY: `index <= next_index <= index_back <= N`, so `index..next_index` is a
-        // range of live, in-bounds elements. Drop exactly those in place via a raw slice
-        // pointer (no reference spanning moved-out slots), then advance `index` past them.
+        // SAFETY: `start_index <= self.index <= index_back <= N`, so `start_index..index`
+        // is a range of live, in-bounds elements. Drop exactly those in place via a raw
+        // slice pointer (no reference spanning moved-out slots); `index` already advanced
+        // past them.
         unsafe {
-            ptr::drop_in_place(raw_subslice!(mut self.array, self.index, next_index));
+            ptr::drop_in_place(raw_subslice!(mut self.array, start_index, self.index));
         }
-
-        self.index = next_index;
 
         self.next()
     }
@@ -273,16 +273,16 @@ impl<T, N: ArrayLength> DoubleEndedIterator for GenericArrayIter<T, N> {
     }
 
     fn nth_back(&mut self, n: usize) -> Option<T> {
-        let next_back = self.index_back - cmp::min(n, self.len());
+        let last_index = self.index_back;
+        self.index_back -= cmp::min(n, self.len());
 
-        // SAFETY: `index <= next_back <= index_back <= N`, so `next_back..index_back` is a
-        // range of live, in-bounds elements. Drop exactly those in place via a raw slice
-        // pointer (no reference spanning moved-out slots), then retreat `index_back`.
+        // SAFETY: `index <= self.index_back <= last_index <= N`, so `index_back..last_index`
+        // is a range of live, in-bounds elements. Drop exactly those in place via a raw
+        // slice pointer (no reference spanning moved-out slots); `index_back` already
+        // retreated past them.
         unsafe {
-            ptr::drop_in_place(raw_subslice!(mut self.array, next_back, self.index_back));
+            ptr::drop_in_place(raw_subslice!(mut self.array, self.index_back, last_index));
         }
-
-        self.index_back = next_back;
 
         self.next_back()
     }
