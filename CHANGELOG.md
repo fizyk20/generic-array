@@ -1,3 +1,6 @@
+* **`1.4.4`**
+    * Improved on some impossibly rare edge cases
+
 * **`1.4.3`**
     * Bump `typenum` to `1.20.1`, which improves `tarr!` ergonomics [#169](https://github.com/fizyk20/generic-array/pull/169)
     * Add code coverage metrics and tests (96.2% as of this version)
