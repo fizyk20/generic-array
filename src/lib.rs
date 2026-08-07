@@ -396,11 +396,13 @@ impl<T: Copy, U: Copy> Copy for GenericArrayImplOdd<T, U> {}
 impl<T, U> Sealed for GenericArrayImplEven<T, U> {}
 impl<T, U> Sealed for GenericArrayImplOdd<T, U> {}
 
-// 1 << (size_of::<usize>() << 3) == usize::MAX + 1
-type MaxArrayLengthP1 = typenum::Shleft<
-    typenum::U1,
-    typenum::Shleft<typenum::U<{ mem::size_of::<usize>() }>, typenum::U3>,
->;
+// (256 ^ size_of::<usize>()) == usize::MAX + 1
+//
+// We've previously used `1 << (size_of::<usize>() << 3)` here. However
+// typenum's implementation of `N << M` requires a recursion depth of `log_2(N) + 2M`
+// causing uses of this type to hit the default recursion limit of `128`.
+type MaxArrayLengthP1 =
+    <typenum::U256 as typenum::Pow<typenum::U<{ mem::size_of::<usize>() }>>>::Output;
 
 /// Helper trait to hide the complex bound under a simpler name
 trait IsWithinUsizeBound: typenum::IsLess<MaxArrayLengthP1, Output = typenum::consts::True> {}
